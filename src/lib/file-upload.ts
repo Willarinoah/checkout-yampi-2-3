@@ -3,9 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 export const uploadPhotosToStorage = async (photos: File[], memorialId: string): Promise<string[]> => {
   console.log('Starting photo upload process for memorial:', memorialId);
   
-  const uploadPromises = photos.map(async (photo) => {
+  const uploadPromises = photos.map(async (photo, index) => {
     const fileExt = photo.name.split('.').pop();
-    const fileName = `${memorialId}/${crypto.randomUUID()}.${fileExt}`;
+    const fileName = `${memorialId}/photos/${crypto.randomUUID()}.${fileExt}`;
     
     console.log('Uploading photo:', fileName);
     
