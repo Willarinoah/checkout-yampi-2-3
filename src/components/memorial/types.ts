@@ -6,4 +6,6 @@ export interface FormPreviewData {
   selectedPlan?: "basic" | "premium";
   startDate?: Date;
   startTime?: string;
+  fullName?: string;
+  phone?: string;
 }

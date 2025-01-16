@@ -9,6 +9,8 @@ export type UserConfig = {
   custom_slug: string;
   unique_url: string;
   email: string;
+  full_name: string;
+  phone: string;
   payment_status: "pending" | "paid";
   qr_code_url: string | null;
   photos: string[] | null;
@@ -20,6 +22,8 @@ export type UserConfig = {
 export type MemorialFormData = {
   couple_name: string;
   email: string;
+  full_name: string;
+  phone: string;
   relationship_start: string;
   time: string;
   message: string | null;

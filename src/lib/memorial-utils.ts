@@ -14,7 +14,7 @@ export const generateUniqueSlug = async (coupleName: string): Promise<string> =>
   const generateMemorialUrl = (slug: string) => `${window.location.origin}/memorial/${slug}`;
 
   const { data: existingWithBase, error: slugError } = await supabase
-    .from('user_configs')
+    .from('memorials')
     .select('custom_slug')
     .eq('custom_slug', baseSlug)
     .maybeSingle();
@@ -32,7 +32,7 @@ export const generateUniqueSlug = async (coupleName: string): Promise<string> =>
   while (true) {
     const newSlug = `${baseSlug}-${counter}`;
     const { data: existing, error } = await supabase
-      .from('user_configs')
+      .from('memorials')
       .select('custom_slug')
       .eq('custom_slug', newSlug)
       .maybeSingle();
@@ -51,10 +51,12 @@ export const generateUniqueSlug = async (coupleName: string): Promise<string> =>
 
 export const createMemorial = async (data: MemorialFormData): Promise<UserConfig> => {
   const { data: memorial, error } = await supabase
-    .from('user_configs')
+    .from('memorials')
     .insert([{
       couple_name: data.couple_name,
       email: data.email,
+      full_name: data.full_name,
+      phone: data.phone,
       relationship_start: data.relationship_start,
       time: data.time,
       message: data.message,
@@ -80,7 +82,7 @@ export const createMemorial = async (data: MemorialFormData): Promise<UserConfig
 
 export const getMemorialBySlug = async (slug: string): Promise<UserConfig | null> => {
   const { data, error } = await supabase
-    .from('user_configs')
+    .from('memorials')
     .select('*')
     .eq('custom_slug', slug)
     .single();
