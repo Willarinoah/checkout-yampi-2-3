@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const checkUrlExpiration = async (memorialId: string): Promise<boolean> => {
   const { data: memorial, error } = await supabase
-    .from('user_configs')
+    .from('memorials')
     .select('plan_type, payment_status')
     .eq('id', memorialId)
     .single();
@@ -28,7 +28,7 @@ export const checkUrlExpiration = async (memorialId: string): Promise<boolean> =
 
   // Basic plan (1 year) expires after one year from creation
   const { data: creationData } = await supabase
-    .from('user_configs')
+    .from('memorials')
     .select('created_at')
     .eq('id', memorialId)
     .single();
@@ -44,7 +44,7 @@ export const checkUrlExpiration = async (memorialId: string): Promise<boolean> =
 
 export const handleExpiredUrl = async (memorialId: string): Promise<void> => {
   const { error } = await supabase
-    .from('user_configs')
+    .from('memorials')
     .update({ payment_status: 'pending' })
     .eq('id', memorialId);
 

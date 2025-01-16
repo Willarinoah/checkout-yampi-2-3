@@ -52,6 +52,7 @@ const CreateMemorial = () => {
           onClose={() => setShowEmailDialog(false)}
           onSubmit={handleEmailSubmit}
           email={email}
+          onEmailChange={setEmail}
           isBrazil={false}
         />
 

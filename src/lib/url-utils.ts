@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const generateMemorialUrl = async (coupleName: string): Promise<string> => {
   const { data: config } = await supabase
-    .from('user_configs')
+    .from('memorials')
     .select('unique_url')
     .eq('couple_name', coupleName)
     .single();
@@ -12,13 +12,12 @@ export const generateMemorialUrl = async (coupleName: string): Promise<string> =
   }
 
   const baseUrl = window.location.origin;
-  // Removendo o '/preview' da URL e adicionando '/memorial'
   return `${baseUrl}/memorial/${coupleName.toLowerCase().replace(/\s+/g, '-')}`;
 };
 
 export const checkUrlAvailability = async (url: string): Promise<boolean> => {
   const { data: existingConfig } = await supabase
-    .from('user_configs')
+    .from('memorials')
     .select('id')
     .eq('unique_url', url)
     .single();
