@@ -71,12 +71,13 @@ export const useMemorialFormLogic = (
       const photoUrls = await uploadPhotosToStorage(photos, customSlug);
       console.log('Photos uploaded:', photoUrls);
 
-      // Create user profile without email field
+      // Create user profile with email field
       const { data: userProfile, error: profileError } = await supabase
         .from('user_profiles')
         .insert({
           full_name: fullName || coupleName,
           phone: phoneNumber,
+          email: submittedEmail,
           address_info: null,
           preferences: null
         })
@@ -95,7 +96,7 @@ export const useMemorialFormLogic = (
       const planPrice = selectedPlan === "basic" ? 29 : 49;
 
       // Create memorial with user profile ID
-      const memorialData: MemorialFormData = {
+      const memorialData = {
         couple_name: coupleName,
         message: message || null,
         plan_type: planType,
