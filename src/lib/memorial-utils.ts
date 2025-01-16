@@ -47,12 +47,16 @@ export const generateUniqueSlug = async (coupleName: string): Promise<string> =>
 };
 
 export const createMemorial = async (data: MemorialFormData): Promise<UserConfig> => {
+  const planType = data.plan_type === "basic" 
+    ? "1 year, 3 photos and no music" 
+    : "Forever, 7 photos and music";
+
   const { data: memorial, error } = await supabase
     .from('memorials')
     .insert([{
       couple_name: data.couple_name,
       message: data.message,
-      plan_type: data.plan_type as "1 year, 3 photos and no music" | "Forever, 7 photos and music",
+      plan_type: planType,
       plan_price: data.plan_price,
       custom_slug: data.custom_slug,
       unique_url: data.unique_url,
