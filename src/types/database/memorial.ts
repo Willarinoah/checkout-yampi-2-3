@@ -1,3 +1,5 @@
+import type { Json } from "@/integrations/supabase/types";
+
 export type UserConfig = {
   id: string;
   user_id?: string;
@@ -18,8 +20,8 @@ export type UserConfig = {
   full_name: string | null;
   phone: string | null;
   email: string | null;
-  address_info: any | null;
-  preferences: any | null;
+  address_info: Json | null;
+  preferences: Json | null;
 };
 
 export type MemorialFormData = {
@@ -38,8 +40,8 @@ export type MemorialFormData = {
   email?: string | null;
   full_name?: string | null;
   phone?: string | null;
-  address_info?: any | null;
-  preferences?: any | null;
+  address_info?: Json | null;
+  preferences?: Json | null;
 };
 
 export const getPlanTypeFromSelection = (planType: "basic" | "premium"): "1 year, 3 photos and no music" | "Forever, 7 photos and music" => {

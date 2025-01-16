@@ -71,7 +71,7 @@ export const createMemorial = async (data: MemorialFormData): Promise<UserConfig
       address_info: data.address_info,
       preferences: data.preferences
     }])
-    .select()
+    .select('*')
     .single();
 
   if (error) {
