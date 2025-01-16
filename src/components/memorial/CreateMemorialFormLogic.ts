@@ -9,7 +9,7 @@ import type { FormPreviewData } from './types';
 import { toast } from "sonner";
 
 export const useMemorialFormLogic = (
-  onEmailSubmit: (email: string) => void,
+  onEmailSubmit: (email: string, fullName?: string, phoneNumber?: string) => void,
   onShowEmailDialog: () => void,
   email: string,
   onFormDataChange: (data: FormPreviewData) => void
@@ -51,10 +51,10 @@ export const useMemorialFormLogic = (
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, onFormDataChange]);
 
-  const handleEmailSubmit = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
+  const handleEmailSubmit = async (submittedEmail: string, fullName: string = "", phoneNumber: string = "") => {
     try {
       setIsLoading(true);
-      onEmailSubmit(submittedEmail);
+      onEmailSubmit(submittedEmail, fullName, phoneNumber);
       setShowEmailDialog(false);
 
       const customSlug = await generateUniqueSlug(coupleName);
