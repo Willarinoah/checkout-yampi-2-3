@@ -9,7 +9,7 @@ import type { FormPreviewData } from './types';
 import { toast } from "sonner";
 
 export const useMemorialFormLogic = (
-  onEmailSubmit: (email: string, fullName?: string, phoneNumber?: string) => void,
+  onEmailSubmit: (email: string) => void,
   onShowEmailDialog: () => void,
   email: string,
   onFormDataChange: (data: FormPreviewData) => void
@@ -23,15 +23,13 @@ export const useMemorialFormLogic = (
   const [isLoading, setIsLoading] = useState(false);
   const [isBrazil, setIsBrazil] = useState<boolean | null>(null);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
-  const [locationInfo, setLocationInfo] = useState<any>(null);
 
   useEffect(() => {
     const checkLocation = async () => {
       try {
-        const info = await detectUserLocation();
-        setIsBrazil(info.is_brazil);
-        setLocationInfo(info);
-        await saveLocationAnalytics(info);
+        const locationInfo = await detectUserLocation();
+        setIsBrazil(locationInfo.is_brazil);
+        await saveLocationAnalytics(locationInfo);
       } catch (error) {
         console.error('Error in location detection:', error);
         setIsBrazil(false);
@@ -51,10 +49,10 @@ export const useMemorialFormLogic = (
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, onFormDataChange]);
 
-  const handleEmailSubmit = async (submittedEmail: string, fullName: string = "", phoneNumber: string = "") => {
+  const handleEmailSubmit = async (submittedEmail: string) => {
     try {
       setIsLoading(true);
-      onEmailSubmit(submittedEmail, fullName, phoneNumber);
+      onEmailSubmit(submittedEmail);
       setShowEmailDialog(false);
 
       const customSlug = await generateUniqueSlug(coupleName);
@@ -70,30 +68,25 @@ export const useMemorialFormLogic = (
       console.log('Photos uploaded:', photoUrls);
 
       const planType = selectedPlan === "basic" 
-        ? "1 year, 3 photos and no music" as const
-        : "Forever, 7 photos and music" as const;
+        ? "1 year, 3 photos and no music" 
+        : "Forever, 7 photos and music";
+      
+      const planPrice = selectedPlan === "basic" ? 29 : 49;
 
       const memorialData = {
         couple_name: coupleName,
         email: submittedEmail,
-        full_name: fullName || null,
-        phone_number: phoneNumber || null,
         message: message || null,
-        plan_type: planType,
-        plan_price: selectedPlan === "basic" ? 29 : 49,
+        plan_type: planType as "1 year, 3 photos and no music" | "Forever, 7 photos and music",
+        plan_price: planPrice,
         custom_slug: customSlug,
         unique_url: uniqueUrl,
-        payment_status: "pending" as const,
+        payment_status: "pending" as "pending" | "paid",
         qr_code_url: qrCodeUrl,
         photos: photoUrls,
         youtube_url: selectedPlan === "premium" && youtubeUrl ? youtubeUrl : null,
         relationship_start: new Date().toISOString(),
-        time: new Date().toLocaleTimeString('en-US', { hour12: false }),
-        address_city: locationInfo?.city || null,
-        address_region: locationInfo?.region || null,
-        address_country: locationInfo?.country || null,
-        address_detected_by: locationInfo?.detected_by || 'fallback',
-        address_ip: locationInfo?.ip || null
+        time: new Date().toLocaleTimeString('en-US', { hour12: false })
       };
 
       console.log('Inserting memorial data:', memorialData);
@@ -102,15 +95,11 @@ export const useMemorialFormLogic = (
         .from('user_configs')
         .insert(memorialData)
         .select()
-        .maybeSingle();
+        .single();
 
       if (insertError) {
         console.error('Error inserting memorial:', insertError);
         throw new Error(insertError.message);
-      }
-
-      if (!insertedMemorial) {
-        throw new Error('Failed to create memorial');
       }
 
       console.log('Successfully created memorial:', insertedMemorial);
@@ -156,7 +145,7 @@ export const useMemorialFormLogic = (
       return;
     }
 
-    handleEmailSubmit(email, "", "");
+    handleEmailSubmit(email);
   };
 
   return {
