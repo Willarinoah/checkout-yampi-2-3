@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { MemorialPreview } from "@/components/memorial/MemorialPreview";
 import { CreateMemorialForm } from "@/components/memorial/CreateMemorialForm";
-import EmailCollectionDialog from "@/components/memorial/EmailCollectionDialog";
+import UserDataCollectionDialog from "@/components/memorial/UserDataCollectionDialog";
 import Header from "@/components/layout/Header";
 import Footer from '@/components/layout/Footer';
 
@@ -47,12 +47,12 @@ const CreateMemorial = () => {
     <>
       <Header />
       <main className="min-h-screen bg-loveblue text-white p-4 pt-24">
-        <EmailCollectionDialog
+        <UserDataCollectionDialog
           open={showEmailDialog}
           onClose={() => setShowEmailDialog(false)}
           onSubmit={handleEmailSubmit}
           email={email}
-          onEmailChange={setEmail}
+          isBrazil={false}
         />
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-2">
