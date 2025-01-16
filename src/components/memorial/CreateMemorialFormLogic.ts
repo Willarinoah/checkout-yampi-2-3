@@ -95,14 +95,14 @@ export const useMemorialFormLogic = (
       const planPrice = selectedPlan === "basic" ? 29 : 49;
 
       // Create memorial with user profile ID
-      const memorialData = {
+      const memorialData: MemorialFormData = {
         couple_name: coupleName,
         message: message || null,
-        plan_type: planType as "1 year, 3 photos and no music" | "Forever, 7 photos and music",
+        plan_type: planType,
         plan_price: planPrice,
         custom_slug: customSlug,
         unique_url: uniqueUrl,
-        payment_status: "pending" as "pending" | "paid",
+        payment_status: "pending",
         qr_code_url: qrCodeUrl,
         photos: photoUrls,
         youtube_url: selectedPlan === "premium" && youtubeUrl ? youtubeUrl : null,
