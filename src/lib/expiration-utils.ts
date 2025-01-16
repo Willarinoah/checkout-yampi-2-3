@@ -2,8 +2,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const checkUrlExpiration = async (memorialId: string): Promise<boolean> => {
   const { data: memorial, error } = await supabase
-    .from('memorial_pages')
-    .select('plan, expires_at')
+    .from('user_configs')
+    .select('plan_type, payment_status')
     .eq('id', memorialId)
     .single();
 
@@ -16,16 +16,27 @@ export const checkUrlExpiration = async (memorialId: string): Promise<boolean> =
     return false;
   }
 
-  // Premium plans don't expire
-  if (memorial.plan === 'premium') {
+  // Check payment status first
+  if (memorial.payment_status !== 'paid') {
+    return false;
+  }
+
+  // Forever plan doesn't expire
+  if (memorial.plan_type === 'Forever, 7 photos and music') {
     return true;
   }
 
-  // Basic plans expire after their expiration date
-  if (memorial.expires_at) {
-    const now = new Date();
-    const expirationDate = new Date(memorial.expires_at);
-    return now < expirationDate;
+  // Basic plan (1 year) expires after one year from creation
+  const { data: creationData } = await supabase
+    .from('user_configs')
+    .select('created_at')
+    .eq('id', memorialId)
+    .single();
+
+  if (creationData) {
+    const creationDate = new Date(creationData.created_at);
+    const expirationDate = new Date(creationDate.setFullYear(creationDate.getFullYear() + 1));
+    return new Date() < expirationDate;
   }
 
   return false;
@@ -33,8 +44,8 @@ export const checkUrlExpiration = async (memorialId: string): Promise<boolean> =
 
 export const handleExpiredUrl = async (memorialId: string): Promise<void> => {
   const { error } = await supabase
-    .from('memorial_pages')
-    .update({ status: 'expired' })
+    .from('user_configs')
+    .update({ payment_status: 'pending' })
     .eq('id', memorialId);
 
   if (error) {
