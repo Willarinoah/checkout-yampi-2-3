@@ -26,9 +26,9 @@ export const CountdownDisplay = ({ startDate, startTime }: CountdownDisplayProps
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const [hours, minutes] = startTime.split(":").map(Number);
+      const [initialHours, initialMinutes] = startTime.split(":").map(Number);
       const start = new Date(startDate);
-      start.setHours(hours, minutes, 0, 0);
+      start.setHours(initialHours, initialMinutes, 0, 0);
       const now = new Date();
 
       const difference = now.getTime() - start.getTime();
