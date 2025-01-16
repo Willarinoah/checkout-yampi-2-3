@@ -54,8 +54,6 @@ export const createMemorial = async (data: MemorialFormData): Promise<UserConfig
       email: data.email,
       full_name: data.full_name,
       phone: data.phone,
-      relationship_start: data.relationship_start,
-      time: data.time,
       message: data.message,
       plan_type: data.plan_type,
       plan_price: data.plan_price,
@@ -64,7 +62,9 @@ export const createMemorial = async (data: MemorialFormData): Promise<UserConfig
       payment_status: data.payment_status,
       qr_code_url: data.qr_code_url,
       photos: data.photos,
-      youtube_url: data.youtube_url || null
+      youtube_url: data.youtube_url,
+      relationship_start: data.relationship_start,
+      time: data.time
     }])
     .select()
     .single();

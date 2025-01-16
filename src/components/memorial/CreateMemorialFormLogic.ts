@@ -23,6 +23,8 @@ export const useMemorialFormLogic = (
   const [isLoading, setIsLoading] = useState(false);
   const [isBrazil, setIsBrazil] = useState<boolean | null>(null);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [startDate, setStartDate] = useState<Date>();
+  const [startTime, setStartTime] = useState("00:00");
 
   useEffect(() => {
     const checkLocation = async () => {
@@ -44,10 +46,12 @@ export const useMemorialFormLogic = (
       photosPreviews,
       message,
       youtubeUrl,
-      selectedPlan
+      selectedPlan,
+      startDate,
+      startTime
     };
     onFormDataChange(previewData);
-  }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, onFormDataChange]);
+  }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
   const handleEmailSubmit = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
     try {
@@ -87,8 +91,8 @@ export const useMemorialFormLogic = (
         qr_code_url: qrCodeUrl,
         photos: photoUrls,
         youtube_url: selectedPlan === "premium" && youtubeUrl ? youtubeUrl : null,
-        relationship_start: new Date().toISOString(),
-        time: new Date().toLocaleTimeString('en-US', { hour12: false })
+        relationship_start: startDate ? startDate.toISOString() : new Date().toISOString(),
+        time: startTime
       };
 
       console.log('Inserting memorial data:', memorialData);
@@ -147,7 +151,7 @@ export const useMemorialFormLogic = (
       return;
     }
 
-    handleEmailSubmit(email);
+    handleEmailSubmit(email, "", "");
   };
 
   return {
@@ -169,6 +173,9 @@ export const useMemorialFormLogic = (
     showEmailDialog,
     setShowEmailDialog,
     handleEmailSubmit,
-    onEmailSubmit
+    startDate,
+    setStartDate,
+    startTime,
+    setStartTime
   };
 };
