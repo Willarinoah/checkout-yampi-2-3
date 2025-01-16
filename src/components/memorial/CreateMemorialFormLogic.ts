@@ -71,17 +71,30 @@ export const useMemorialFormLogic = (
       const photoUrls = await uploadPhotosToStorage(photos, customSlug);
       console.log('Photos uploaded:', photoUrls);
 
+      // Primeiro criar o perfil do usuário
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .insert({
+          full_name: fullName,
+          phone: phoneNumber,
+        })
+        .select()
+        .single();
+
+      if (profileError) {
+        console.error('Error creating user profile:', profileError);
+        throw new Error(profileError.message);
+      }
+
       const planType = selectedPlan === "basic" 
         ? "1 year, 3 photos and no music" 
         : "Forever, 7 photos and music";
       
       const planPrice = selectedPlan === "basic" ? 29 : 49;
 
+      // Depois criar o memorial associado ao perfil
       const memorialData = {
         couple_name: coupleName,
-        email: submittedEmail,
-        full_name: fullName,
-        phone: phoneNumber,
         message: message || null,
         plan_type: planType as "1 year, 3 photos and no music" | "Forever, 7 photos and music",
         plan_price: planPrice,
@@ -92,7 +105,8 @@ export const useMemorialFormLogic = (
         photos: photoUrls,
         youtube_url: selectedPlan === "premium" && youtubeUrl ? youtubeUrl : null,
         relationship_start: startDate ? startDate.toISOString() : new Date().toISOString(),
-        time: startTime
+        time: startTime,
+        user_id: userProfile.id // Associar ao perfil criado
       };
 
       console.log('Inserting memorial data:', memorialData);
