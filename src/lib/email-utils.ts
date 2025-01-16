@@ -1,4 +1,14 @@
+import { supabase } from '@/integrations/supabase/client';
+
 export const sendMemorialEmail = async (email: string, memorialUrl: string, qrCodeUrl: string) => {
-  // Implementar quando necessário
-  console.log('Sending email to:', email, 'with memorial URL:', memorialUrl, 'and QR code:', qrCodeUrl);
+  const { data, error } = await supabase.functions.invoke('send-memorial-email', {
+    body: {
+      to: email,
+      memorialUrl,
+      qrCodeUrl
+    }
+  });
+
+  if (error) throw error;
+  return data;
 };
