@@ -1,6 +1,6 @@
 export type UserConfig = {
   id: string;
-  user_id: string;
+  user_id?: string;
   couple_name: string;
   message: string | null;
   plan_type: "1 year, 3 photos and no music" | "Forever, 7 photos and music";
@@ -15,6 +15,11 @@ export type UserConfig = {
   time: string;
   created_at: string;
   updated_at: string;
+  full_name: string | null;
+  phone: string | null;
+  email: string | null;
+  address_info: any | null;
+  preferences: any | null;
 };
 
 export type MemorialFormData = {
@@ -30,7 +35,11 @@ export type MemorialFormData = {
   youtube_url?: string | null;
   relationship_start: string;
   time: string;
-  user_id: string;
+  email?: string | null;
+  full_name?: string | null;
+  phone?: string | null;
+  address_info?: any | null;
+  preferences?: any | null;
 };
 
 export const getPlanTypeFromSelection = (planType: "basic" | "premium"): "1 year, 3 photos and no music" | "Forever, 7 photos and music" => {

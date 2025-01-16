@@ -1,6 +1,7 @@
 import slugify from 'slugify';
 import { supabase } from "@/integrations/supabase/client";
-import type { UserConfig, MemorialFormData, getPlanTypeFromSelection } from '@/types/database/memorial';
+import type { UserConfig, MemorialFormData } from '@/types/database/memorial';
+import { getPlanTypeFromSelection } from '@/types/database/memorial';
 
 export const generateUniqueSlug = async (coupleName: string): Promise<string> => {
   const baseSlug = slugify(coupleName, {
@@ -64,7 +65,11 @@ export const createMemorial = async (data: MemorialFormData): Promise<UserConfig
       youtube_url: data.youtube_url,
       relationship_start: data.relationship_start,
       time: data.time,
-      user_id: data.user_id
+      email: data.email,
+      full_name: data.full_name,
+      phone: data.phone,
+      address_info: data.address_info,
+      preferences: data.preferences
     }])
     .select()
     .single();
