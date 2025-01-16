@@ -9,93 +9,187 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      analytics_data: {
+        Row: {
+          device_info: Json | null
+          id: string
+          memorial_id: string | null
+          visit_timestamp: string
+          visitor_location: Json | null
+        }
+        Insert: {
+          device_info?: Json | null
+          id?: string
+          memorial_id?: string | null
+          visit_timestamp?: string
+          visitor_location?: Json | null
+        }
+        Update: {
+          device_info?: Json | null
+          id?: string
+          memorial_id?: string | null
+          visit_timestamp?: string
+          visitor_location?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_data_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       location_analytics: {
         Row: {
           city: string | null
           country_code: string
           created_at: string
-          detected_by: Database["public"]["Enums"]["detection_method"]
+          detected_by: string
           id: string
           is_brazil: boolean
           region: string | null
-          timestamp: string
         }
         Insert: {
           city?: string | null
           country_code: string
           created_at?: string
-          detected_by: Database["public"]["Enums"]["detection_method"]
+          detected_by: string
           id?: string
-          is_brazil: boolean
+          is_brazil?: boolean
           region?: string | null
-          timestamp?: string
         }
         Update: {
           city?: string | null
           country_code?: string
           created_at?: string
-          detected_by?: Database["public"]["Enums"]["detection_method"]
+          detected_by?: string
           id?: string
           is_brazil?: boolean
           region?: string | null
-          timestamp?: string
         }
         Relationships: []
       }
-      user_configs: {
+      memorials: {
         Row: {
           couple_name: string
           created_at: string
           custom_slug: string
-          email: string
           id: string
           message: string | null
-          payment_status: Database["public"]["Enums"]["payment_status"]
+          payment_status: string | null
           photos: string[] | null
-          plan_price: number
-          plan_type: Database["public"]["Enums"]["plan_type"]
+          plan_price: number | null
+          plan_type: string | null
           qr_code_url: string | null
-          relationship_start: string
-          time: string
           unique_url: string
           updated_at: string
+          user_id: string | null
           youtube_url: string | null
         }
         Insert: {
           couple_name: string
           created_at?: string
           custom_slug: string
-          email: string
           id?: string
           message?: string | null
-          payment_status?: Database["public"]["Enums"]["payment_status"]
+          payment_status?: string | null
           photos?: string[] | null
-          plan_price: number
-          plan_type: Database["public"]["Enums"]["plan_type"]
+          plan_price?: number | null
+          plan_type?: string | null
           qr_code_url?: string | null
-          relationship_start: string
-          time: string
           unique_url: string
           updated_at?: string
+          user_id?: string | null
           youtube_url?: string | null
         }
         Update: {
           couple_name?: string
           created_at?: string
           custom_slug?: string
-          email?: string
           id?: string
           message?: string | null
-          payment_status?: Database["public"]["Enums"]["payment_status"]
+          payment_status?: string | null
           photos?: string[] | null
-          plan_price?: number
-          plan_type?: Database["public"]["Enums"]["plan_type"]
+          plan_price?: number | null
+          plan_type?: string | null
           qr_code_url?: string | null
-          relationship_start?: string
-          time?: string
           unique_url?: string
           updated_at?: string
+          user_id?: string | null
           youtube_url?: string | null
+        }
+        Relationships: []
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          memorial_id: string | null
+          provider: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          memorial_id?: string | null
+          provider: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          memorial_id?: string | null
+          provider?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_profiles: {
+        Row: {
+          address_info: Json | null
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          preferences: Json | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address_info?: Json | null
+          created_at?: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          preferences?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address_info?: Json | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          preferences?: Json | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -107,14 +201,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      detection_method:
-        | "ipapi"
-        | "cloudflare"
-        | "browser"
-        | "fallback"
-        | "vercel"
-      payment_status: "pending" | "paid"
-      plan_type: "1 year, 3 photos and no music" | "Forever, 7 photos and music"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
