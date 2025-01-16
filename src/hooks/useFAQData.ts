@@ -1,12 +1,11 @@
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getFAQs } from "@/data/faqData";
+import { faqData } from "@/data/faqData";
 
 export const useFAQData = () => {
-  const { t } = useLanguage();
-  const faqs = getFAQs(t);
+  const { currentLanguage } = useLanguage();
+  const faqs = faqData[currentLanguage as keyof typeof faqData];
   
   return {
-    faqs,
-    t
+    faqs
   };
 };
