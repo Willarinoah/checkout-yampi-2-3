@@ -9,96 +9,7 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      location_analytics: {
-        Row: {
-          city: string | null
-          country_code: string
-          created_at: string
-          detected_by: Database["public"]["Enums"]["detection_method"]
-          id: string
-          is_brazil: boolean
-          region: string | null
-          timestamp: string
-        }
-        Insert: {
-          city?: string | null
-          country_code: string
-          created_at?: string
-          detected_by: Database["public"]["Enums"]["detection_method"]
-          id?: string
-          is_brazil: boolean
-          region?: string | null
-          timestamp?: string
-        }
-        Update: {
-          city?: string | null
-          country_code?: string
-          created_at?: string
-          detected_by?: Database["public"]["Enums"]["detection_method"]
-          id?: string
-          is_brazil?: boolean
-          region?: string | null
-          timestamp?: string
-        }
-        Relationships: []
-      }
-      user_configs: {
-        Row: {
-          couple_name: string
-          created_at: string
-          custom_slug: string
-          email: string
-          id: string
-          message: string | null
-          payment_status: Database["public"]["Enums"]["payment_status"]
-          photos: string[] | null
-          plan_price: number
-          plan_type: Database["public"]["Enums"]["plan_type"]
-          qr_code_url: string | null
-          relationship_start: string
-          time: string
-          unique_url: string
-          updated_at: string
-          youtube_url: string | null
-        }
-        Insert: {
-          couple_name: string
-          created_at?: string
-          custom_slug: string
-          email: string
-          id?: string
-          message?: string | null
-          payment_status?: Database["public"]["Enums"]["payment_status"]
-          photos?: string[] | null
-          plan_price: number
-          plan_type: Database["public"]["Enums"]["plan_type"]
-          qr_code_url?: string | null
-          relationship_start: string
-          time: string
-          unique_url: string
-          updated_at?: string
-          youtube_url?: string | null
-        }
-        Update: {
-          couple_name?: string
-          created_at?: string
-          custom_slug?: string
-          email?: string
-          id?: string
-          message?: string | null
-          payment_status?: Database["public"]["Enums"]["payment_status"]
-          photos?: string[] | null
-          plan_price?: number
-          plan_type?: Database["public"]["Enums"]["plan_type"]
-          qr_code_url?: string | null
-          relationship_start?: string
-          time?: string
-          unique_url?: string
-          updated_at?: string
-          youtube_url?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
@@ -107,14 +18,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      detection_method:
-        | "ipapi"
-        | "cloudflare"
-        | "browser"
-        | "fallback"
-        | "vercel"
-      payment_status: "pending" | "paid"
-      plan_type: "1 year, 3 photos and no music" | "Forever, 7 photos and music"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
