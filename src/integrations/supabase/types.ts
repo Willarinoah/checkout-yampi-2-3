@@ -9,7 +9,160 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      analytics_data: {
+        Row: {
+          device_info: Json | null
+          id: string
+          memorial_id: string | null
+          visit_timestamp: string
+          visitor_location: Json | null
+        }
+        Insert: {
+          device_info?: Json | null
+          id?: string
+          memorial_id?: string | null
+          visit_timestamp?: string
+          visitor_location?: Json | null
+        }
+        Update: {
+          device_info?: Json | null
+          id?: string
+          memorial_id?: string | null
+          visit_timestamp?: string
+          visitor_location?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_data_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memorials: {
+        Row: {
+          couple_name: string
+          created_at: string
+          custom_slug: string
+          id: string
+          message: string | null
+          payment_status: string | null
+          photos: string[] | null
+          plan_price: number | null
+          plan_type: string | null
+          qr_code_url: string | null
+          unique_url: string
+          updated_at: string
+          user_id: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          couple_name: string
+          created_at?: string
+          custom_slug: string
+          id?: string
+          message?: string | null
+          payment_status?: string | null
+          photos?: string[] | null
+          plan_price?: number | null
+          plan_type?: string | null
+          qr_code_url?: string | null
+          unique_url: string
+          updated_at?: string
+          user_id?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          couple_name?: string
+          created_at?: string
+          custom_slug?: string
+          id?: string
+          message?: string | null
+          payment_status?: string | null
+          photos?: string[] | null
+          plan_price?: number | null
+          plan_type?: string | null
+          qr_code_url?: string | null
+          unique_url?: string
+          updated_at?: string
+          user_id?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          memorial_id: string | null
+          provider: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          memorial_id?: string | null
+          provider: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          memorial_id?: string | null
+          provider?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_profiles: {
+        Row: {
+          address_info: Json | null
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          preferences: Json | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address_info?: Json | null
+          created_at?: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          preferences?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address_info?: Json | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          preferences?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
