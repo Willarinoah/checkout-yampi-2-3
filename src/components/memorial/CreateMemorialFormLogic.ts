@@ -59,36 +59,18 @@ export const useMemorialFormLogic = (
       onEmailSubmit(submittedEmail);
       setShowEmailDialog(false);
 
-      // 1. Primeiro salvamos o perfil do usuário
-      const { data: userProfile, error: profileError } = await supabase
-        .from('user_profiles')
-        .insert({
-          email: submittedEmail,
-          full_name: fullName,
-          phone: phoneNumber
-        })
-        .select()
-        .single();
-
-      if (profileError) {
-        console.error('Error creating user profile:', profileError);
-        throw new Error('Failed to create user profile');
-      }
-
-      console.log('User profile created:', userProfile);
-
-      // 2. Geramos o slug e URLs
+      // 1. Geramos o slug e URLs
       const customSlug = await generateUniqueSlug(coupleName);
       const baseUrl = sanitizeBaseUrl(window.location.origin);
       const uniqueUrl = constructMemorialUrl(baseUrl, `/memorial/${customSlug}`);
       console.log('Generated unique URL:', uniqueUrl);
 
-      // 3. Upload do QR Code
+      // 2. Upload do QR Code
       const qrCodeBlob = await generateQRCodeBlob(uniqueUrl);
       const qrCodeUrl = await uploadQRCode(qrCodeBlob, customSlug);
       console.log('QR Code uploaded:', qrCodeUrl);
 
-      // 4. Upload das fotos
+      // 3. Upload das fotos
       const photoUrls = await uploadPhotosToStorage(photos, customSlug);
       console.log('Photos uploaded:', photoUrls);
 
@@ -98,7 +80,7 @@ export const useMemorialFormLogic = (
       
       const planPrice = selectedPlan === "basic" ? 29 : 49;
 
-      // 5. Criamos o memorial
+      // 4. Criamos o memorial com os dados do usuário incluídos
       const memorialData = {
         couple_name: coupleName,
         message: message || null,
@@ -112,7 +94,9 @@ export const useMemorialFormLogic = (
         youtube_url: selectedPlan === "premium" && youtubeUrl ? youtubeUrl : null,
         relationship_start: startDate ? startDate.toISOString() : new Date().toISOString(),
         time: startTime,
-        user_id: userProfile.id
+        email: submittedEmail,
+        full_name: fullName,
+        phone: phoneNumber
       };
 
       console.log('Inserting memorial data:', memorialData);
@@ -130,15 +114,14 @@ export const useMemorialFormLogic = (
 
       console.log('Successfully created memorial:', insertedMemorial);
 
-      // 6. Só depois de tudo salvo, criamos o checkout
+      // 5. Só depois de tudo salvo, criamos o checkout
       const checkoutEndpoint = isBrazil ? 'mercadopago-checkout' : 'create-checkout';
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         checkoutEndpoint,
         {
           body: {
             planType: selectedPlan,
-            memorialData: insertedMemorial,
-            userProfile: userProfile
+            memorialData: insertedMemorial
           },
         }
       );

@@ -73,15 +73,20 @@ export type Database = {
       }
       memorials: {
         Row: {
+          address_info: Json | null
           couple_name: string
           created_at: string
           custom_slug: string
+          email: string | null
+          full_name: string | null
           id: string
           message: string | null
           payment_status: string | null
+          phone: string | null
           photos: string[] | null
           plan_price: number | null
           plan_type: string | null
+          preferences: Json | null
           qr_code_url: string | null
           relationship_start: string
           time: string
@@ -91,15 +96,20 @@ export type Database = {
           youtube_url: string | null
         }
         Insert: {
+          address_info?: Json | null
           couple_name: string
           created_at?: string
           custom_slug: string
+          email?: string | null
+          full_name?: string | null
           id?: string
           message?: string | null
           payment_status?: string | null
+          phone?: string | null
           photos?: string[] | null
           plan_price?: number | null
           plan_type?: string | null
+          preferences?: Json | null
           qr_code_url?: string | null
           relationship_start?: string
           time?: string
@@ -109,15 +119,20 @@ export type Database = {
           youtube_url?: string | null
         }
         Update: {
+          address_info?: Json | null
           couple_name?: string
           created_at?: string
           custom_slug?: string
+          email?: string | null
+          full_name?: string | null
           id?: string
           message?: string | null
           payment_status?: string | null
+          phone?: string | null
           photos?: string[] | null
           plan_price?: number | null
           plan_type?: string | null
+          preferences?: Json | null
           qr_code_url?: string | null
           relationship_start?: string
           time?: string
@@ -165,42 +180,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      user_profiles: {
-        Row: {
-          address_info: Json | null
-          created_at: string
-          email: string | null
-          full_name: string
-          id: string
-          phone: string | null
-          preferences: Json | null
-          updated_at: string
-          user_id: string | null
-        }
-        Insert: {
-          address_info?: Json | null
-          created_at?: string
-          email?: string | null
-          full_name: string
-          id?: string
-          phone?: string | null
-          preferences?: Json | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Update: {
-          address_info?: Json | null
-          created_at?: string
-          email?: string | null
-          full_name?: string
-          id?: string
-          phone?: string | null
-          preferences?: Json | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Relationships: []
       }
     }
     Views: {
