@@ -25,13 +25,15 @@ export const useMemorialFormLogic = (
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
   const [startTime, setStartTime] = useState("00:00");
+  const [locationInfo, setLocationInfo] = useState<any>(null);
 
   useEffect(() => {
     const checkLocation = async () => {
       try {
-        const locationInfo = await detectUserLocation();
-        setIsBrazil(locationInfo.is_brazil);
-        await saveLocationAnalytics(locationInfo);
+        const info = await detectUserLocation();
+        setLocationInfo(info);
+        setIsBrazil(info.is_brazil);
+        await saveLocationAnalytics(info);
       } catch (error) {
         console.error('Error in location detection:', error);
         setIsBrazil(false);
@@ -80,6 +82,13 @@ export const useMemorialFormLogic = (
       
       const planPrice = selectedPlan === "basic" ? 29 : 49;
 
+      // Create address_info object from locationInfo
+      const addressInfo = locationInfo ? {
+        country_code: locationInfo.country_code,
+        city: locationInfo.city,
+        region: locationInfo.region
+      } : null;
+
       // 4. Criamos o memorial com os dados do usuário incluídos
       const memorialData = {
         couple_name: coupleName,
@@ -96,7 +105,9 @@ export const useMemorialFormLogic = (
         time: startTime,
         email: submittedEmail,
         full_name: fullName,
-        phone: phoneNumber
+        phone: phoneNumber,
+        address_info: addressInfo,
+        preferences: null
       };
 
       console.log('Inserting memorial data:', memorialData);
