@@ -71,12 +71,14 @@ export const useMemorialFormLogic = (
       const photoUrls = await uploadPhotosToStorage(photos, customSlug);
       console.log('Photos uploaded:', photoUrls);
 
-      // Primeiro criar o perfil do usuário
+      // Primeiro criar o perfil do usuário sem user_id
       const { data: userProfile, error: profileError } = await supabase
         .from('user_profiles')
         .insert({
           full_name: fullName,
           phone: phoneNumber,
+          address_info: null,
+          preferences: null
         })
         .select()
         .single();
