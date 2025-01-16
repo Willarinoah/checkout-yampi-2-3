@@ -1,16 +1,21 @@
-export const faqData = {
-  en: [
-    {
-      question: "How does it work?",
-      answer: "Create your memorial page, customize it with photos and messages, and share it with your loved ones."
-    },
-    // Add more FAQ items as needed
-  ],
-  pt: [
-    {
-      question: "Como funciona?",
-      answer: "Crie sua página memorial, personalize com fotos e mensagens, e compartilhe com seus entes queridos."
-    },
-    // Add more FAQ items as needed
-  ]
-};
+import { FAQ } from "@/types/faq";
+import { TranslationKey } from "@/translations/types";
+
+export const getFAQs = (t: (key: TranslationKey) => string): FAQ[] => [
+  {
+    question: t("faq_what_is"),
+    answer: t("faq_what_is_answer")
+  },
+  {
+    question: t("faq_receive_page"),
+    answer: t("faq_receive_page_answer")
+  },
+  {
+    question: t("faq_valid_forever"),
+    answer: t("faq_valid_forever_answer")
+  },
+  {
+    question: t("faq_can_edit"),
+    answer: t("faq_can_edit_answer")
+  }
+];
