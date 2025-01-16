@@ -10,9 +10,6 @@ export const generateUniqueSlug = async (coupleName: string): Promise<string> =>
     locale: 'pt'
   });
 
-  // Function to generate the full URL
-  const generateMemorialUrl = (slug: string) => `${window.location.origin}/memorial/${slug}`;
-
   const { data: existingWithBase, error: slugError } = await supabase
     .from('memorials')
     .select('custom_slug')

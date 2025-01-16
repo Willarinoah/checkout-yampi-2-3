@@ -49,7 +49,7 @@ export const useMemorialFormLogic = (
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, onFormDataChange]);
 
-  const handleEmailSubmit = async (submittedEmail: string) => {
+  const handleEmailSubmit = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
     try {
       setIsLoading(true);
       onEmailSubmit(submittedEmail);
@@ -76,6 +76,8 @@ export const useMemorialFormLogic = (
       const memorialData = {
         couple_name: coupleName,
         email: submittedEmail,
+        full_name: fullName,
+        phone: phoneNumber,
         message: message || null,
         plan_type: planType as "1 year, 3 photos and no music" | "Forever, 7 photos and music",
         plan_price: planPrice,
@@ -92,7 +94,7 @@ export const useMemorialFormLogic = (
       console.log('Inserting memorial data:', memorialData);
 
       const { data: insertedMemorial, error: insertError } = await supabase
-        .from('user_configs')
+        .from('memorials')
         .insert(memorialData)
         .select()
         .single();
