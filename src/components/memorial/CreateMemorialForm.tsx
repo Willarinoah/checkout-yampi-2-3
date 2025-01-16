@@ -12,7 +12,7 @@ import type { FormPreviewData } from './types';
 import { PaymentModal } from './PaymentModals';
 
 interface CreateMemorialFormProps {
-  onEmailSubmit: (email: string, fullName?: string, phoneNumber?: string) => void;
+  onEmailSubmit: (email: string) => void;
   onShowEmailDialog: () => void;
   email: string;
   onFormDataChange: (data: FormPreviewData) => void;
