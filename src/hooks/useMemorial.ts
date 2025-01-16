@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { createMemorial as createMemorialUtil, getMemorialBySlug } from '@/lib/memorial-utils';
-import { sendMemorialEmail } from '@/lib/email-utils';
 import type { MemorialFormData, UserConfig } from '@/types/database/memorial';
 import { toast } from 'sonner';
 import { generateMemorialUrl } from '@/lib/url-utils';
@@ -33,8 +32,6 @@ export const useMemorial = (slug?: string) => {
       }
 
       const memorialUrl = await generateMemorialUrl(data.couple_name);
-      const qrCodeUrl = `${memorialUrl}/qr`;
-      await sendMemorialEmail(data.email, memorialUrl, qrCodeUrl);
       
       return memorial;
     },

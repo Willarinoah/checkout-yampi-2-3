@@ -51,9 +51,6 @@ export const createMemorial = async (data: MemorialFormData): Promise<UserConfig
     .from('memorials')
     .insert([{
       couple_name: data.couple_name,
-      email: data.email,
-      full_name: data.full_name,
-      phone: data.phone,
       message: data.message,
       plan_type: data.plan_type,
       plan_price: data.plan_price,
@@ -64,7 +61,8 @@ export const createMemorial = async (data: MemorialFormData): Promise<UserConfig
       photos: data.photos,
       youtube_url: data.youtube_url,
       relationship_start: data.relationship_start,
-      time: data.time
+      time: data.time,
+      user_id: data.user_id
     }])
     .select()
     .single();
