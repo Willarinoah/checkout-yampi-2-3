@@ -79,7 +79,11 @@ export const createMemorial = async (data: MemorialFormData): Promise<UserConfig
     throw error;
   }
 
-  return memorial;
+  // Ensure the plan_type is correctly typed when returning
+  return {
+    ...memorial,
+    plan_type: memorial.plan_type as "1 year, 3 photos and no music" | "Forever, 7 photos and music"
+  } as UserConfig;
 };
 
 export const getMemorialBySlug = async (slug: string): Promise<UserConfig | null> => {
@@ -94,5 +98,9 @@ export const getMemorialBySlug = async (slug: string): Promise<UserConfig | null
     return null;
   }
 
-  return data;
+  // Ensure the plan_type is correctly typed when returning
+  return data ? {
+    ...data,
+    plan_type: data.plan_type as "1 year, 3 photos and no music" | "Forever, 7 photos and music"
+  } as UserConfig : null;
 };
