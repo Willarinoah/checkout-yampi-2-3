@@ -1,6 +1,6 @@
 import slugify from 'slugify';
 import { supabase } from "@/integrations/supabase/client";
-import type { UserConfig, MemorialFormData } from '@/types/database/memorial';
+import type { UserConfig, MemorialFormData, getPlanTypeFromSelection } from '@/types/database/memorial';
 
 export const generateUniqueSlug = async (coupleName: string): Promise<string> => {
   const baseSlug = slugify(coupleName, {
@@ -47,9 +47,7 @@ export const generateUniqueSlug = async (coupleName: string): Promise<string> =>
 };
 
 export const createMemorial = async (data: MemorialFormData): Promise<UserConfig> => {
-  const planType = data.plan_type === "basic" 
-    ? "1 year, 3 photos and no music" 
-    : "Forever, 7 photos and music";
+  const planType = getPlanTypeFromSelection(data.plan_type);
 
   const { data: memorial, error } = await supabase
     .from('memorials')

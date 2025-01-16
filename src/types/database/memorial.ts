@@ -20,7 +20,7 @@ export type UserConfig = {
 export type MemorialFormData = {
   couple_name: string;
   message: string | null;
-  plan_type: "1 year, 3 photos and no music" | "Forever, 7 photos and music";
+  plan_type: "basic" | "premium";
   plan_price: number;
   custom_slug: string;
   unique_url: string;
@@ -31,4 +31,10 @@ export type MemorialFormData = {
   relationship_start: string;
   time: string;
   user_id: string;
+};
+
+export const getPlanTypeFromSelection = (planType: "basic" | "premium"): "1 year, 3 photos and no music" | "Forever, 7 photos and music" => {
+  return planType === "basic" 
+    ? "1 year, 3 photos and no music" 
+    : "Forever, 7 photos and music";
 };
