@@ -41,6 +41,36 @@ export type Database = {
           },
         ]
       }
+      location_analytics: {
+        Row: {
+          city: string | null
+          country_code: string
+          created_at: string
+          detected_by: string
+          id: string
+          is_brazil: boolean
+          region: string | null
+        }
+        Insert: {
+          city?: string | null
+          country_code: string
+          created_at?: string
+          detected_by: string
+          id?: string
+          is_brazil?: boolean
+          region?: string | null
+        }
+        Update: {
+          city?: string | null
+          country_code?: string
+          created_at?: string
+          detected_by?: string
+          id?: string
+          is_brazil?: boolean
+          region?: string | null
+        }
+        Relationships: []
+      }
       memorials: {
         Row: {
           couple_name: string
