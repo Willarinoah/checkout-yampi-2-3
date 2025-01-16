@@ -52,7 +52,7 @@ export const createMemorial = async (data: MemorialFormData): Promise<UserConfig
     .insert([{
       couple_name: data.couple_name,
       message: data.message,
-      plan_type: data.plan_type,
+      plan_type: data.plan_type as "1 year, 3 photos and no music" | "Forever, 7 photos and music",
       plan_price: data.plan_price,
       custom_slug: data.custom_slug,
       unique_url: data.unique_url,
