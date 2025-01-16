@@ -71,11 +71,11 @@ export const useMemorialFormLogic = (
       const photoUrls = await uploadPhotosToStorage(photos, customSlug);
       console.log('Photos uploaded:', photoUrls);
 
-      // Primeiro criar o perfil do usuário sem user_id
+      // Create user profile without email field
       const { data: userProfile, error: profileError } = await supabase
         .from('user_profiles')
         .insert({
-          full_name: fullName,
+          full_name: fullName || coupleName,
           phone: phoneNumber,
           address_info: null,
           preferences: null
@@ -94,7 +94,7 @@ export const useMemorialFormLogic = (
       
       const planPrice = selectedPlan === "basic" ? 29 : 49;
 
-      // Depois criar o memorial associado ao perfil
+      // Create memorial with user profile ID
       const memorialData = {
         couple_name: coupleName,
         message: message || null,
@@ -108,7 +108,7 @@ export const useMemorialFormLogic = (
         youtube_url: selectedPlan === "premium" && youtubeUrl ? youtubeUrl : null,
         relationship_start: startDate ? startDate.toISOString() : new Date().toISOString(),
         time: startTime,
-        user_id: userProfile.id // Associar ao perfil criado
+        user_id: userProfile.id
       };
 
       console.log('Inserting memorial data:', memorialData);
