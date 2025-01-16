@@ -95,7 +95,7 @@ export const useMemorialFormLogic = (
       
       const planPrice = selectedPlan === "basic" ? 29 : 49;
 
-      // Create memorial with user profile ID
+      // Create memorial with user profile ID and relationship start date/time
       const memorialData = {
         couple_name: coupleName,
         message: message || null,

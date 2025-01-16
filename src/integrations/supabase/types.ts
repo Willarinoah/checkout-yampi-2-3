@@ -83,6 +83,8 @@ export type Database = {
           plan_price: number | null
           plan_type: string | null
           qr_code_url: string | null
+          relationship_start: string
+          time: string
           unique_url: string
           updated_at: string
           user_id: string | null
@@ -99,6 +101,8 @@ export type Database = {
           plan_price?: number | null
           plan_type?: string | null
           qr_code_url?: string | null
+          relationship_start?: string
+          time?: string
           unique_url: string
           updated_at?: string
           user_id?: string | null
@@ -115,6 +119,8 @@ export type Database = {
           plan_price?: number | null
           plan_type?: string | null
           qr_code_url?: string | null
+          relationship_start?: string
+          time?: string
           unique_url?: string
           updated_at?: string
           user_id?: string | null
