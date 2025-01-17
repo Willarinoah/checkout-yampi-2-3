@@ -1,22 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { SESv2Client, SendEmailCommand } from "npm:@aws-sdk/client-sesv2";
 
-const AWS_ACCESS_KEY_ID = Deno.env.get("AWS_ACCESS_KEY_ID");
-const AWS_SECRET_ACCESS_KEY = Deno.env.get("AWS_SECRET_ACCESS_KEY");
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface EmailRequest {
-  to: string;
-  memorialUrl: string;
-  qrCodeUrl: string;
-}
-
-const handler = async (req: Request): Promise<Response> => {
+serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -24,27 +14,21 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log("Starting email sending process...");
 
-    if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
-      throw new Error("AWS credentials are missing");
-    }
-
-    const emailRequest: EmailRequest = await req.json();
-    console.log("Received request data:", emailRequest);
+    const { to, memorialUrl, qrCodeUrl } = await req.json();
+    console.log("Received request data:", { to, memorialUrl, qrCodeUrl });
 
     const client = new SESv2Client({
       region: "sa-east-1",
       credentials: {
-        accessKeyId: AWS_ACCESS_KEY_ID,
-        secretAccessKey: AWS_SECRET_ACCESS_KEY,
+        accessKeyId: Deno.env.get("AWS_ACCESS_KEY_ID") || '',
+        secretAccessKey: Deno.env.get("AWS_SECRET_ACCESS_KEY") || '',
       },
     });
-
-    console.log("Preparing to send email via SES...");
 
     const command = new SendEmailCommand({
       FromEmailAddress: "contact@memoryys.com",
       Destination: {
-        ToAddresses: [emailRequest.to],
+        ToAddresses: [to],
       },
       Content: {
         Simple: {
@@ -74,12 +58,12 @@ const handler = async (req: Request): Promise<Response> => {
                       </p>
 
                       <div style="text-align: center; margin: 30px 0;">
-                        <img src="${emailRequest.qrCodeUrl}" 
+                        <img src="${qrCodeUrl}" 
                              alt="QR Code" 
                              style="max-width: 200px; height: auto;">
                         
                         <p>
-                          <a href="${emailRequest.qrCodeUrl}" 
+                          <a href="${qrCodeUrl}" 
                              download="qr-code-memorial.png"
                              style="background-color: #FF1493; 
                                     color: white; 
@@ -95,10 +79,10 @@ const handler = async (req: Request): Promise<Response> => {
 
                       <p style="text-align: center;">
                         Acesse seu memorial em | Access your memorial at:<br>
-                        <a href="${emailRequest.memorialUrl}" 
+                        <a href="${memorialUrl}" 
                            style="color: #FF1493; 
                                   text-decoration: none;">
-                          ${emailRequest.memorialUrl}
+                          ${memorialUrl}
                         </a>
                       </p>
 
@@ -127,22 +111,26 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
 
-    console.log("Attempting to send email via SES...");
+    console.log("Attempting to send email...");
     const response = await client.send(command);
-    console.log("SES Response:", response);
+    console.log("Email sent successfully:", response);
 
-    return new Response(JSON.stringify({ success: true, messageId: response.MessageId }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: true, messageId: response.MessageId }),
+      { 
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
+    );
 
   } catch (error) {
     console.error("Error sending email:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { 
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
   }
-};
-
-serve(handler);
+});

@@ -51,7 +51,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('🎉 Successfully verified webhook signature');
+    console.log('Successfully verified webhook signature');
     console.log('Event type:', event.type);
 
     const supabase = createClient(
@@ -63,15 +63,14 @@ serve(async (req) => {
       const session = event.data.object;
       console.log('Processing checkout.session.completed');
       console.log('Session metadata:', session.metadata);
-      
+
       if (!session.metadata?.customSlug) {
         console.error('No custom slug found in session metadata');
         throw new Error('No custom slug found in session metadata');
       }
 
-      // Update the memorial data with paid status
       const { data: memorial, error: updateError } = await supabase
-        .from('user_configs')
+        .from('memorials')
         .update({ payment_status: 'paid' })
         .eq('custom_slug', session.metadata.customSlug)
         .select()
@@ -82,10 +81,8 @@ serve(async (req) => {
         throw updateError;
       }
 
-      console.log('Successfully updated payment status to paid for slug:', session.metadata.customSlug);
-      console.log('Memorial data:', memorial);
+      console.log('Successfully updated payment status for slug:', session.metadata.customSlug);
 
-      // Send email with QR code
       if (memorial) {
         try {
           const emailResponse = await fetch(
@@ -113,15 +110,17 @@ serve(async (req) => {
           console.log('Successfully sent memorial email');
         } catch (emailError) {
           console.error('Error in email sending process:', emailError);
-          // We don't throw here to avoid retriggering the webhook
         }
       }
     }
 
-    return new Response(JSON.stringify({ received: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({ received: true }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
   } catch (err) {
     console.error('Webhook error:', err);
     return new Response(

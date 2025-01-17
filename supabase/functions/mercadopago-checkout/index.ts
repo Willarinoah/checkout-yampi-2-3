@@ -5,9 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Updated sanitizeUrl function to properly handle URL formatting
 const sanitizeUrl = (url: string): string => {
-  // Remove trailing slashes and any malformed colons
   return url.replace(/[:/]+$/, '').replace(/:[/]{0,2}$/, '');
 };
 
@@ -26,22 +24,16 @@ serve(async (req) => {
     const { planType, memorialData } = await req.json();
     console.log('Creating Mercado Pago checkout for:', { planType, memorialData });
 
-    // Ensure we have a valid base URL
     const baseUrl = sanitizeUrl(Deno.env.get('SUPABASE_URL') || '');
     if (!baseUrl) {
       throw new Error('Missing SUPABASE_URL configuration');
     }
 
-    // Construct notification URL without any trailing colons or slashes
     const notificationUrl = `${baseUrl}/functions/v1/mercadopago-webhook`;
     console.log('Constructed notification URL:', notificationUrl);
 
-    // Ensure success and failure URLs are properly formatted
     const successUrl = sanitizeUrl(memorialData.unique_url);
     const cancelUrl = `${new URL(memorialData.unique_url).origin}/create`;
-
-    console.log('Success URL:', successUrl);
-    console.log('Cancel URL:', cancelUrl);
 
     const preferenceData = {
       items: [{
