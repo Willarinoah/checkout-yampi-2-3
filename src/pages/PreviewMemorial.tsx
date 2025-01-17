@@ -60,7 +60,8 @@ const PreviewMemorial: React.FC = () => {
           message={memorial.message || undefined}
           youtubeUrl={memorial.youtube_url || undefined}
           selectedPlan={selectedPlan}
-          isPreview={false}
+          startDate={memorial.relationship_start ? new Date(memorial.relationship_start) : undefined}
+          startTime={memorial.time}
         />
         
         <div className="text-center">
