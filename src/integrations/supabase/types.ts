@@ -9,38 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      analytics_data: {
-        Row: {
-          device_info: Json | null
-          id: string
-          memorial_id: string | null
-          visit_timestamp: string
-          visitor_location: Json | null
-        }
-        Insert: {
-          device_info?: Json | null
-          id?: string
-          memorial_id?: string | null
-          visit_timestamp?: string
-          visitor_location?: Json | null
-        }
-        Update: {
-          device_info?: Json | null
-          id?: string
-          memorial_id?: string | null
-          visit_timestamp?: string
-          visitor_location?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "analytics_data_memorial_id_fkey"
-            columns: ["memorial_id"]
-            isOneToOne: false
-            referencedRelation: "memorials"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       location_analytics: {
         Row: {
           city: string | null
@@ -143,50 +111,17 @@ export type Database = {
         }
         Relationships: []
       }
-      payment_transactions: {
-        Row: {
-          amount: number
-          created_at: string
-          id: string
-          memorial_id: string | null
-          provider: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          id?: string
-          memorial_id?: string | null
-          provider: string
-          status: string
-          updated_at?: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          id?: string
-          memorial_id?: string | null
-          provider?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payment_transactions_memorial_id_fkey"
-            columns: ["memorial_id"]
-            isOneToOne: false
-            referencedRelation: "memorials"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      trunc_timestamp: {
+        Args: {
+          "": string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
