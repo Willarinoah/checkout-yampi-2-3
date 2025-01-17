@@ -15,21 +15,18 @@ export type Database = {
           id: string
           memorial_id: string | null
           visit_timestamp: string
-          visitor_location: Json | null
         }
         Insert: {
           device_info?: Json | null
           id?: string
           memorial_id?: string | null
           visit_timestamp?: string
-          visitor_location?: Json | null
         }
         Update: {
           device_info?: Json | null
           id?: string
           memorial_id?: string | null
           visit_timestamp?: string
-          visitor_location?: Json | null
         }
         Relationships: [
           {
@@ -186,7 +183,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      trunc_timestamp: {
+        Args: {
+          "": string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
