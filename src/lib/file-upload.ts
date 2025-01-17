@@ -35,13 +35,29 @@ export const uploadQRCode = async (qrCodeBlob: Blob, memorialId: string): Promis
   
   const fileName = `${memorialId}/qr-code.png`;
   
-  const { error } = await supabase.storage
-    .from('memorials')
-    .upload(fileName, qrCodeBlob);
+  // First try to delete any existing file
+  try {
+    await supabase.storage
+      .from('memorials')
+      .remove([fileName]);
+    
+    console.log('Removed existing QR code if any');
+  } catch (error) {
+    // Ignore deletion errors as the file might not exist
+    console.log('No existing QR code found or error removing:', error);
+  }
 
-  if (error) {
-    console.error('Error uploading QR code:', error);
-    throw error;
+  // Now upload the new file
+  const { error: uploadError } = await supabase.storage
+    .from('memorials')
+    .upload(fileName, qrCodeBlob, {
+      contentType: 'image/png',
+      upsert: true // Enable upsert to replace if exists
+    });
+
+  if (uploadError) {
+    console.error('Error uploading QR code:', uploadError);
+    throw uploadError;
   }
 
   const { data: { publicUrl } } = supabase.storage
