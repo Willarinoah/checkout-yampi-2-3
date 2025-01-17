@@ -43,7 +43,7 @@ serve(async (req) => {
           Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         );
 
-        // Atualizado para usar a tabela correta mercadopago_memorials
+        // Updated to use mercadopago_memorials table
         const { data: memorial, error: updateError } = await supabase
           .from('mercadopago_memorials')
           .update({ 

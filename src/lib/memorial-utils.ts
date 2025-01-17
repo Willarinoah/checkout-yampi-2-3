@@ -1,6 +1,5 @@
 import { createMemorial, checkMemorialExists } from './memorial-data-utils';
 import type { Memorial } from './memorial-data-utils';
-import { generateSlug } from './url-utils';
 import { constructMemorialUrl, sanitizeBaseUrl } from './url-sanitizer';
 
 export const generateUniqueSlug = async (coupleName: string): Promise<string> => {
@@ -43,3 +42,10 @@ export const createNewMemorial = async (
     throw error;
   }
 };
+
+function generateSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}

@@ -14,7 +14,7 @@ export interface MemorialResult {
 }
 
 export const getMemorialBySlug = async (slug: string): Promise<MemorialResult> => {
-  // Primeiro tenta mercadopago_memorials
+  // First try mercadopago_memorials
   const { data: mpMemorial, error: mpError } = await supabase
     .from('mercadopago_memorials')
     .select('*')
@@ -25,7 +25,7 @@ export const getMemorialBySlug = async (slug: string): Promise<MemorialResult> =
     return { memorial: mpMemorial, error: null, source: 'mercadopago' };
   }
 
-  // Se não encontrar, tenta stripe_memorials
+  // If not found, try stripe_memorials
   const { data: stripeMemorial, error: stripeError } = await supabase
     .from('stripe_memorials')
     .select('*')
@@ -52,7 +52,7 @@ export const updateMemorialData = async (
 };
 
 export const checkMemorialExists = async (slug: string): Promise<boolean> => {
-  // Verifica em ambas as tabelas
+  // Check in both tables
   const { data: mpMemorial } = await supabase
     .from('mercadopago_memorials')
     .select('custom_slug')
@@ -68,11 +68,6 @@ export const checkMemorialExists = async (slug: string): Promise<boolean> => {
     .maybeSingle();
 
   return !!stripeMemorial;
-};
-
-export const getMemorialPaymentStatus = async (slug: string): Promise<string> => {
-  const { memorial } = await getMemorialBySlug(slug);
-  return memorial?.payment_status || 'pending';
 };
 
 type RequiredMemorialFields = {
@@ -99,4 +94,9 @@ export const createMemorial = async (
   }
 
   return memorial;
+};
+
+export const getMemorialPaymentStatus = async (slug: string): Promise<string> => {
+  const { memorial } = await getMemorialBySlug(slug);
+  return memorial?.payment_status || 'pending';
 };
