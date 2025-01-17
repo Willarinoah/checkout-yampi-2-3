@@ -15,31 +15,20 @@ export type Database = {
           id: string
           memorial_id: string | null
           visit_timestamp: string
-          visitor_location: Json | null
         }
         Insert: {
           device_info?: Json | null
           id?: string
           memorial_id?: string | null
           visit_timestamp?: string
-          visitor_location?: Json | null
         }
         Update: {
           device_info?: Json | null
           id?: string
           memorial_id?: string | null
           visit_timestamp?: string
-          visitor_location?: Json | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "analytics_data_memorial_id_fkey"
-            columns: ["memorial_id"]
-            isOneToOne: false
-            referencedRelation: "memorials"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       location_analytics: {
         Row: {
@@ -171,22 +160,19 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "payment_transactions_memorial_id_fkey"
-            columns: ["memorial_id"]
-            isOneToOne: false
-            referencedRelation: "memorials"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      trunc_timestamp: {
+        Args: {
+          "": string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
