@@ -105,6 +105,7 @@ export const MemorialPreview: React.FC<MemorialPreviewProps> = ({
                   allowFullScreen
                   className="w-full h-full"
                   playsInline
+                  {...{} as CustomIframeAttributes}
                 />
               </div>
             )}
