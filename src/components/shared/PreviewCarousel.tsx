@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import useEmblaCarousel, { EmblaCarouselType } from "embla-carousel-react";
+import useEmblaCarousel, { UseEmblaCarouselType } from "embla-carousel-react";
 import AutoplayPlugin from "embla-carousel-autoplay";
 import { cn } from "@/lib/utils";
 
@@ -49,7 +49,7 @@ export function PreviewCarousel({ photos, className }: PreviewCarouselProps) {
     [autoplay]
   );
 
-  const onSelect = useCallback((api: EmblaCarouselType) => {
+  const onSelect = useCallback((api: UseEmblaCarouselType[1]) => {
     setSelectedIndex(api.selectedScrollSnap());
   }, []);
 
@@ -64,7 +64,6 @@ export function PreviewCarousel({ photos, className }: PreviewCarouselProps) {
     };
   }, [emblaApi, onSelect]);
 
-  // Calculate and set aspect ratio when photos change
   useEffect(() => {
     const calculateImageAspectRatios = async () => {
       if (photos.length === 0) return;
@@ -73,7 +72,6 @@ export function PreviewCarousel({ photos, className }: PreviewCarouselProps) {
         photos.map(photo => getImageDimensions(photo))
       );
       
-      // Find the average aspect ratio of all images
       const totalRatio = dimensions.reduce(
         (sum, dim) => sum + calculateAspectRatio(dim.width, dim.height),
         0

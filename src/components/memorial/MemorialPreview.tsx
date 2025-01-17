@@ -18,10 +18,9 @@ interface MemorialPreviewProps {
   startTime?: string;
 }
 
-type IframeHTMLAttributes = React.DetailedHTMLProps<React.IframeHTMLAttributes<HTMLIFrameElement>, HTMLIFrameElement>;
-interface CustomIframeAttributes extends IframeHTMLAttributes {
+type CustomIframeAttributes = React.DetailedHTMLProps<React.IframeHTMLAttributes<HTMLIFrameElement>, HTMLIFrameElement> & {
   playsInline?: boolean;
-}
+};
 
 export const MemorialPreview: React.FC<MemorialPreviewProps> = ({
   coupleName,
