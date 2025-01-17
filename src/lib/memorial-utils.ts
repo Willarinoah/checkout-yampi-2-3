@@ -32,13 +32,14 @@ export const getPlanTypeFromSelection = (planType: "basic" | "premium"): "1 year
 };
 
 export const createNewMemorial = async (
-  memorialData: Partial<Memorial>,
+  memorialData: Partial<Memorial> & { couple_name: string },
   isBrazil: boolean
 ): Promise<Memorial | null> => {
   try {
     console.log(`Creating memorial for ${isBrazil ? 'Brazil' : 'International'}:`, memorialData);
     
-    const memorial = await createMemorial(memorialData, isBrazil);
+    const customSlug = await generateUniqueSlug(memorialData.couple_name);
+    const memorial = await createMemorial({ ...memorialData, custom_slug: customSlug }, isBrazil);
     
     if (!memorial) {
       throw new Error('Failed to create memorial');

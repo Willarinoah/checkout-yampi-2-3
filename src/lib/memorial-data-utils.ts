@@ -75,7 +75,7 @@ export const getMemorialPaymentStatus = async (slug: string): Promise<string> =>
 };
 
 export const createMemorial = async (
-  data: Partial<Memorial>, 
+  data: { couple_name: string; custom_slug: string } & Partial<Memorial>, 
   isBrazil: boolean
 ): Promise<Memorial | null> => {
   const tableName = isBrazil ? 'mercadopago_memorials' : 'stripe_memorials';
