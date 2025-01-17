@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-type LocationInfo = {
+export type LocationInfo = {
   country_code: string;
   city?: string;
   region?: string;

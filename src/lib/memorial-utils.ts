@@ -1,57 +1,57 @@
 import slugify from 'slugify';
 import { supabase } from "@/integrations/supabase/client";
+import { getMemorialBySlug, updateMemorialData, checkMemorialExists } from './memorial-data-utils';
 import type { UserConfig, MemorialFormData } from '@/types/database/memorial';
 import { getPlanTypeFromSelection } from '@/types/database/memorial';
 
-export const generateUniqueSlug = async (coupleName: string): Promise<string> => {
-  const baseSlug = slugify(coupleName, {
+const generateSlug = (coupleName: string): string => {
+  return slugify(coupleName, {
     lower: true,
     strict: true,
     trim: true,
     locale: 'pt'
   });
-
-  const { data: existingWithBase, error: slugError } = await supabase
-    .from('memorials')
-    .select('custom_slug')
-    .eq('custom_slug', baseSlug)
-    .maybeSingle();
-
-  if (slugError) {
-    console.error('Error checking slug:', slugError);
-    throw slugError;
-  }
-
-  if (!existingWithBase) {
-    return baseSlug;
-  }
-
-  let counter = 1;
-  while (true) {
-    const newSlug = `${baseSlug}-${counter}`;
-    const { data: existing, error } = await supabase
-      .from('memorials')
-      .select('custom_slug')
-      .eq('custom_slug', newSlug)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Error checking slug:', error);
-      throw error;
-    }
-
-    if (!existing) {
-      return newSlug;
-    }
-    counter++;
-  }
 };
 
-export const createMemorial = async (data: MemorialFormData): Promise<UserConfig> => {
+export const generateUniqueSlug = async (coupleName: string): Promise<string> => {
+  let slug = generateSlug(coupleName);
+  let isAvailable = !(await checkMemorialExists(slug));
+  let counter = 1;
+
+  while (!isAvailable) {
+    slug = `${generateSlug(coupleName)}-${counter}`;
+    isAvailable = !(await checkMemorialExists(slug));
+    counter++;
+  }
+
+  return slug;
+};
+
+export const getMemorialData = async (slug: string): Promise<UserConfig | null> => {
+  const { memorial } = await getMemorialBySlug(slug);
+  if (!memorial) return null;
+  
+  return {
+    ...memorial,
+    plan_type: memorial.plan_type as "1 year, 3 photos and no music" | "Forever, 7 photos and music"
+  };
+};
+
+export const updateMemorial = async (slug: string, data: Partial<UserConfig>, isBrazil: boolean) => {
+  // Convert the UserConfig data back to Memorial type
+  const memorialData = {
+    ...data,
+    plan_type: data.plan_type || undefined
+  };
+  return updateMemorialData(slug, memorialData, isBrazil);
+};
+
+export const createMemorial = async (data: MemorialFormData, isBrazil: boolean): Promise<UserConfig> => {
   const planType = getPlanTypeFromSelection(data.plan_type);
+  const tableName = isBrazil ? 'mercadopago_memorials' : 'stripe_memorials';
 
   const { data: memorial, error } = await supabase
-    .from('memorials')
+    .from(tableName)
     .insert([{
       couple_name: data.couple_name,
       message: data.message,
@@ -79,28 +79,8 @@ export const createMemorial = async (data: MemorialFormData): Promise<UserConfig
     throw error;
   }
 
-  // Ensure the plan_type is correctly typed when returning
   return {
     ...memorial,
     plan_type: memorial.plan_type as "1 year, 3 photos and no music" | "Forever, 7 photos and music"
   } as UserConfig;
-};
-
-export const getMemorialBySlug = async (slug: string): Promise<UserConfig | null> => {
-  const { data, error } = await supabase
-    .from('memorials')
-    .select('*')
-    .eq('custom_slug', slug)
-    .single();
-
-  if (error) {
-    console.error('Error fetching memorial:', error);
-    return null;
-  }
-
-  // Ensure the plan_type is correctly typed when returning
-  return data ? {
-    ...data,
-    plan_type: data.plan_type as "1 year, 3 photos and no music" | "Forever, 7 photos and music"
-  } as UserConfig : null;
 };

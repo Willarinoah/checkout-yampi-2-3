@@ -4,7 +4,7 @@ import { uploadPhotosToStorage, uploadQRCode } from '@/lib/file-upload';
 import { generateQRCodeBlob } from '@/lib/qr-utils';
 import { generateUniqueSlug } from "@/lib/memorial-utils";
 import { sanitizeBaseUrl, constructMemorialUrl } from '@/lib/url-sanitizer';
-import { detectUserLocation, saveLocationAnalytics } from '@/lib/location-detector';
+import { detectUserLocation, saveLocationAnalytics, type LocationInfo } from '@/lib/location-detector';
 import type { FormPreviewData } from './types';
 import { toast } from "sonner";
 
@@ -25,7 +25,7 @@ export const useMemorialFormLogic = (
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
   const [startTime, setStartTime] = useState("00:00");
-  const [locationInfo, setLocationInfo] = useState<any>(null);
+  const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
 
   useEffect(() => {
     const checkLocation = async () => {

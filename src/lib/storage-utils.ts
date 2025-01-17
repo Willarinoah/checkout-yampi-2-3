@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getMemorialBySlug, updateMemorialData } from './memorial-data-utils';
 
 export const uploadPhotosToStorage = async (
   photos: File[],
@@ -41,4 +42,13 @@ export const uploadQRCode = async (
     .getPublicUrl(fileName);
 
   return publicUrl;
+};
+
+export const updateMemorialPhotos = async (slug: string, photos: string[], isBrazil: boolean) => {
+  return updateMemorialData(slug, { photos }, isBrazil);
+};
+
+export const getMemorialPhotos = async (slug: string): Promise<string[]> => {
+  const { memorial } = await getMemorialBySlug(slug);
+  return memorial?.photos || [];
 };

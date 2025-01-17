@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getMemorialBySlug, updateMemorialData } from './memorial-data-utils';
 
 export const uploadPhotosToStorage = async (photos: File[], memorialId: string): Promise<string[]> => {
   console.log('Starting photo upload process for memorial:', memorialId);
@@ -49,4 +50,16 @@ export const uploadQRCode = async (qrCodeBlob: Blob, memorialId: string): Promis
 
   console.log('QR code uploaded successfully:', publicUrl);
   return publicUrl;
+};
+
+export const updateMemorialFiles = async (slug: string, files: { [key: string]: string }, isBrazil: boolean) => {
+  return updateMemorialData(slug, files, isBrazil);
+};
+
+export const getMemorialFiles = async (slug: string) => {
+  const { memorial } = await getMemorialBySlug(slug);
+  return {
+    photos: memorial?.photos || [],
+    qr_code_url: memorial?.qr_code_url
+  };
 };

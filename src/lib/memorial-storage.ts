@@ -9,7 +9,7 @@ export interface MemorialData {
 }
 
 // In-memory fallback for preview environments
-let memoryStorage: Record<string, MemorialData> = {};
+const memoryStorage: Record<string, MemorialData> = {};
 
 const isPreviewEnvironment = () => {
   return window.location.hostname.includes('preview--') || 

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import useEmblaCarousel from "embla-carousel-react";
+import useEmblaCarousel, { EmblaCarouselType } from "embla-carousel-react";
 import AutoplayPlugin from "embla-carousel-autoplay";
 import { cn } from "@/lib/utils";
 
@@ -49,7 +49,7 @@ export function PreviewCarousel({ photos, className }: PreviewCarouselProps) {
     [autoplay]
   );
 
-  const onSelect = useCallback((api: any) => {
+  const onSelect = useCallback((api: EmblaCarouselType) => {
     setSelectedIndex(api.selectedScrollSnap());
   }, []);
 

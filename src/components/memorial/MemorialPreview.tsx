@@ -18,6 +18,11 @@ interface MemorialPreviewProps {
   startTime?: string;
 }
 
+type IframeHTMLAttributes = React.DetailedHTMLProps<React.IframeHTMLAttributes<HTMLIFrameElement>, HTMLIFrameElement>;
+interface CustomIframeAttributes extends IframeHTMLAttributes {
+  playsInline?: boolean;
+}
+
 export const MemorialPreview: React.FC<MemorialPreviewProps> = ({
   coupleName,
   photos,
@@ -100,7 +105,7 @@ export const MemorialPreview: React.FC<MemorialPreviewProps> = ({
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                   allowFullScreen
                   className="w-full h-full"
-                  {...{ playsInline: true } as any}
+                  playsInline
                 />
               </div>
             )}

@@ -7,12 +7,13 @@ import { MemorialPreview } from '@/components/memorial/MemorialPreview';
 import { useEffect } from 'react';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import type { MercadoPagoMemorial, StripeMemorial } from '@/lib/memorial-data-utils';
 
 const PreviewMemorial: React.FC = () => {
   const { slug } = useParams();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [memorial, setMemorial] = React.useState<any>(null);
+  const [memorial, setMemorial] = React.useState<MercadoPagoMemorial | StripeMemorial | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<Error | null>(null);
 
@@ -22,7 +23,7 @@ const PreviewMemorial: React.FC = () => {
         setIsLoading(true);
         
         // Tentar buscar primeiro no Mercado Pago
-        let { data: mpMemorial } = await supabase
+        const { data: mpMemorial } = await supabase
           .from('mercadopago_memorials')
           .select('*')
           .eq('custom_slug', slug)

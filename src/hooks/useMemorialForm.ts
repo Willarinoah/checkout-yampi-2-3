@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { memorialSchema, type MemorialFormValues } from '@/lib/schemas/memorial-schema';
+import { ZodError } from 'zod';
 
 const STORAGE_KEY = 'memorial_form_data';
 const TIMEOUT_MINUTES = 30;
@@ -86,11 +87,12 @@ export const useMemorialForm = () => {
       setErrors({});
       return true;
     } catch (error) {
-      if (error instanceof Error) {
-        const zodError = error as any;
+      if (error instanceof ZodError) {
         const formattedErrors: Record<string, string> = {};
-        zodError.errors?.forEach((err: any) => {
-          formattedErrors[err.path[0]] = err.message;
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            formattedErrors[err.path[0]] = err.message;
+          }
         });
         setErrors(formattedErrors);
       }
