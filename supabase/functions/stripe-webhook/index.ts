@@ -69,7 +69,6 @@ serve(async (req) => {
         throw new Error('No custom slug found in session metadata');
       }
 
-      // Primeiro, atualizamos o status do memorial
       const { data: memorial, error: updateError } = await supabase
         .from('memorials')
         .update({ payment_status: 'paid' })
@@ -82,24 +81,8 @@ serve(async (req) => {
         throw updateError;
       }
 
-      // Agora, registramos a transação
-      const { error: transactionError } = await supabase
-        .from('payment_transactions')
-        .insert({
-          memorial_id: memorial.id,
-          provider: 'stripe',
-          status: 'completed',
-          amount: session.amount_total / 100, // Stripe amounts are in cents
-        });
+      console.log('Successfully updated payment status for slug:', session.metadata.customSlug);
 
-      if (transactionError) {
-        console.error('Error recording payment transaction:', transactionError);
-        throw transactionError;
-      }
-
-      console.log('Successfully updated payment status and recorded transaction');
-
-      // Enviar e-mail de confirmação
       if (memorial) {
         try {
           const emailResponse = await fetch(
