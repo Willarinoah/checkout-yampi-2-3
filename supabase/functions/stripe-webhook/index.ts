@@ -69,12 +69,17 @@ serve(async (req) => {
         throw new Error('No custom slug found in session metadata');
       }
 
+      // Atualizado para usar a tabela stripe_memorials
       const { data: memorial, error: updateError } = await supabase
-        .from('memorials')
-        .update({ payment_status: 'paid' })
+        .from('stripe_memorials')
+        .update({ 
+          payment_status: 'paid',
+          stripe_session_id: session.id,
+          stripe_customer_id: session.customer,
+        })
         .eq('custom_slug', session.metadata.customSlug)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         console.error('Error updating payment status:', updateError);
