@@ -6,12 +6,70 @@ import { Button } from '@/components/ui/button';
 import { MemorialPreview } from '@/components/memorial/MemorialPreview';
 import { useEffect } from 'react';
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import debounce from 'lodash/debounce';
 
 const PreviewMemorial: React.FC = () => {
   const { slug } = useParams();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { memorial, isLoading, error } = useMemorial(slug);
+
+  // Função para registrar a visualização
+  const registerView = async (memorialId: string) => {
+    // Verificar se já registramos esta visualização nesta sessão
+    const sessionKey = `memorial_view_${memorialId}`;
+    if (sessionStorage.getItem(sessionKey)) {
+      console.log('View already registered in this session');
+      return;
+    }
+
+    try {
+      // Coletar informações básicas do dispositivo
+      const deviceInfo = {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        platform: navigator.platform,
+        screenSize: {
+          width: window.screen.width,
+          height: window.screen.height
+        }
+      };
+
+      const { error: analyticsError } = await supabase
+        .from('analytics_data')
+        .insert([
+          {
+            memorial_id: memorialId,
+            device_info: deviceInfo,
+          }
+        ]);
+
+      if (analyticsError) {
+        console.error('Error registering view:', analyticsError);
+        return;
+      }
+
+      // Marcar como registrado nesta sessão
+      sessionStorage.setItem(sessionKey, 'true');
+      console.log('View registered successfully');
+    } catch (err) {
+      console.error('Error in analytics:', err);
+    }
+  };
+
+  // Criar versão com debounce da função
+  const debouncedRegisterView = debounce(registerView, 1000);
+
+  useEffect(() => {
+    if (memorial?.id && memorial.payment_status === 'paid') {
+      debouncedRegisterView(memorial.id);
+    }
+    // Cleanup function para cancelar debounce pendente
+    return () => {
+      debouncedRegisterView.cancel();
+    };
+  }, [memorial?.id]);
 
   useEffect(() => {
     if (memorial && memorial.payment_status === 'pending') {
