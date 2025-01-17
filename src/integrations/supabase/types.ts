@@ -9,27 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      analytics_data: {
-        Row: {
-          device_info: Json | null
-          id: string
-          memorial_id: string | null
-          visit_timestamp: string
-        }
-        Insert: {
-          device_info?: Json | null
-          id?: string
-          memorial_id?: string | null
-          visit_timestamp?: string
-        }
-        Update: {
-          device_info?: Json | null
-          id?: string
-          memorial_id?: string | null
-          visit_timestamp?: string
-        }
-        Relationships: []
-      }
       location_analytics: {
         Row: {
           city: string | null
@@ -129,36 +108,6 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           youtube_url?: string | null
-        }
-        Relationships: []
-      }
-      payment_transactions: {
-        Row: {
-          amount: number
-          created_at: string
-          id: string
-          memorial_id: string | null
-          provider: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          id?: string
-          memorial_id?: string | null
-          provider: string
-          status: string
-          updated_at?: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          id?: string
-          memorial_id?: string | null
-          provider?: string
-          status?: string
-          updated_at?: string
         }
         Relationships: []
       }

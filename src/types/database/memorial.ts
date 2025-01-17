@@ -1,50 +1,64 @@
-import type { Json } from "@/integrations/supabase/types";
+export type PlanType = "1 year, 3 photos and no music" | "Forever, 7 photos and music";
 
-export type UserConfig = {
+export interface UserConfig {
   id: string;
   user_id?: string;
   couple_name: string;
-  photos: string[] | null;
-  message: string | null;
-  youtube_url: string | null;
-  payment_status: string;
-  qr_code_url: string | null;
+  photos?: string[];
+  message?: string;
+  youtube_url?: string;
+  payment_status?: string;
+  qr_code_url?: string;
   custom_slug: string;
   unique_url: string;
-  plan_type: "1 year, 3 photos and no music" | "Forever, 7 photos and music";
-  plan_price: number;
-  created_at: string;
-  updated_at: string;
-  relationship_start: string;
-  time: string;
-  full_name: string | null;
-  phone: string | null;
-  email: string | null;
-  address_info: Json | null;
-  preferences: Json | null;
-};
+  plan_type: PlanType;
+  plan_price?: number;
+  created_at?: string;
+  updated_at?: string;
+  relationship_start?: string;
+  time?: string;
+  full_name?: string;
+  phone?: string;
+  email?: string;
+  address_info?: {
+    country_code?: string;
+    city?: string;
+    region?: string;
+  };
+  preferences?: {
+    theme?: string;
+    language?: string;
+  };
+}
 
-export type MemorialFormData = {
+export interface MemorialFormData {
   couple_name: string;
-  message: string | null;
-  plan_type: "basic" | "premium";
+  message?: string;
+  plan_type: string;
   plan_price: number;
   custom_slug: string;
   unique_url: string;
   payment_status: string;
-  qr_code_url?: string | null;
-  photos?: string[] | null;
-  youtube_url?: string | null;
+  qr_code_url: string;
+  photos: string[];
+  youtube_url?: string;
   relationship_start: string;
   time: string;
-  email?: string | null;
-  full_name?: string | null;
-  phone?: string | null;
-  address_info?: Json | null;
-  preferences?: Json | null;
-};
+  email: string;
+  full_name: string;
+  phone: string;
+  address_info?: {
+    country_code?: string;
+    city?: string;
+    region?: string;
+  };
+  preferences?: {
+    theme?: string;
+    language?: string;
+  };
+}
 
-export const getPlanTypeFromSelection = (planType: "basic" | "premium"): "1 year, 3 photos and no music" | "Forever, 7 photos and music" => {
+export const getPlanTypeFromSelection = (planType: string): PlanType => {
   return planType === "basic" 
     ? "1 year, 3 photos and no music" 
     : "Forever, 7 photos and music";
