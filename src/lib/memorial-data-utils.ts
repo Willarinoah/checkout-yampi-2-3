@@ -13,24 +13,24 @@ export interface MemorialResult {
 }
 
 export const getMemorialBySlug = async (slug: string): Promise<MemorialResult> => {
-  // Primeiro tenta Mercado Pago
+  // Primeiro tenta mercadopago_memorials
   const { data: mpMemorial, error: mpError } = await supabase
     .from('mercadopago_memorials')
     .select('*')
     .eq('custom_slug', slug)
-    .single();
+    .maybeSingle();
 
   if (mpMemorial) {
     return { memorial: mpMemorial, error: null, source: 'mercadopago' };
   }
 
-  // Se não encontrar, tenta Stripe
+  // Se não encontrar, tenta stripe_memorials
   const { data: stripeMemorial, error: stripeError } = await supabase
     .from('stripe_memorials')
     .select('*')
     .eq('custom_slug', slug)
-    .single();
-  
+    .maybeSingle();
+
   if (stripeMemorial) {
     return { memorial: stripeMemorial, error: null, source: 'stripe' };
   }
@@ -38,7 +38,11 @@ export const getMemorialBySlug = async (slug: string): Promise<MemorialResult> =
   return { memorial: null, error: stripeError || mpError };
 };
 
-export const updateMemorialData = async (slug: string, data: Partial<Memorial>, isBrazil: boolean) => {
+export const updateMemorialData = async (
+  slug: string, 
+  data: Partial<Memorial>, 
+  isBrazil: boolean
+) => {
   const tableName = isBrazil ? 'mercadopago_memorials' : 'stripe_memorials';
   return supabase
     .from(tableName)
@@ -52,7 +56,7 @@ export const checkMemorialExists = async (slug: string): Promise<boolean> => {
     .from('mercadopago_memorials')
     .select('custom_slug')
     .eq('custom_slug', slug)
-    .single();
+    .maybeSingle();
 
   if (mpMemorial) return true;
 
@@ -60,12 +64,32 @@ export const checkMemorialExists = async (slug: string): Promise<boolean> => {
     .from('stripe_memorials')
     .select('custom_slug')
     .eq('custom_slug', slug)
-    .single();
+    .maybeSingle();
 
   return !!stripeMemorial;
 };
 
-export const getMemorialPaymentStatus = async (slug: string) => {
+export const getMemorialPaymentStatus = async (slug: string): Promise<string> => {
   const { memorial } = await getMemorialBySlug(slug);
   return memorial?.payment_status || 'pending';
+};
+
+export const createMemorial = async (
+  data: Partial<Memorial>, 
+  isBrazil: boolean
+): Promise<Memorial | null> => {
+  const tableName = isBrazil ? 'mercadopago_memorials' : 'stripe_memorials';
+  
+  const { data: memorial, error } = await supabase
+    .from(tableName)
+    .insert([data])
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error(`Error creating memorial in ${tableName}:`, error);
+    throw error;
+  }
+
+  return memorial;
 };

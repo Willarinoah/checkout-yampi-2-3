@@ -43,12 +43,17 @@ serve(async (req) => {
           Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         );
 
+        // Atualizado para usar a tabela correta mercadopago_memorials
         const { data: memorial, error: updateError } = await supabase
-          .from('memorials')
-          .update({ payment_status: 'paid' })
+          .from('mercadopago_memorials')
+          .update({ 
+            payment_status: 'paid',
+            mp_external_reference: paymentData.external_reference,
+            mp_merchant_order_id: paymentData.merchant_order_id
+          })
           .eq('custom_slug', paymentData.external_reference)
           .select()
-          .single();
+          .maybeSingle();
 
         if (updateError) {
           console.error('Error updating payment status:', updateError);
