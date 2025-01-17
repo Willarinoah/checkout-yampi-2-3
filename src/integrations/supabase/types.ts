@@ -111,6 +111,168 @@ export type Database = {
         }
         Relationships: []
       }
+      mercadopago_memorials: {
+        Row: {
+          address_info: Json | null
+          couple_name: string
+          created_at: string
+          custom_slug: string
+          email: string | null
+          full_name: string | null
+          id: string
+          message: string | null
+          mp_external_reference: string | null
+          mp_merchant_order_id: string | null
+          mp_preference_id: string | null
+          payment_status: string | null
+          phone: string | null
+          photos: string[] | null
+          plan_price: number | null
+          plan_type: string | null
+          preferences: Json | null
+          qr_code_url: string | null
+          relationship_start: string
+          time: string
+          unique_url: string
+          updated_at: string
+          user_id: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          address_info?: Json | null
+          couple_name: string
+          created_at?: string
+          custom_slug: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          message?: string | null
+          mp_external_reference?: string | null
+          mp_merchant_order_id?: string | null
+          mp_preference_id?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          photos?: string[] | null
+          plan_price?: number | null
+          plan_type?: string | null
+          preferences?: Json | null
+          qr_code_url?: string | null
+          relationship_start?: string
+          time?: string
+          unique_url: string
+          updated_at?: string
+          user_id?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          address_info?: Json | null
+          couple_name?: string
+          created_at?: string
+          custom_slug?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          message?: string | null
+          mp_external_reference?: string | null
+          mp_merchant_order_id?: string | null
+          mp_preference_id?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          photos?: string[] | null
+          plan_price?: number | null
+          plan_type?: string | null
+          preferences?: Json | null
+          qr_code_url?: string | null
+          relationship_start?: string
+          time?: string
+          unique_url?: string
+          updated_at?: string
+          user_id?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
+      stripe_memorials: {
+        Row: {
+          address_info: Json | null
+          couple_name: string
+          created_at: string
+          custom_slug: string
+          email: string | null
+          full_name: string | null
+          id: string
+          message: string | null
+          payment_status: string | null
+          phone: string | null
+          photos: string[] | null
+          plan_price: number | null
+          plan_type: string | null
+          preferences: Json | null
+          qr_code_url: string | null
+          relationship_start: string
+          stripe_customer_id: string | null
+          stripe_session_id: string | null
+          stripe_subscription_id: string | null
+          time: string
+          unique_url: string
+          updated_at: string
+          user_id: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          address_info?: Json | null
+          couple_name: string
+          created_at?: string
+          custom_slug: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          message?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          photos?: string[] | null
+          plan_price?: number | null
+          plan_type?: string | null
+          preferences?: Json | null
+          qr_code_url?: string | null
+          relationship_start?: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          time?: string
+          unique_url: string
+          updated_at?: string
+          user_id?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          address_info?: Json | null
+          couple_name?: string
+          created_at?: string
+          custom_slug?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          message?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          photos?: string[] | null
+          plan_price?: number | null
+          plan_type?: string | null
+          preferences?: Json | null
+          qr_code_url?: string | null
+          relationship_start?: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          time?: string
+          unique_url?: string
+          updated_at?: string
+          user_id?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

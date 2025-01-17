@@ -61,18 +61,15 @@ export const useMemorialFormLogic = (
       onEmailSubmit(submittedEmail);
       setShowEmailDialog(false);
 
-      // 1. Geramos o slug e URLs
       const customSlug = await generateUniqueSlug(coupleName);
       const baseUrl = sanitizeBaseUrl(window.location.origin);
       const uniqueUrl = constructMemorialUrl(baseUrl, `/memorial/${customSlug}`);
       console.log('Generated unique URL:', uniqueUrl);
 
-      // 2. Upload do QR Code
       const qrCodeBlob = await generateQRCodeBlob(uniqueUrl);
       const qrCodeUrl = await uploadQRCode(qrCodeBlob, customSlug);
       console.log('QR Code uploaded:', qrCodeUrl);
 
-      // 3. Upload das fotos
       const photoUrls = await uploadPhotosToStorage(photos, customSlug);
       console.log('Photos uploaded:', photoUrls);
 
@@ -82,14 +79,12 @@ export const useMemorialFormLogic = (
       
       const planPrice = selectedPlan === "basic" ? 29 : 49;
 
-      // Create address_info object from locationInfo
       const addressInfo = locationInfo ? {
         country_code: locationInfo.country_code,
         city: locationInfo.city,
         region: locationInfo.region
       } : null;
 
-      // 4. Criamos o memorial com os dados do usuário incluídos
       const memorialData = {
         couple_name: coupleName,
         message: message || null,
@@ -112,8 +107,11 @@ export const useMemorialFormLogic = (
 
       console.log('Inserting memorial data:', memorialData);
 
+      // Inserir na tabela apropriada com base na localização
+      const tableName = isBrazil ? 'mercadopago_memorials' : 'stripe_memorials';
+      
       const { data: insertedMemorial, error: insertError } = await supabase
-        .from('memorials')
+        .from(tableName)
         .insert(memorialData)
         .select()
         .single();
@@ -125,7 +123,6 @@ export const useMemorialFormLogic = (
 
       console.log('Successfully created memorial:', insertedMemorial);
 
-      // 5. Só depois de tudo salvo, criamos o checkout
       const checkoutEndpoint = isBrazil ? 'mercadopago-checkout' : 'create-checkout';
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         checkoutEndpoint,
