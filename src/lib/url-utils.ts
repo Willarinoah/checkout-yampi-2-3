@@ -1,6 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
 import { checkMemorialExists, getMemorialBySlug } from './memorial-data-utils';
 
+export const generateSlug = (coupleName: string): string => {
+  return coupleName.toLowerCase().replace(/\s+/g, '-');
+};
+
 export const isSlugAvailable = async (slug: string): Promise<boolean> => {
   return !(await checkMemorialExists(slug));
 };

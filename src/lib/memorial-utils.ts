@@ -1,4 +1,4 @@
-import { createMemorial } from './memorial-data-utils';
+import { createMemorial, checkMemorialExists } from './memorial-data-utils';
 import type { Memorial } from './memorial-data-utils';
 import { generateSlug } from './url-utils';
 import { constructMemorialUrl, sanitizeBaseUrl } from './url-sanitizer';
