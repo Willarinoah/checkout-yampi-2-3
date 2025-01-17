@@ -43,6 +43,7 @@ serve(async (req) => {
           Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         );
 
+        // Primeiro, atualizamos o status do memorial
         const { data: memorial, error: updateError } = await supabase
           .from('memorials')
           .update({ payment_status: 'paid' })
@@ -55,8 +56,24 @@ serve(async (req) => {
           throw updateError;
         }
 
-        console.log('Successfully updated payment status for:', paymentData.external_reference);
+        // Agora, registramos a transação
+        const { error: transactionError } = await supabase
+          .from('payment_transactions')
+          .insert({
+            memorial_id: memorial.id,
+            provider: 'mercadopago',
+            status: 'completed',
+            amount: paymentData.transaction_amount,
+          });
 
+        if (transactionError) {
+          console.error('Error recording payment transaction:', transactionError);
+          throw transactionError;
+        }
+
+        console.log('Successfully updated payment status and recorded transaction');
+
+        // Enviar e-mail de confirmação
         if (memorial) {
           try {
             const emailResponse = await fetch(
