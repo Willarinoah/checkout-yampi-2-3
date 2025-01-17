@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { PostgrestError } from "@supabase/supabase-js";
+import type { Json } from "@/integrations/supabase/types";
 
 export type MercadoPagoMemorial = Database['public']['Tables']['mercadopago_memorials']['Row'];
 export type StripeMemorial = Database['public']['Tables']['stripe_memorials']['Row'];
@@ -74,8 +75,14 @@ export const getMemorialPaymentStatus = async (slug: string): Promise<string> =>
   return memorial?.payment_status || 'pending';
 };
 
+type RequiredMemorialFields = {
+  couple_name: string;
+  custom_slug: string;
+  unique_url: string;
+};
+
 export const createMemorial = async (
-  data: { couple_name: string; custom_slug: string } & Partial<Memorial>, 
+  data: RequiredMemorialFields & Partial<Memorial>,
   isBrazil: boolean
 ): Promise<Memorial | null> => {
   const tableName = isBrazil ? 'mercadopago_memorials' : 'stripe_memorials';

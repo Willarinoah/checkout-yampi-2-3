@@ -1,34 +1,19 @@
-import slugify from 'slugify';
-import { checkMemorialExists, createMemorial } from './memorial-data-utils';
+import { createMemorial } from './memorial-data-utils';
 import type { Memorial } from './memorial-data-utils';
-
-export const generateSlug = (coupleName: string): string => {
-  return slugify(coupleName, {
-    lower: true,
-    strict: true,
-    trim: true,
-    locale: 'pt'
-  });
-};
+import { generateSlug } from './url-utils';
+import { constructMemorialUrl, sanitizeBaseUrl } from './url-sanitizer';
 
 export const generateUniqueSlug = async (coupleName: string): Promise<string> => {
-  let slug = generateSlug(coupleName);
-  let isAvailable = !(await checkMemorialExists(slug));
+  const baseSlug = generateSlug(coupleName);
+  let uniqueSlug = baseSlug;
   let counter = 1;
 
-  while (!isAvailable) {
-    slug = `${generateSlug(coupleName)}-${counter}`;
-    isAvailable = !(await checkMemorialExists(slug));
+  while (await checkMemorialExists(uniqueSlug)) {
+    uniqueSlug = `${baseSlug}-${counter}`;
     counter++;
   }
 
-  return slug;
-};
-
-export const getPlanTypeFromSelection = (planType: "basic" | "premium"): "1 year, 3 photos and no music" | "Forever, 7 photos and music" => {
-  return planType === "basic" 
-    ? "1 year, 3 photos and no music" 
-    : "Forever, 7 photos and music";
+  return uniqueSlug;
 };
 
 export const createNewMemorial = async (
@@ -39,16 +24,22 @@ export const createNewMemorial = async (
     console.log(`Creating memorial for ${isBrazil ? 'Brazil' : 'International'}:`, memorialData);
     
     const customSlug = await generateUniqueSlug(memorialData.couple_name);
-    const memorial = await createMemorial({ ...memorialData, custom_slug: customSlug }, isBrazil);
+    const baseUrl = sanitizeBaseUrl(window.location.origin);
+    const uniqueUrl = constructMemorialUrl(baseUrl, `/memorial/${customSlug}`);
+    
+    const memorial = await createMemorial({ 
+      ...memorialData, 
+      custom_slug: customSlug,
+      unique_url: uniqueUrl
+    }, isBrazil);
     
     if (!memorial) {
       throw new Error('Failed to create memorial');
     }
 
-    console.log('Successfully created memorial:', memorial);
     return memorial;
   } catch (error) {
-    console.error('Error in create memorial flow:', error);
+    console.error('Error in createNewMemorial:', error);
     throw error;
   }
 };
