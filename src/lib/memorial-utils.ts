@@ -1,6 +1,5 @@
 import slugify from 'slugify';
 import { supabase } from "@/integrations/supabase/client";
-import { getMemorialBySlug, updateMemorialData, checkMemorialExists } from './memorial-data-utils';
 import type { UserConfig, MemorialFormData } from '@/types/database/memorial';
 import { getPlanTypeFromSelection } from '@/types/database/memorial';
 
@@ -28,27 +27,84 @@ export const generateUniqueSlug = async (coupleName: string): Promise<string> =>
 };
 
 export const getMemorialData = async (slug: string): Promise<UserConfig | null> => {
-  const { memorial } = await getMemorialBySlug(slug);
-  if (!memorial) return null;
-  
-  return {
-    ...memorial,
-    plan_type: memorial.plan_type as "1 year, 3 photos and no music" | "Forever, 7 photos and music"
-  };
+  // First try mercadopago_memorials
+  const { data: mpMemorial, error: mpError } = await supabase
+    .from('mercadopago_memorials')
+    .select('*')
+    .eq('custom_slug', slug)
+    .maybeSingle();
+
+  if (mpMemorial) {
+    console.log('Found memorial in mercadopago_memorials:', mpMemorial);
+    return {
+      ...mpMemorial,
+      plan_type: mpMemorial.plan_type as "1 year, 3 photos and no music" | "Forever, 7 photos and music"
+    };
+  }
+
+  // If not found, try stripe_memorials
+  const { data: stripeMemorial, error: stripeError } = await supabase
+    .from('stripe_memorials')
+    .select('*')
+    .eq('custom_slug', slug)
+    .maybeSingle();
+
+  if (stripeMemorial) {
+    console.log('Found memorial in stripe_memorials:', stripeMemorial);
+    return {
+      ...stripeMemorial,
+      plan_type: stripeMemorial.plan_type as "1 year, 3 photos and no music" | "Forever, 7 photos and music"
+    };
+  }
+
+  console.log('Memorial not found in either table:', { mpError, stripeError });
+  return null;
 };
 
 export const updateMemorial = async (slug: string, data: Partial<UserConfig>, isBrazil: boolean) => {
-  // Convert the UserConfig data back to Memorial type
-  const memorialData = {
-    ...data,
-    plan_type: data.plan_type || undefined
-  };
-  return updateMemorialData(slug, memorialData, isBrazil);
+  const tableName = isBrazil ? 'mercadopago_memorials' : 'stripe_memorials';
+  console.log(`Updating memorial in ${tableName}:`, { slug, data });
+  
+  const { data: result, error } = await supabase
+    .from(tableName)
+    .update(data)
+    .eq('custom_slug', slug)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error(`Error updating memorial in ${tableName}:`, error);
+    throw error;
+  }
+
+  return result;
+};
+
+export const checkMemorialExists = async (slug: string): Promise<boolean> => {
+  // Check in mercadopago_memorials
+  const { data: mpMemorial, error: mpError } = await supabase
+    .from('mercadopago_memorials')
+    .select('custom_slug')
+    .eq('custom_slug', slug)
+    .maybeSingle();
+
+  if (mpMemorial) return true;
+
+  // Check in stripe_memorials
+  const { data: stripeMemorial, error: stripeError } = await supabase
+    .from('stripe_memorials')
+    .select('custom_slug')
+    .eq('custom_slug', slug)
+    .maybeSingle();
+
+  return !!stripeMemorial;
 };
 
 export const createMemorial = async (data: MemorialFormData, isBrazil: boolean): Promise<UserConfig> => {
   const planType = getPlanTypeFromSelection(data.plan_type);
   const tableName = isBrazil ? 'mercadopago_memorials' : 'stripe_memorials';
+  
+  console.log(`Creating memorial in ${tableName}:`, data);
 
   const { data: memorial, error } = await supabase
     .from(tableName)
@@ -71,16 +127,22 @@ export const createMemorial = async (data: MemorialFormData, isBrazil: boolean):
       address_info: data.address_info,
       preferences: data.preferences
     }])
-    .select('*')
-    .single();
+    .select()
+    .maybeSingle();
 
   if (error) {
-    console.error('Error creating memorial:', error);
+    console.error(`Error creating memorial in ${tableName}:`, error);
     throw error;
   }
+
+  if (!memorial) {
+    throw new Error('Failed to create memorial');
+  }
+
+  console.log(`Successfully created memorial:`, memorial);
 
   return {
     ...memorial,
     plan_type: memorial.plan_type as "1 year, 3 photos and no music" | "Forever, 7 photos and music"
-  } as UserConfig;
+  };
 };
