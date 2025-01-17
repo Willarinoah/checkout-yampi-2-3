@@ -35,16 +35,28 @@ serve(async (req) => {
     const successUrl = sanitizeUrl(memorialData.unique_url);
     const cancelUrl = `${new URL(memorialData.unique_url).origin}/create`;
 
+    // Split full name into first and last name
+    const nameParts = (memorialData.full_name || '').split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
     const preferenceData = {
       items: [{
         id: `love-counter-${planType}`,
         title: planType === 'basic' ? 'Plano Basic Love Counter' : 'Plano Premium Love Counter',
+        description: `Memorial digital para ${memorialData.couple_name}`,
+        category_id: 'digital_services',
         quantity: 1,
         currency_id: 'BRL',
         unit_price: Number(memorialData.plan_price)
       }],
       payer: {
-        email: memorialData.email
+        email: memorialData.email,
+        first_name: firstName,
+        last_name: lastName,
+        phone: {
+          number: memorialData.phone?.replace(/\D/g, '') || ''
+        }
       },
       back_urls: {
         success: successUrl,
