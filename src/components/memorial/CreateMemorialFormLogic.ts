@@ -107,18 +107,23 @@ export const useMemorialFormLogic = (
 
       console.log('Inserting memorial data:', memorialData);
 
-      // Inserir na tabela apropriada com base na localização
+      // Determinar qual tabela usar com base na localização
       const tableName = isBrazil ? 'mercadopago_memorials' : 'stripe_memorials';
-      
+      console.log('Using table:', tableName);
+
       const { data: insertedMemorial, error: insertError } = await supabase
         .from(tableName)
         .insert(memorialData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (insertError) {
         console.error('Error inserting memorial:', insertError);
         throw new Error(insertError.message);
+      }
+
+      if (!insertedMemorial) {
+        throw new Error('Failed to create memorial');
       }
 
       console.log('Successfully created memorial:', insertedMemorial);
