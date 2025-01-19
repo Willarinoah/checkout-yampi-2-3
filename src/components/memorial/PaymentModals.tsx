@@ -21,13 +21,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   isBrazil
 }) => {
   const [localEmail, setLocalEmail] = React.useState(email);
-  const [fullName, setFullName] = React.useState("");
+  const [firstName, setFirstName] = React.useState("");
+  const [lastName, setLastName] = React.useState("");
   const [phoneNumber, setPhoneNumber] = React.useState("");
 
   const sanitizePhoneNumber = (value: string) => {
-    // First remove all non-digits
     const digitsOnly = value.replace(/[^\d]/g, '');
-    // Then add back the plus sign if it was at the start
     return value.startsWith('+') ? `+${digitsOnly}` : digitsOnly;
   };
 
@@ -35,6 +34,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     const cleanNumber = sanitizePhoneNumber(rawNumber);
     
     if (isBrazil) {
+      // Formato brasileiro: +55 (XX) XXXXX-XXXX
       if (cleanNumber.startsWith('+55')) return cleanNumber;
       if (cleanNumber.length <= 11) return `+55${cleanNumber}`;
       return cleanNumber;
@@ -49,34 +49,41 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     setPhoneNumber(formattedNumber);
   };
 
-  const validateFullName = (name: string) => {
+  const validateName = (name: string, field: string) => {
     const trimmedName = name.trim();
-    if (trimmedName.length < 3) {
-      toast.error(isBrazil ? "Nome deve ter pelo menos 3 caracteres" : "Name must be at least 3 characters long");
+    if (trimmedName.length < 2) {
+      toast.error(isBrazil 
+        ? `${field} deve ter pelo menos 2 caracteres` 
+        : `${field} must be at least 2 characters long`);
       return false;
     }
-    if (trimmedName.length > 100) {
-      toast.error(isBrazil ? "Nome deve ter no máximo 100 caracteres" : "Name must be at most 100 characters long");
+    if (trimmedName.length > 50) {
+      toast.error(isBrazil 
+        ? `${field} deve ter no máximo 50 caracteres` 
+        : `${field} must be at most 50 characters long`);
       return false;
     }
     return true;
   };
 
   const validateForm = () => {
-    if (!localEmail || !fullName || !phoneNumber) {
-      toast.error(isBrazil ? "Por favor, preencha todos os campos" : "Please fill in all fields");
+    if (!localEmail || !firstName || !lastName || !phoneNumber) {
+      toast.error(isBrazil 
+        ? "Por favor, preencha todos os campos" 
+        : "Please fill in all fields");
       return false;
     }
 
-    if (!validateFullName(fullName)) {
-      return false;
-    }
+    if (!validateName(firstName, isBrazil ? "Nome" : "First name")) return false;
+    if (!validateName(lastName, isBrazil ? "Sobrenome" : "Last name")) return false;
 
     const cleanNumber = sanitizePhoneNumber(phoneNumber);
     const minLength = isBrazil ? 11 : 6;
     
     if (cleanNumber.length < minLength) {
-      toast.error(isBrazil ? "Número de telefone inválido" : "Invalid phone number");
+      toast.error(isBrazil 
+        ? "Número de telefone inválido" 
+        : "Invalid phone number");
       return false;
     }
 
@@ -86,7 +93,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(localEmail, fullName.trim(), phoneNumber);
+      const fullName = `${firstName.trim()} ${lastName.trim()}`;
+      onSubmit(localEmail, fullName, phoneNumber);
     }
   };
 
@@ -106,12 +114,24 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               <div className="relative">
                 <Input
                   type="text"
-                  placeholder="Nome completo"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Nome"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
                   className="pl-10 bg-white border-gray-300"
                   required
-                  maxLength={100}
+                  maxLength={50}
+                />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              </div>
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Sobrenome"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="pl-10 bg-white border-gray-300"
+                  required
+                  maxLength={50}
                 />
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               </div>
@@ -167,12 +187,24 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             <div className="relative">
               <Input
                 type="text"
-                placeholder="Full name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                placeholder="First name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
                 className="pl-10 bg-white border-gray-300"
                 required
-                maxLength={100}
+                maxLength={50}
+              />
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            </div>
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="pl-10 bg-white border-gray-300"
+                required
+                maxLength={50}
               />
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             </div>
