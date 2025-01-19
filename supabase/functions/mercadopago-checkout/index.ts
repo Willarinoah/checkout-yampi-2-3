@@ -9,6 +9,27 @@ const sanitizeUrl = (url: string): string => {
   return url.replace(/[:/]+$/, '').replace(/:[/]{0,2}$/, '');
 };
 
+const formatPhoneNumber = (phone: string | null): { area_code: string; number: string } => {
+  if (!phone) return { area_code: '', number: '' };
+  
+  // Remove todos os caracteres não numéricos
+  const cleanPhone = phone.replace(/\D/g, '');
+  
+  // Extrai DDD (2 dígitos) e número
+  const areaCode = cleanPhone.substring(0, 2);
+  const number = cleanPhone.substring(2);
+  
+  return { area_code: areaCode, number };
+};
+
+const createItemDescription = (coupleName: string, planType: string): string => {
+  const planDescription = planType === 'basic' 
+    ? '1 ano, 3 fotos' 
+    : 'Para sempre, 7 fotos e música';
+  
+  return `Memorial digital para ${coupleName} - ${planDescription}`;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -24,6 +45,11 @@ serve(async (req) => {
     const { planType, memorialData } = await req.json();
     console.log('Creating Mercado Pago checkout for:', { planType, memorialData });
 
+    // Validação dos campos obrigatórios
+    if (!memorialData.couple_name || !memorialData.email || !memorialData.full_name) {
+      throw new Error('Missing required fields: couple_name, email, or full_name');
+    }
+
     const baseUrl = sanitizeUrl(Deno.env.get('SUPABASE_URL') || '');
     if (!baseUrl) {
       throw new Error('Missing SUPABASE_URL configuration');
@@ -35,16 +61,33 @@ serve(async (req) => {
     const successUrl = sanitizeUrl(memorialData.unique_url);
     const cancelUrl = `${new URL(memorialData.unique_url).origin}/create`;
 
-    // Split full name into first and last name
+    // Separar nome completo em nome e sobrenome
     const nameParts = (memorialData.full_name || '').split(' ');
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
+
+    // Formatar número de telefone
+    const formattedPhone = formatPhoneNumber(memorialData.phone);
+
+    // Criar descrição detalhada do item
+    const itemDescription = createItemDescription(memorialData.couple_name, planType);
+
+    // Preparar dados de endereço do comprador
+    const addressInfo = memorialData.address_info || {};
+    const payerAddress = {
+      zip_code: addressInfo.postal_code || '',
+      street_name: addressInfo.street || '',
+      street_number: addressInfo.number || '',
+      city: addressInfo.city || '',
+      state: addressInfo.region || '',
+      country: addressInfo.country_code || 'BR'
+    };
 
     const preferenceData = {
       items: [{
         id: `love-counter-${planType}`,
         title: planType === 'basic' ? 'Plano Basic Love Counter' : 'Plano Premium Love Counter',
-        description: `Memorial digital para ${memorialData.couple_name}`,
+        description: itemDescription,
         category_id: 'digital_services',
         quantity: 1,
         currency_id: 'BRL',
@@ -54,8 +97,11 @@ serve(async (req) => {
         email: memorialData.email,
         first_name: firstName,
         last_name: lastName,
-        phone: {
-          number: memorialData.phone?.replace(/\D/g, '') || ''
+        phone: formattedPhone,
+        address: payerAddress,
+        identification: {
+          type: 'CPF',
+          number: ''  // Opcional, pode ser preenchido se necessário
         }
       },
       back_urls: {
@@ -71,10 +117,14 @@ serve(async (req) => {
         excluded_payment_methods: [],
         excluded_payment_types: [],
         installments: 12
+      },
+      metadata: {
+        memorial_id: memorialData.id,
+        plan_type: planType
       }
     };
 
-    console.log('Creating Mercado Pago preference:', preferenceData);
+    console.log('Creating Mercado Pago preference:', JSON.stringify(preferenceData, null, 2));
 
     const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
       method: 'POST',
