@@ -45,7 +45,25 @@ const getCountryFromCoordinates = async (latitude: number, longitude: number): P
 
 export const detectUserLocation = async (): Promise<LocationInfo> => {
   try {
-    // First try: Browser Geolocation API
+    // First try: Vercel Edge Runtime geolocation
+    const response = await fetch('/api/geo');
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Location detected by Vercel:', data);
+      return {
+        country_code: data.country,
+        city: data.city,
+        region: data.region,
+        is_brazil: data.country === 'BR',
+        detected_by: 'vercel'
+      };
+    }
+  } catch (error) {
+    console.error('Vercel geolocation failed:', error);
+  }
+
+  try {
+    // Second try: Browser Geolocation API
     console.log('Trying browser geolocation...');
     const position = await getBrowserLocation();
     const locationInfo = await getCountryFromCoordinates(
@@ -56,38 +74,38 @@ export const detectUserLocation = async (): Promise<LocationInfo> => {
     return locationInfo;
   } catch (error) {
     console.error('Browser geolocation failed:', error);
-    
-    // Final fallback: Default to US
-    console.log('Using fallback location');
-    return {
-      country_code: 'US',
-      is_brazil: false,
-      detected_by: 'fallback'
-    };
   }
+
+  // Final fallback: Default to US
+  console.log('Using fallback location');
+  return {
+    country_code: 'US',
+    is_brazil: false,
+    detected_by: 'fallback'
+  };
 };
 
-export const saveLocationAnalytics = async (locationInfo: LocationInfo): Promise<boolean> => {
+export const saveLocationAnalytics = async (locationInfo: LocationInfo) => {
   try {
     const { error } = await supabase
       .from('location_analytics')
       .insert([{
         country_code: locationInfo.country_code,
-        city: locationInfo.city || null,
-        region: locationInfo.region || null,
+        city: locationInfo.city,
+        region: locationInfo.region,
         is_brazil: locationInfo.is_brazil,
         detected_by: locationInfo.detected_by
       }]);
 
     if (error) {
       console.error('Error saving location analytics:', error);
-      return false;
+      throw error;
     }
     
     console.log('Location analytics saved successfully');
     return true;
   } catch (error) {
     console.error('Error saving location analytics:', error);
-    return false;
+    throw error;
   }
 };
