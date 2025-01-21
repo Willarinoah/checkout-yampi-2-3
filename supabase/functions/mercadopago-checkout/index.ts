@@ -11,14 +11,9 @@ const sanitizeUrl = (url: string): string => {
 
 const formatPhoneNumber = (phone: string | null): { area_code: string; number: string } => {
   if (!phone) return { area_code: '', number: '' };
-  
-  // Remove todos os caracteres não numéricos
   const cleanPhone = phone.replace(/\D/g, '');
-  
-  // Extrai DDD (2 dígitos) e número
   const areaCode = cleanPhone.substring(0, 2);
   const number = cleanPhone.substring(2);
-  
   return { area_code: areaCode, number };
 };
 
@@ -26,7 +21,6 @@ const createItemDescription = (coupleName: string, planType: string): string => 
   const planDescription = planType === 'basic' 
     ? '1 ano, 3 fotos' 
     : 'Para sempre, 7 fotos e música';
-  
   return `Memorial digital para ${coupleName} - ${planDescription}`;
 };
 
@@ -45,7 +39,6 @@ serve(async (req) => {
     const { planType, memorialData } = await req.json();
     console.log('Creating Mercado Pago checkout for:', { planType, memorialData });
 
-    // Validação dos campos obrigatórios
     if (!memorialData.couple_name || !memorialData.email || !memorialData.full_name) {
       throw new Error('Missing required fields: couple_name, email, or full_name');
     }
@@ -98,11 +91,7 @@ serve(async (req) => {
         first_name: firstName,
         last_name: lastName,
         phone: formattedPhone,
-        address: payerAddress,
-        identification: {
-          type: 'CPF',
-          number: ''  // Opcional, pode ser preenchido se necessário
-        }
+        address: payerAddress
       },
       back_urls: {
         success: successUrl,
