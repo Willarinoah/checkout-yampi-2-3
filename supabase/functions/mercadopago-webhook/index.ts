@@ -1,10 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
-import { crypto } from "https://deno.land/std@0.190.0/crypto/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-signature',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 serve(async (req) => {
@@ -14,20 +13,31 @@ serve(async (req) => {
   }
 
   try {
-    const payload = await req.text();
-    console.log('Received webhook payload:', payload);
-    const data = JSON.parse(payload);
-    console.log('Parsed webhook data:', data);
+    const mercadopagoToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
+    if (!mercadopagoToken) {
+      throw new Error('Missing Mercado Pago configuration');
+    }
 
-    if (data.type === 'payment' && data.data.id) {
-      const mercadopagoToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
-      if (!mercadopagoToken) {
-        throw new Error('Missing Mercado Pago configuration');
-      }
+    // Create Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing Supabase configuration');
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-      // Fetch payment details
+    // Parse webhook payload
+    const payload = await req.json();
+    console.log('Received Mercado Pago webhook:', payload);
+
+    // Handle different webhook events
+    if (payload.type === 'payment' && payload.action === 'payment.updated') {
+      const paymentId = payload.data.id;
+      console.log('Processing payment update for payment ID:', paymentId);
+
+      // Fetch payment details from Mercado Pago API
       const paymentResponse = await fetch(
-        `https://api.mercadopago.com/v1/payments/${data.data.id}`,
+        `https://api.mercadopago.com/v1/payments/${paymentId}`,
         {
           headers: {
             'Authorization': `Bearer ${mercadopagoToken}`,
@@ -42,12 +52,6 @@ serve(async (req) => {
       const paymentData = await paymentResponse.json();
       console.log('Payment details:', paymentData);
 
-      // Initialize Supabase client
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-
       // Map payment status
       const paymentStatus = {
         approved: 'paid',
@@ -60,56 +64,64 @@ serve(async (req) => {
         charged_back: 'chargeback'
       }[paymentData.status] || 'pending';
 
-      // Update memorial payment status
-      const { data: memorial, error: updateError } = await supabase
-        .from('mercadopago_memorials')
-        .update({
-          payment_status: paymentStatus,
-          mp_merchant_order_id: paymentData.order.id,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('mp_external_reference', paymentData.external_reference)
-        .select()
-        .single();
+      // Update memorial payment status based on the payment status
+      if (paymentData.external_reference) {
+        const { data: memorial, error: memorialError } = await supabase
+          .from('mercadopago_memorials')
+          .update({ 
+            payment_status: paymentStatus,
+            mp_merchant_order_id: paymentData.order.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('custom_slug', paymentData.external_reference)
+          .select()
+          .single();
 
-      if (updateError) {
-        console.error('Error updating memorial payment status:', updateError);
-        throw updateError;
-      }
+        if (memorialError) {
+          console.error('Error updating payment status:', memorialError);
+          throw memorialError;
+        }
 
-      // If payment is approved, send confirmation email
-      if (paymentStatus === 'paid') {
-        try {
-          await fetch(
-            `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-memorial-email`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-              },
-              body: JSON.stringify({
-                to: memorial.email,
-                memorialUrl: memorial.unique_url,
-                qrCodeUrl: memorial.qr_code_url
-              }),
+        console.log('Successfully updated payment status for:', paymentData.external_reference);
+        console.log('Memorial data:', memorial);
+
+        // Send confirmation email if payment is approved
+        if (paymentStatus === 'paid' && memorial) {
+          try {
+            console.log('Sending email to:', memorial.email);
+            const emailResponse = await fetch(
+              `${supabaseUrl}/functions/v1/send-memorial-email`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+                },
+                body: JSON.stringify({
+                  to: memorial.email,
+                  memorialUrl: memorial.unique_url,
+                  qrCodeUrl: memorial.qr_code_url
+                }),
+              }
+            );
+
+            if (!emailResponse.ok) {
+              const errorData = await emailResponse.text();
+              console.error('Error sending email:', errorData);
+              // Log error but don't throw to avoid webhook retries
+              console.error(`Failed to send email: ${errorData}`);
+            } else {
+              console.log('Successfully sent memorial email');
             }
-          );
-          console.log('Confirmation email sent successfully');
-        } catch (emailError) {
-          console.error('Error sending confirmation email:', emailError);
+          } catch (emailError) {
+            console.error('Error in email sending process:', emailError);
+            // Don't throw to avoid webhook retries
+          }
         }
       }
-
-      return new Response(
-        JSON.stringify({ received: true }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
-        }
-      );
     }
 
+    // Return success response
     return new Response(
       JSON.stringify({ received: true }),
       { 
@@ -117,13 +129,18 @@ serve(async (req) => {
         status: 200,
       }
     );
+
   } catch (error) {
     console.error('Error processing webhook:', error);
+    // Return 200 to acknowledge receipt even for errors
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack 
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 200,
       }
     );
   }
