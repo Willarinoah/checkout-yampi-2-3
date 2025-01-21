@@ -7,44 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-signature',
 };
 
-async function validateWebhookSignature(payload: string, signature: string | null): Promise<boolean> {
-  if (!signature) {
-    console.error('No signature provided');
-    return false;
-  }
-  
-  const webhookSecret = Deno.env.get('MERCADOPAGO_WEBHOOK_SECRET');
-  if (!webhookSecret) {
-    console.error('Missing MERCADOPAGO_WEBHOOK_SECRET');
-    return false;
-  }
-
-  try {
-    const encoder = new TextEncoder();
-    const key = await crypto.subtle.importKey(
-      "raw",
-      encoder.encode(webhookSecret),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign", "verify"]
-    );
-
-    const signatureBytes = new Uint8Array(
-      signature.split('').map(c => c.charCodeAt(0))
-    );
-
-    return await crypto.subtle.verify(
-      "HMAC",
-      key,
-      signatureBytes,
-      encoder.encode(payload)
-    );
-  } catch (error) {
-    console.error('Error validating signature:', error);
-    return false;
-  }
-}
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -52,23 +14,8 @@ serve(async (req) => {
   }
 
   try {
-    const signature = req.headers.get('x-signature');
     const payload = await req.text();
     console.log('Received webhook payload:', payload);
-    
-    // Validate webhook signature
-    const isValid = await validateWebhookSignature(payload, signature);
-    if (!isValid) {
-      console.error('Invalid webhook signature');
-      return new Response(
-        JSON.stringify({ error: 'Invalid signature' }),
-        { 
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
     const data = JSON.parse(payload);
     console.log('Parsed webhook data:', data);
 
