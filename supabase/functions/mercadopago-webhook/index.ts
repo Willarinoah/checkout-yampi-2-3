@@ -1,118 +1,56 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-import { createHmac } from "https://deno.land/std@0.190.0/crypto/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { crypto } from "https://deno.land/std@0.190.0/crypto/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-signature',
 };
 
-// Função para validar a assinatura do Mercado Pago
-const validateMPSignature = (payload: string, signature: string | null, secret: string): boolean => {
+async function validateWebhookSignature(payload: string, signature: string | null): Promise<boolean> {
   if (!signature) return false;
   
-  const generatedSignature = createHmac("sha256", secret)
-    .update(payload)
-    .toString("hex");
-    
-  return signature === generatedSignature;
-};
-
-// Função para mapear status do Mercado Pago para nosso sistema
-const mapPaymentStatus = (mpStatus: string): string => {
-  const statusMap: Record<string, string> = {
-    approved: 'paid',
-    pending: 'pending',
-    in_process: 'pending',
-    rejected: 'rejected',
-    refunded: 'refunded',
-    cancelled: 'cancelled',
-    in_mediation: 'dispute',
-    charged_back: 'chargeback'
-  };
-  return statusMap[mpStatus] || 'pending';
-};
-
-// Função para processar a atualização do pagamento
-const processPaymentUpdate = async (
-  supabase: any,
-  memorialId: string,
-  currentStatus: string,
-  paymentData: any,
-  previousStatus: string
-) => {
-  console.log('Processing payment update:', {
-    memorialId,
-    currentStatus,
-    previousStatus,
-    paymentData: JSON.stringify(paymentData, null, 2)
-  });
-
-  const updateData = {
-    payment_status: currentStatus,
-    mp_external_reference: paymentData.external_reference,
-    mp_merchant_order_id: paymentData.order.id,
-    updated_at: new Date().toISOString(),
-  };
-
-  const { data: memorial, error: updateError } = await supabase
-    .from('mercadopago_memorials')
-    .update(updateData)
-    .eq('id', memorialId)
-    .select()
-    .single();
-
-  if (updateError) {
-    console.error('Error updating memorial payment status:', updateError);
-    throw updateError;
+  const webhookSecret = Deno.env.get('MERCADOPAGO_WEBHOOK_SECRET');
+  if (!webhookSecret) {
+    console.error('Missing MERCADOPAGO_WEBHOOK_SECRET');
+    return false;
   }
 
-  // Se o pagamento foi aprovado, enviar email de confirmação
-  if (currentStatus === 'paid' && previousStatus !== 'paid') {
-    try {
-      await fetch(
-        `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-memorial-email`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-          },
-          body: JSON.stringify({
-            to: memorial.email,
-            memorialUrl: memorial.unique_url,
-            qrCodeUrl: memorial.qr_code_url
-          }),
-        }
-      );
-      console.log('Confirmation email sent successfully');
-    } catch (emailError) {
-      console.error('Error sending confirmation email:', emailError);
-    }
-  }
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(webhookSecret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign", "verify"]
+  );
 
-  return memorial;
-};
+  const signature_bytes = new Uint8Array(
+    signature.split('').map(c => c.charCodeAt(0))
+  );
+
+  return await crypto.subtle.verify(
+    "HMAC",
+    key,
+    signature_bytes,
+    encoder.encode(payload)
+  );
+}
 
 serve(async (req) => {
-  // Tratamento de CORS
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('Received Mercado Pago webhook');
-    
-    // Validar origem e assinatura
     const signature = req.headers.get('x-signature');
-    const rawBody = await req.text();
-    const webhookSecret = Deno.env.get('MERCADOPAGO_WEBHOOK_SECRET');
-
-    if (!webhookSecret) {
-      throw new Error('Missing Mercado Pago webhook secret');
-    }
-
-    if (!validateMPSignature(rawBody, signature, webhookSecret)) {
+    const payload = await req.text();
+    console.log('Received webhook payload:', payload);
+    
+    // Validate webhook signature
+    const isValid = await validateWebhookSignature(payload, signature);
+    if (!isValid) {
       console.error('Invalid webhook signature');
       return new Response(
         JSON.stringify({ error: 'Invalid signature' }),
@@ -123,18 +61,18 @@ serve(async (req) => {
       );
     }
 
-    const payload = JSON.parse(rawBody);
-    console.log('Webhook payload:', JSON.stringify(payload, null, 2));
+    const data = JSON.parse(payload);
+    console.log('Parsed webhook data:', data);
 
-    if (payload.type === 'payment' && payload.data.id) {
+    if (data.type === 'payment' && data.data.id) {
       const mercadopagoToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
       if (!mercadopagoToken) {
         throw new Error('Missing Mercado Pago configuration');
       }
 
-      // Buscar detalhes do pagamento
+      // Fetch payment details
       const paymentResponse = await fetch(
-        `https://api.mercadopago.com/v1/payments/${payload.data.id}`,
+        `https://api.mercadopago.com/v1/payments/${data.data.id}`,
         {
           headers: {
             'Authorization': `Bearer ${mercadopagoToken}`,
@@ -147,53 +85,74 @@ serve(async (req) => {
       }
 
       const paymentData = await paymentResponse.json();
-      console.log('Payment details:', JSON.stringify(paymentData, null, 2));
+      console.log('Payment details:', paymentData);
 
-      // Inicializar cliente Supabase
+      // Initialize Supabase client
       const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
-      // Buscar memorial atual
-      const { data: memorial, error: fetchError } = await supabase
+      // Map payment status
+      const paymentStatus = {
+        approved: 'paid',
+        pending: 'pending',
+        in_process: 'pending',
+        rejected: 'rejected',
+        refunded: 'refunded',
+        cancelled: 'cancelled',
+        in_mediation: 'dispute',
+        charged_back: 'chargeback'
+      }[paymentData.status] || 'pending';
+
+      // Update memorial payment status
+      const { data: memorial, error: updateError } = await supabase
         .from('mercadopago_memorials')
-        .select('*')
-        .eq('custom_slug', paymentData.external_reference)
+        .update({
+          payment_status: paymentStatus,
+          mp_merchant_order_id: paymentData.order.id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('mp_external_reference', paymentData.external_reference)
+        .select()
         .single();
 
-      if (fetchError) {
-        console.error('Error fetching memorial:', fetchError);
-        throw fetchError;
+      if (updateError) {
+        console.error('Error updating memorial payment status:', updateError);
+        throw updateError;
       }
 
-      if (!memorial) {
-        throw new Error(`Memorial not found for reference: ${paymentData.external_reference}`);
+      // If payment is approved, send confirmation email
+      if (paymentStatus === 'paid') {
+        try {
+          await fetch(
+            `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-memorial-email`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+              },
+              body: JSON.stringify({
+                to: memorial.email,
+                memorialUrl: memorial.unique_url,
+                qrCodeUrl: memorial.qr_code_url
+              }),
+            }
+          );
+          console.log('Confirmation email sent successfully');
+        } catch (emailError) {
+          console.error('Error sending confirmation email:', emailError);
+        }
       }
 
-      // Verificar se o status já foi processado
-      if (memorial.payment_status === 'paid' && paymentData.status === 'approved') {
-        console.log('Payment already processed, skipping update');
-        return new Response(
-          JSON.stringify({ received: true, status: 'already_processed' }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
-          }
-        );
-      }
-
-      // Processar atualização do pagamento
-      const currentStatus = mapPaymentStatus(paymentData.status);
-      await processPaymentUpdate(
-        supabase,
-        memorial.id,
-        currentStatus,
-        paymentData,
-        memorial.payment_status
+      return new Response(
+        JSON.stringify({ received: true }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
       );
-
-      console.log('Payment status updated successfully');
     }
 
     return new Response(
