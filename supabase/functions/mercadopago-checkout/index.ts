@@ -12,7 +12,9 @@ const sanitizeUrl = (url: string): string => {
 const formatPhoneNumber = (phone: string | null): { area_code: string; number: string } => {
   if (!phone) return { area_code: '', number: '' };
   const cleanPhone = phone.replace(/\D/g, '');
+  // Pega os dois primeiros dígitos como DDD
   const areaCode = cleanPhone.substring(0, 2);
+  // Pega o resto como número
   const number = cleanPhone.substring(2);
   return { area_code: areaCode, number };
 };
@@ -88,9 +90,11 @@ serve(async (req) => {
       }],
       payer: {
         email: memorialData.email,
-        first_name: firstName,
-        last_name: lastName,
-        phone: formattedPhone,
+        first_name: firstName,           // Campo recomendado pelo MP
+        last_name: lastName,             // Campo recomendado pelo MP
+        name: firstName,                 // Mantido para compatibilidade
+        surname: lastName,               // Mantido para compatibilidade
+        phone: formattedPhone,          // Formato: { area_code, number }
         address: payerAddress
       },
       back_urls: {
