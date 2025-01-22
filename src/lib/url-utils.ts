@@ -15,26 +15,50 @@ export const getMemorialUrl = async (slug: string): Promise<string | null> => {
 };
 
 export const generateMemorialUrl = async (coupleName: string): Promise<string> => {
-  const { data: config } = await supabase
-    .from('memorials')
+  // Primeiro tenta encontrar na tabela mercadopago_memorials
+  const { data: mpMemorial } = await supabase
+    .from('mercadopago_memorials')
     .select('unique_url')
     .eq('couple_name', coupleName)
-    .single();
+    .maybeSingle();
 
-  if (config?.unique_url) {
-    return config.unique_url;
+  if (mpMemorial?.unique_url) {
+    return mpMemorial.unique_url;
   }
 
+  // Se não encontrar, tenta na tabela stripe_memorials
+  const { data: stripeMemorial } = await supabase
+    .from('stripe_memorials')
+    .select('unique_url')
+    .eq('couple_name', coupleName)
+    .maybeSingle();
+
+  if (stripeMemorial?.unique_url) {
+    return stripeMemorial.unique_url;
+  }
+
+  // Se não encontrar em nenhuma tabela, gera uma nova URL
   const baseUrl = window.location.origin;
   return `${baseUrl}/memorial/${coupleName.toLowerCase().replace(/\s+/g, '-')}`;
 };
 
 export const checkUrlAvailability = async (url: string): Promise<boolean> => {
-  const { data: existingConfig } = await supabase
-    .from('memorials')
+  // Verifica em ambas as tabelas
+  const { data: mpMemorial } = await supabase
+    .from('mercadopago_memorials')
     .select('id')
     .eq('unique_url', url)
-    .single();
+    .maybeSingle();
 
-  return !existingConfig;
+  if (mpMemorial) {
+    return false;
+  }
+
+  const { data: stripeMemorial } = await supabase
+    .from('stripe_memorials')
+    .select('id')
+    .eq('unique_url', url)
+    .maybeSingle();
+
+  return !stripeMemorial;
 };
