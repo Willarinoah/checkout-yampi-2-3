@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { initializeGTM } from "./lib/analytics";
 import Index from "./pages/Index";
 import CreateMemorial from "./pages/CreateMemorial";
 import PreviewMemorial from "./pages/PreviewMemorial";
@@ -20,6 +21,11 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Inicializa o GTM
+if (typeof window !== 'undefined') {
+  initializeGTM();
+}
 
 function App() {
   return (
