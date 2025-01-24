@@ -26,7 +26,7 @@ export const initializeGTM = () => {
     j.async = true;
     j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
     f.parentNode?.insertBefore(j, f);
-  })(window, document, 'script', 'dataLayer', 'GTM-XXXXXXX'); // Substitua GTM-XXXXXXX pelo seu ID do GTM
+  })(window, document, 'script', 'dataLayer', 'GTM-WPZJ22P'); // Substitua GTM-XXXXXXX pelo seu ID do GTM
 };
 
 export const trackPaymentMethod = (data: PaymentTrackingData) => {
