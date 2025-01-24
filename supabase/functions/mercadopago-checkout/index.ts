@@ -12,9 +12,7 @@ const sanitizeUrl = (url: string): string => {
 const formatPhoneNumber = (phone: string | null): { area_code: string; number: string } => {
   if (!phone) return { area_code: '', number: '' };
   const cleanPhone = phone.replace(/\D/g, '');
-  // Pega os dois primeiros dígitos como DDD
   const areaCode = cleanPhone.substring(0, 2);
-  // Pega o resto como número
   const number = cleanPhone.substring(2);
   return { area_code: areaCode, number };
 };
@@ -90,11 +88,11 @@ serve(async (req) => {
       }],
       payer: {
         email: memorialData.email,
-        first_name: firstName,           // Campo recomendado pelo MP
-        last_name: lastName,             // Campo recomendado pelo MP
-        name: firstName,                 // Mantido para compatibilidade
-        surname: lastName,               // Mantido para compatibilidade
-        phone: formattedPhone,          // Formato: { area_code, number }
+        first_name: firstName,
+        last_name: lastName,
+        name: firstName,
+        surname: lastName,
+        phone: formattedPhone,
         address: payerAddress
       },
       back_urls: {
@@ -107,9 +105,16 @@ serve(async (req) => {
       external_reference: memorialData.custom_slug,
       statement_descriptor: 'Love Counter',
       payment_methods: {
-        excluded_payment_methods: [],
-        excluded_payment_types: [],
-        installments: 12
+        excluded_payment_methods: [
+          { id: "bolbradesco" },  // Exclui Boleto
+          { id: "debvirtual" }    // Exclui Cartão de Débito Virtual CAIXA
+        ],
+        excluded_payment_types: [
+          { id: "ticket" },       // Exclui todos os tipos de boleto
+          { id: "debit_card" }    // Exclui todos os cartões de débito
+        ],
+        installments: 12,         // Mantém parcelamento em até 12x
+        default_installments: 1
       },
       metadata: {
         memorial_id: memorialData.id,
