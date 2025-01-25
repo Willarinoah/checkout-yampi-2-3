@@ -8,11 +8,32 @@ import Pricing from "@/components/home/Pricing";
 import ViralSurprises from "@/components/home/ViralSurprises";
 import FAQ from "@/components/home/FAQ";
 import Footer from "@/components/layout/Footer";
+import { trackPageView, trackUserLocation } from "@/lib/analytics/dataLayer";
+import { detectUserLocation } from "@/lib/location-detector";
 
 const Index = () => {
   const location = useLocation();
 
   useEffect(() => {
+    // Track page view
+    trackPageView('Homepage');
+
+    // Track user location
+    const trackLocation = async () => {
+      try {
+        const locationInfo = await detectUserLocation();
+        trackUserLocation(
+          locationInfo.country_code,
+          locationInfo.region,
+          locationInfo.city
+        );
+      } catch (error) {
+        console.error('Error detecting location:', error);
+      }
+    };
+
+    trackLocation();
+
     if (location.state && location.state.scrollTo) {
       if (location.state.scrollTo === 'top') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
