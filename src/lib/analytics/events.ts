@@ -33,10 +33,13 @@ export const pushEvent = (eventData: any) => {
   }
 };
 
+// Eventos de Página
 export const trackPageView = (pageType: string, userData?: UserData) => {
   const eventData: any = {
     event: 'page_view',
-    pageType
+    pageType,
+    page_path: window.location.pathname,
+    page_title: document.title
   };
 
   if (userData) {
@@ -53,6 +56,7 @@ export const trackPageView = (pageType: string, userData?: UserData) => {
   pushEvent(eventData);
 };
 
+// Evento de Clique no Botão Criar Site
 export const trackCreateSiteClick = (userData?: UserData) => {
   const eventData: any = {
     event: 'create_site_click',
@@ -70,6 +74,7 @@ export const trackCreateSiteClick = (userData?: UserData) => {
   pushEvent(eventData);
 };
 
+// Evento de Início do Checkout
 export const trackBeginCheckout = (
   planType: 'basic' | 'premium',
   price: number,
@@ -87,7 +92,9 @@ export const trackBeginCheckout = (
         item_category: 'Memorial Plan',
         item_variant: planType,
         price: price,
-        quantity: 1
+        quantity: 1,
+        content_type: 'product',
+        content_ids: [`${planType}_plan`]
       }]
     },
     user_data: {
@@ -104,6 +111,7 @@ export const trackBeginCheckout = (
   pushEvent(eventData);
 };
 
+// Evento de Compra
 export const trackPurchase = (
   transactionId: string,
   planType: 'basic' | 'premium',
@@ -125,13 +133,15 @@ export const trackPurchase = (
         item_category: 'Memorial Plan',
         item_variant: planType,
         price: price,
-        quantity: 1
+        quantity: 1,
+        content_type: 'product',
+        content_ids: [`${planType}_plan`]
       }]
     },
     user_data: {
       ...(userData.email && { email_sha256: hashData(userData.email) }),
       ...(userData.phone && { phone_sha256: hashData(userData.phone) }),
-      ...(userData.name && { name_sha256: hashData(userData.name) }),
+      ...(userData.name && { name_sha256: hashData.name) }),
       ...(userData.country && { country: userData.country }),
       ...(userData.region && { region: userData.region }),
       ...(userData.city && { city: userData.city })
@@ -144,6 +154,7 @@ export const trackPurchase = (
   pushEvent(eventData);
 };
 
+// Evento de Erro no Pagamento
 export const trackPaymentError = (
   errorType: string,
   errorMessage: string,
