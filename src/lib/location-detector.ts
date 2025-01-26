@@ -25,16 +25,19 @@ const getBrowserLocation = (): Promise<GeolocationPosition> => {
 
 const getCountryFromCoordinates = async (latitude: number, longitude: number): Promise<LocationInfo> => {
   try {
-    const response = await fetch(
-      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-    );
+    // Using ipapi.co as a more reliable alternative
+    const response = await fetch(`https://ipapi.co/json/`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch location data');
+    }
+    
     const data = await response.json();
     
     return {
-      country_code: data.countryCode,
+      country_code: data.country_code,
       city: data.city,
-      region: data.principalSubdivision,
-      is_brazil: data.countryCode === 'BR',
+      region: data.region,
+      is_brazil: data.country_code === 'BR',
       detected_by: 'browser'
     };
   } catch (error) {
@@ -46,43 +49,67 @@ const getCountryFromCoordinates = async (latitude: number, longitude: number): P
 export const detectUserLocation = async (): Promise<LocationInfo> => {
   try {
     // First try: Vercel Edge Runtime geolocation
-    const response = await fetch('/api/geo');
+    try {
+      const response = await fetch('/api/geo');
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Location detected by Vercel:', data);
+        return {
+          country_code: data.country,
+          city: data.city,
+          region: data.region,
+          is_brazil: data.country === 'BR',
+          detected_by: 'vercel'
+        };
+      }
+    } catch (error) {
+      console.error('Vercel geolocation failed:', error);
+    }
+
+    try {
+      // Second try: Browser Geolocation API
+      console.log('Trying browser geolocation...');
+      const position = await getBrowserLocation();
+      const locationInfo = await getCountryFromCoordinates(
+        position.coords.latitude,
+        position.coords.longitude
+      );
+      console.log('Location detected by browser:', locationInfo);
+      return locationInfo;
+    } catch (error) {
+      console.error('Browser geolocation failed:', error);
+    }
+
+    // Final fallback: IP-based geolocation
+    const response = await fetch('https://ipapi.co/json/');
     if (response.ok) {
       const data = await response.json();
-      console.log('Location detected by Vercel:', data);
-      return {
-        country_code: data.country,
+      const locationInfo = {
+        country_code: data.country_code,
         city: data.city,
         region: data.region,
-        is_brazil: data.country === 'BR',
-        detected_by: 'vercel'
+        is_brazil: data.country_code === 'BR',
+        detected_by: 'fallback' as const
       };
+      console.log('Location detected by IP:', locationInfo);
+      return locationInfo;
     }
-  } catch (error) {
-    console.error('Vercel geolocation failed:', error);
-  }
 
-  try {
-    // Second try: Browser Geolocation API
-    console.log('Trying browser geolocation...');
-    const position = await getBrowserLocation();
-    const locationInfo = await getCountryFromCoordinates(
-      position.coords.latitude,
-      position.coords.longitude
-    );
-    console.log('Location detected by browser:', locationInfo);
-    return locationInfo;
+    // Ultimate fallback: Default to US
+    console.log('Using fallback location');
+    return {
+      country_code: 'US',
+      is_brazil: false,
+      detected_by: 'fallback'
+    };
   } catch (error) {
-    console.error('Browser geolocation failed:', error);
+    console.error('All location detection methods failed:', error);
+    return {
+      country_code: 'US',
+      is_brazil: false,
+      detected_by: 'fallback'
+    };
   }
-
-  // Final fallback: Default to US
-  console.log('Using fallback location');
-  return {
-    country_code: 'US',
-    is_brazil: false,
-    detected_by: 'fallback'
-  };
 };
 
 export const saveLocationAnalytics = async (locationInfo: LocationInfo) => {
