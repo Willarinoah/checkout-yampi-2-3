@@ -1,4 +1,5 @@
 import { sha256 } from 'crypto-js';
+import { pushToDataLayer } from './dataLayer';
 
 interface UserData {
   email?: string;
@@ -22,17 +23,6 @@ const hashData = (data: string): string => {
   return sha256(data).toString();
 };
 
-export const pushEvent = (eventData: any) => {
-  if (typeof window !== 'undefined') {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push(eventData);
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('DataLayer Push:', eventData);
-    }
-  }
-};
-
 // Eventos de Página
 export const trackPageView = (pageType: string, userData?: UserData) => {
   const eventData: any = {
@@ -53,7 +43,7 @@ export const trackPageView = (pageType: string, userData?: UserData) => {
     };
   }
 
-  pushEvent(eventData);
+  pushToDataLayer(eventData);
 };
 
 // Evento de Clique no Botão Criar Site
@@ -71,7 +61,7 @@ export const trackCreateSiteClick = (userData?: UserData) => {
     };
   }
 
-  pushEvent(eventData);
+  pushToDataLayer(eventData);
 };
 
 // Evento de Início do Checkout
@@ -81,7 +71,7 @@ export const trackBeginCheckout = (
   userData: UserData,
   paymentProvider: 'stripe' | 'mercadopago'
 ) => {
-  const eventData = {
+  pushToDataLayer({
     event: 'begin_checkout',
     ecommerce: {
       currency: paymentProvider === 'mercadopago' ? 'BRL' : 'USD',
@@ -89,12 +79,8 @@ export const trackBeginCheckout = (
       items: [{
         item_id: `${planType}_plan`,
         item_name: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`,
-        item_category: 'Memorial Plan',
-        item_variant: planType,
-        price: price,
-        quantity: 1,
-        content_type: 'product',
-        content_ids: [`${planType}_plan`]
+        price,
+        quantity: 1
       }]
     },
     user_data: {
@@ -104,11 +90,8 @@ export const trackBeginCheckout = (
       ...(userData.country && { country: userData.country }),
       ...(userData.region && { region: userData.region }),
       ...(userData.city && { city: userData.city })
-    },
-    payment_provider: paymentProvider
-  };
-
-  pushEvent(eventData);
+    }
+  });
 };
 
 // Evento de Compra
@@ -121,7 +104,7 @@ export const trackPurchase = (
   userData: UserData,
   status: string
 ) => {
-  const eventData = {
+  pushToDataLayer({
     event: 'purchase',
     ecommerce: {
       transaction_id: transactionId,
@@ -130,12 +113,8 @@ export const trackPurchase = (
       items: [{
         item_id: `${planType}_plan`,
         item_name: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`,
-        item_category: 'Memorial Plan',
-        item_variant: planType,
-        price: price,
-        quantity: 1,
-        content_type: 'product',
-        content_ids: [`${planType}_plan`]
+        price,
+        quantity: 1
       }]
     },
     user_data: {
@@ -149,9 +128,7 @@ export const trackPurchase = (
     payment_provider: paymentProvider,
     payment_method: paymentMethod,
     payment_status: status
-  };
-
-  pushEvent(eventData);
+  });
 };
 
 // Evento de Erro no Pagamento
@@ -160,7 +137,7 @@ export const trackPaymentError = (
   errorMessage: string,
   paymentProvider: 'stripe' | 'mercadopago'
 ) => {
-  pushEvent({
+  pushToDataLayer({
     event: 'payment_error',
     error_type: errorType,
     error_message: errorMessage,
