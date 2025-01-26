@@ -5,6 +5,8 @@ export interface DataLayerEvent {
   error_type?: string;
   error_message?: string;
   payment_provider?: string;
+  payment_method?: string;
+  payment_status?: string;
   ecommerce?: {
     transaction_id?: string;
     currency?: string;
