@@ -1,13 +1,25 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { trackPurchase, trackPaymentError } from "@/lib/analytics/events";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const fetchPaymentDetails = async (paymentId: string, token: string) => {
+  const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch payment details: ${response.statusText}`);
+  }
+  return response.json();
+};
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -36,40 +48,13 @@ serve(async (req) => {
       console.log('Processing payment update for payment ID:', paymentId);
 
       // Fetch payment details from Mercado Pago API
-      const paymentResponse = await fetch(
-        `https://api.mercadopago.com/v1/payments/${paymentId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${mercadopagoToken}`,
-          },
-        }
-      );
+      const paymentData = await fetchPaymentDetails(paymentId, mercadopagoToken);
 
-      if (!paymentResponse.ok) {
-        throw new Error(`Failed to fetch payment details: ${paymentResponse.statusText}`);
-      }
-
-      const paymentData = await paymentResponse.json();
-      console.log('Payment details:', paymentData);
-
-      // Map payment status
-      const paymentStatus = {
-        approved: 'paid',
-        pending: 'pending',
-        in_process: 'pending',
-        rejected: 'rejected',
-        refunded: 'refunded',
-        cancelled: 'cancelled',
-        in_mediation: 'dispute',
-        charged_back: 'chargeback'
-      }[paymentData.status] || 'pending';
-
-      // Update memorial payment status based on the payment status
-      if (paymentData.external_reference) {
+      if (paymentData && paymentData.external_reference) {
         const { data: memorial, error: memorialError } = await supabase
           .from('mercadopago_memorials')
           .update({ 
-            payment_status: paymentStatus,
+            payment_status: paymentData.status,
             mp_merchant_order_id: paymentData.order.id,
             updated_at: new Date().toISOString(),
           })
@@ -85,38 +70,30 @@ serve(async (req) => {
         console.log('Successfully updated payment status for:', paymentData.external_reference);
         console.log('Memorial data:', memorial);
 
-        // Send confirmation email if payment is approved
-        if (paymentStatus === 'paid' && memorial) {
-          try {
-            console.log('Sending email to:', memorial.email);
-            const emailResponse = await fetch(
-              `${supabaseUrl}/functions/v1/send-memorial-email`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-                },
-                body: JSON.stringify({
-                  to: memorial.email,
-                  memorialUrl: memorial.unique_url,
-                  qrCodeUrl: memorial.qr_code_url
-                }),
-              }
-            );
+        // Track purchase event
+        trackPurchase(
+          paymentData.id,
+          memorial.plan_type === 'basic' ? 'basic' : 'premium',
+          memorial.plan_price,
+          paymentData.payment_method_id,
+          'mercadopago',
+          {
+            email: memorial.email,
+            phone: memorial.phone,
+            name: memorial.full_name,
+            country: memorial.address_info?.country_code,
+            region: memorial.address_info?.region,
+            city: memorial.address_info?.city
+          },
+          paymentData.status
+        );
 
-            if (!emailResponse.ok) {
-              const errorData = await emailResponse.text();
-              console.error('Error sending email:', errorData);
-              // Log error but don't throw to avoid webhook retries
-              console.error(`Failed to send email: ${errorData}`);
-            } else {
-              console.log('Successfully sent memorial email');
-            }
-          } catch (emailError) {
-            console.error('Error in email sending process:', emailError);
-            // Don't throw to avoid webhook retries
-          }
+        if (paymentData.status === 'rejected') {
+          trackPaymentError(
+            'payment_rejected',
+            paymentData.status_detail,
+            'mercadopago'
+          );
         }
       }
     }
@@ -132,6 +109,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error processing webhook:', error);
+    trackPaymentError('webhook_error', error.message, 'mercadopago');
     // Return 200 to acknowledge receipt even for errors
     return new Response(
       JSON.stringify({ 

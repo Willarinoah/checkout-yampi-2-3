@@ -1,14 +1,46 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Instagram, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useNavigate } from "react-router-dom"; // Importando o hook de navegação
+import { useNavigate } from "react-router-dom";
+import { trackCreateSiteClick, trackPageView } from "@/lib/analytics/events";
+import { useEffect } from "react";
+import { detectUserLocation } from "@/lib/location-detector";
 
 const Hero = () => {
   const { t } = useLanguage();
-  const navigate = useNavigate(); // Adicionando a navegação
+  const navigate = useNavigate();
 
-  const handleCreateSite = () => {
-    navigate('/create'); // Redireciona para a página de criação de memorial
+  useEffect(() => {
+    const trackInitialPageView = async () => {
+      try {
+        const locationInfo = await detectUserLocation();
+        trackPageView('Homepage', {
+          country: locationInfo.country_code,
+          region: locationInfo.region,
+          city: locationInfo.city
+        });
+      } catch (error) {
+        console.error('Error tracking page view:', error);
+        trackPageView('Homepage');
+      }
+    };
+
+    trackInitialPageView();
+  }, []);
+
+  const handleCreateSite = async () => {
+    try {
+      const locationInfo = await detectUserLocation();
+      trackCreateSiteClick({
+        country: locationInfo.country_code,
+        region: locationInfo.region,
+        city: locationInfo.city
+      });
+    } catch (error) {
+      console.error('Error tracking create site click:', error);
+      trackCreateSiteClick();
+    }
+    navigate('/create');
   };
 
   return (
