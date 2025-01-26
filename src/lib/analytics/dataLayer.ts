@@ -2,7 +2,11 @@
 export interface DataLayerEvent {
   event: string;
   pageType?: string;
+  error_type?: string;
+  error_message?: string;
+  payment_provider?: string;
   ecommerce?: {
+    transaction_id?: string;
     currency?: string;
     value?: number;
     items?: Array<{

@@ -8,7 +8,7 @@ import Pricing from "@/components/home/Pricing";
 import ViralSurprises from "@/components/home/ViralSurprises";
 import FAQ from "@/components/home/FAQ";
 import Footer from "@/components/layout/Footer";
-import { trackPageView, trackUserLocation } from "@/lib/analytics/dataLayer";
+import { trackPageView } from "@/lib/analytics/events";
 import { detectUserLocation } from "@/lib/location-detector";
 
 const Index = () => {
@@ -22,11 +22,13 @@ const Index = () => {
     const trackLocation = async () => {
       try {
         const locationInfo = await detectUserLocation();
-        trackUserLocation(
-          locationInfo.country_code,
-          locationInfo.region,
-          locationInfo.city
-        );
+        if (locationInfo) {
+          trackPageView('Homepage', {
+            country: locationInfo.country_code,
+            region: locationInfo.region,
+            city: locationInfo.city
+          });
+        }
       } catch (error) {
         console.error('Error detecting location:', error);
       }
