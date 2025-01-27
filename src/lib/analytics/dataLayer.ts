@@ -28,9 +28,11 @@ export interface DataLayerEvent {
   };
 }
 
+type DataLayerItem = DataLayerEvent;
+
 declare global {
   interface Window {
-    dataLayer: any[];
+    dataLayer: DataLayerItem[];
   }
 }
 
