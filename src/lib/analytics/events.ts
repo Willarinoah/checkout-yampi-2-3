@@ -1,5 +1,5 @@
 import { sha256 } from 'crypto-js';
-import { pushToDataLayer } from './dataLayer';
+import { pushToDataLayer, DataLayerEvent } from './dataLayer';
 
 interface UserData {
   email?: string;
@@ -25,7 +25,7 @@ const hashData = (data: string): string => {
 
 // Eventos de Página
 export const trackPageView = (pageType: string, userData?: UserData) => {
-  const eventData: any = {
+  const eventData: DataLayerEvent = {
     event: 'page_view',
     pageType,
     page_path: window.location.pathname,
@@ -48,7 +48,7 @@ export const trackPageView = (pageType: string, userData?: UserData) => {
 
 // Evento de Clique no Botão Criar Site
 export const trackCreateSiteClick = (userData?: UserData) => {
-  const eventData: any = {
+  const eventData: DataLayerEvent = {
     event: 'create_site_click',
     pageType: 'Homepage'
   };

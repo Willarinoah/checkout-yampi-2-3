@@ -7,6 +7,8 @@ export interface DataLayerEvent {
   payment_provider?: string;
   payment_method?: string;
   payment_status?: string;
+  page_path?: string;
+  page_title?: string;
   ecommerce?: {
     transaction_id?: string;
     currency?: string;
@@ -28,10 +30,10 @@ export interface DataLayerEvent {
   };
 }
 
-// Use any[] to match Google Tag Manager's expected type
+// Type-safe declaration for Google Tag Manager's dataLayer
 declare global {
   interface Window {
-    dataLayer: any[];
+    dataLayer: DataLayerEvent[];
   }
 }
 
