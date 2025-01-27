@@ -3,12 +3,6 @@ export interface AnalyticsConfig {
   gtmId: string;
 }
 
-declare global {
-  interface Window {
-    dataLayer: any[];
-  }
-}
-
 export const initializeGTM = () => {
   (function(w: Window, d: Document, s: 'script', l: string, i: string) {
     w[l] = w[l] || [];
