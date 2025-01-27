@@ -28,11 +28,10 @@ export interface DataLayerEvent {
   };
 }
 
-type DataLayerItem = DataLayerEvent;
-
+// Use any[] to match Google Tag Manager's expected type
 declare global {
   interface Window {
-    dataLayer: DataLayerItem[];
+    dataLayer: any[];
   }
 }
 
