@@ -71,13 +71,12 @@ serve(async (req) => {
       hasSecretKey: !!yampiSecretKey
     });
 
-    // Create order in Yampi with proper authentication headers and updated endpoint
-    const response = await fetch(`https://api.dooki.com.br/v2/teste1970/checkout/orders`, {
+    // Create order in Yampi with proper authentication headers and updated endpoint format
+    const response = await fetch(`https://api.dooki.com.br/v2/${yampiStoreId}/checkout/orders`, {
       method: 'POST',
       headers: {
         'User-Token': yampiToken,
         'Secret-Key': yampiSecretKey,
-        'X-Store-ID': yampiStoreId,
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
