@@ -3,26 +3,26 @@ import type { Database } from "@/integrations/supabase/types";
 import { PostgrestError } from "@supabase/supabase-js";
 import type { Json } from "@/integrations/supabase/types";
 
-export type MercadoPagoMemorial = Database['public']['Tables']['mercadopago_memorials']['Row'];
+export type YampiMemorial = Database['public']['Tables']['yampi_memorials']['Row'];
 export type StripeMemorial = Database['public']['Tables']['stripe_memorials']['Row'];
-export type Memorial = MercadoPagoMemorial | StripeMemorial;
+export type Memorial = YampiMemorial | StripeMemorial;
 
 export interface MemorialResult {
   memorial: Memorial | null;
   error: PostgrestError | null;
-  source?: 'mercadopago' | 'stripe';
+  source?: 'yampi' | 'stripe';
 }
 
 export const getMemorialBySlug = async (slug: string): Promise<MemorialResult> => {
-  // First try mercadopago_memorials
-  const { data: mpMemorial, error: mpError } = await supabase
-    .from('mercadopago_memorials')
+  // First try yampi_memorials
+  const { data: yampiMemorial, error: yampiError } = await supabase
+    .from('yampi_memorials')
     .select('*')
     .eq('custom_slug', slug)
     .maybeSingle();
 
-  if (mpMemorial) {
-    return { memorial: mpMemorial, error: null, source: 'mercadopago' };
+  if (yampiMemorial) {
+    return { memorial: yampiMemorial, error: null, source: 'yampi' };
   }
 
   // If not found, try stripe_memorials
@@ -36,7 +36,7 @@ export const getMemorialBySlug = async (slug: string): Promise<MemorialResult> =
     return { memorial: stripeMemorial, error: null, source: 'stripe' };
   }
 
-  return { memorial: null, error: stripeError || mpError };
+  return { memorial: null, error: stripeError || yampiError };
 };
 
 export const updateMemorialData = async (
@@ -44,7 +44,7 @@ export const updateMemorialData = async (
   data: Partial<Memorial>, 
   isBrazil: boolean
 ) => {
-  const tableName = isBrazil ? 'mercadopago_memorials' : 'stripe_memorials';
+  const tableName = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
   return supabase
     .from(tableName)
     .update(data)
@@ -53,13 +53,13 @@ export const updateMemorialData = async (
 
 export const checkMemorialExists = async (slug: string): Promise<boolean> => {
   // Check in both tables
-  const { data: mpMemorial } = await supabase
-    .from('mercadopago_memorials')
+  const { data: yampiMemorial } = await supabase
+    .from('yampi_memorials')
     .select('custom_slug')
     .eq('custom_slug', slug)
     .maybeSingle();
 
-  if (mpMemorial) return true;
+  if (yampiMemorial) return true;
 
   const { data: stripeMemorial } = await supabase
     .from('stripe_memorials')
@@ -80,7 +80,7 @@ export const createMemorial = async (
   data: RequiredMemorialFields & Partial<Memorial>,
   isBrazil: boolean
 ): Promise<Memorial | null> => {
-  const tableName = isBrazil ? 'mercadopago_memorials' : 'stripe_memorials';
+  const tableName = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
   
   const { data: memorial, error } = await supabase
     .from(tableName)

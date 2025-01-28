@@ -1,19 +1,18 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useMemorial } from "@/hooks/useMemorial";
 import { Button } from '@/components/ui/button';
 import { MemorialPreview } from '@/components/memorial/MemorialPreview';
 import { useEffect } from 'react';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import type { MercadoPagoMemorial, StripeMemorial } from '@/lib/memorial-data-utils';
+import type { YampiMemorial, StripeMemorial } from '@/lib/memorial-data-utils';
 
 const PreviewMemorial: React.FC = () => {
   const { slug } = useParams();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [memorial, setMemorial] = React.useState<MercadoPagoMemorial | StripeMemorial | null>(null);
+  const [memorial, setMemorial] = React.useState<YampiMemorial | StripeMemorial | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<Error | null>(null);
 
@@ -22,15 +21,15 @@ const PreviewMemorial: React.FC = () => {
       try {
         setIsLoading(true);
         
-        // Tentar buscar primeiro no Mercado Pago
-        const { data: mpMemorial } = await supabase
-          .from('mercadopago_memorials')
+        // Try yampi_memorials first
+        const { data: yampiMemorial } = await supabase
+          .from('yampi_memorials')
           .select('*')
           .eq('custom_slug', slug)
           .single();
 
-        // Se não encontrar, tentar no Stripe
-        if (!mpMemorial) {
+        // If not found, try stripe_memorials
+        if (!yampiMemorial) {
           const { data: stripeMemorial } = await supabase
             .from('stripe_memorials')
             .select('*')
@@ -41,7 +40,7 @@ const PreviewMemorial: React.FC = () => {
             setMemorial(stripeMemorial);
           }
         } else {
-          setMemorial(mpMemorial);
+          setMemorial(yampiMemorial);
         }
 
       } catch (err) {

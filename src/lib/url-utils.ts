@@ -15,18 +15,18 @@ export const getMemorialUrl = async (slug: string): Promise<string | null> => {
 };
 
 export const generateMemorialUrl = async (coupleName: string): Promise<string> => {
-  // Primeiro tenta encontrar na tabela mercadopago_memorials
-  const { data: mpMemorial } = await supabase
-    .from('mercadopago_memorials')
+  // First try yampi_memorials
+  const { data: yampiMemorial } = await supabase
+    .from('yampi_memorials')
     .select('unique_url')
     .eq('couple_name', coupleName)
     .maybeSingle();
 
-  if (mpMemorial?.unique_url) {
-    return mpMemorial.unique_url;
+  if (yampiMemorial?.unique_url) {
+    return yampiMemorial.unique_url;
   }
 
-  // Se não encontrar, tenta na tabela stripe_memorials
+  // If not found, try stripe_memorials
   const { data: stripeMemorial } = await supabase
     .from('stripe_memorials')
     .select('unique_url')
@@ -37,20 +37,20 @@ export const generateMemorialUrl = async (coupleName: string): Promise<string> =
     return stripeMemorial.unique_url;
   }
 
-  // Se não encontrar em nenhuma tabela, gera uma nova URL
+  // If not found in either table, generate a new URL
   const baseUrl = window.location.origin;
   return `${baseUrl}/memorial/${coupleName.toLowerCase().replace(/\s+/g, '-')}`;
 };
 
 export const checkUrlAvailability = async (url: string): Promise<boolean> => {
-  // Verifica em ambas as tabelas
-  const { data: mpMemorial } = await supabase
-    .from('mercadopago_memorials')
+  // Check both tables
+  const { data: yampiMemorial } = await supabase
+    .from('yampi_memorials')
     .select('id')
     .eq('unique_url', url)
     .maybeSingle();
 
-  if (mpMemorial) {
+  if (yampiMemorial) {
     return false;
   }
 
