@@ -69,6 +69,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       toast.error(t("fill_missing"));
       return;
     }
+    console.log('Showing Yampi checkout for plan:', selectedPlan);
     setShowYampiCheckout(true);
   };
 
