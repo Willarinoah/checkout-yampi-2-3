@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,11 +20,10 @@ serve(async (req) => {
     }
 
     const yampiToken = Deno.env.get('YAMPI_ACCESS_TOKEN');
-    const yampiSecretKey = Deno.env.get('YAMPI_SECRET_KEY');
     const yampiStoreId = Deno.env.get('YAMPI_STORE_ID');
     const yampiAlias = 'teste1970';
     
-    if (!yampiToken || !yampiStoreId || !yampiSecretKey) {
+    if (!yampiToken || !yampiStoreId) {
       throw new Error('Missing Yampi configuration');
     }
 
