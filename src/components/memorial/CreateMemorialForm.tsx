@@ -29,7 +29,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   const { t } = useLanguage();
   const [startDate, setStartDate] = useState<Date>();
   const [startTime, setStartTime] = useState("00:00");
-  const [showYampiButton, setShowYampiButton] = useState(false);
+  const [showYampiCheckout, setShowYampiCheckout] = useState(false);
   
   const {
     selectedPlan,
@@ -69,7 +69,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       toast.error(t("fill_missing"));
       return;
     }
-    setShowYampiButton(true);
+    setShowYampiCheckout(true);
   };
 
   return (
@@ -143,16 +143,18 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         </div>
       )}
 
-      {showYampiButton ? (
-        <YampiButton planType={selectedPlan} />
-      ) : (
-        <Button
-          className="w-full bg-lovepink hover:bg-lovepink/90"
-          disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
-          onClick={handleCreateMemorial}
-        >
-          {isLoading ? t("creating") : t("create_our_site")}
-        </Button>
+      <Button
+        className="w-full bg-lovepink hover:bg-lovepink/90"
+        disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
+        onClick={handleCreateMemorial}
+      >
+        {isLoading ? t("creating") : t("create_our_site")}
+      </Button>
+
+      {showYampiCheckout && (
+        <div className="mt-4">
+          <YampiButton planType={selectedPlan} />
+        </div>
       )}
     </div>
   );

@@ -18,10 +18,12 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
 
     return () => {
       // Cleanup on unmount
-      script.remove();
+      const scripts = document.getElementsByClassName('ymp-script');
+      Array.from(scripts).forEach(script => script.remove());
     };
   }, [planType]);
 
-  // The button container that Yampi will populate
-  return <div id="yampi-checkout-button" />;
+  return (
+    <div id="yampi-checkout-button" className="mt-4" />
+  );
 };
