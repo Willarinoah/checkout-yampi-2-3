@@ -10,6 +10,7 @@ import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
 import { PaymentModal } from './PaymentModals';
+import { YampiButton } from './YampiButton';
 
 interface CreateMemorialFormProps {
   onEmailSubmit: (email: string) => void;
@@ -27,6 +28,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   const { t } = useLanguage();
   const [startDate, setStartDate] = useState<Date>();
   const [startTime, setStartTime] = useState("00:00");
+  const [showYampiButton, setShowYampiButton] = useState(false);
   
   const {
     selectedPlan,
@@ -42,7 +44,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     photosPreviews,
     setPhotosPreviews,
     isLoading,
-    handleCreateMemorial,
     isBrazil,
     showEmailDialog,
     setShowEmailDialog,
@@ -61,6 +62,14 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     };
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
+
+  const handleCreateMemorial = () => {
+    if (!coupleName || photosPreviews.length === 0 || !startDate) {
+      toast.error(t("fill_missing"));
+      return;
+    }
+    setShowYampiButton(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -133,13 +142,17 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         </div>
       )}
 
-      <Button
-        className="w-full bg-lovepink hover:bg-lovepink/90"
-        disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
-        onClick={handleCreateMemorial}
-      >
-        {isLoading ? t("creating") : t("create_our_site")}
-      </Button>
+      {showYampiButton ? (
+        <YampiButton planType={selectedPlan} />
+      ) : (
+        <Button
+          className="w-full bg-lovepink hover:bg-lovepink/90"
+          disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
+          onClick={handleCreateMemorial}
+        >
+          {isLoading ? t("creating") : t("create_our_site")}
+        </Button>
+      )}
     </div>
   );
 };
