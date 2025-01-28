@@ -13,33 +13,6 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-          detectSessionInUrl: false
-        }
-      }
-    );
-
-    // Get JWT token from request header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Missing authorization header');
-    }
-
-    // Verify JWT token
-    const jwt = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(jwt);
-    
-    if (authError || !user) {
-      throw new Error('Invalid JWT token');
-    }
-
     // Get request data
     const { planType, memorialData } = await req.json();
     console.log('Creating Yampi checkout for:', { planType, memorialData });
@@ -90,8 +63,7 @@ serve(async (req) => {
         metadata: {
           memorial_id: memorialData.id,
           custom_slug: memorialData.custom_slug,
-          plan_type: planType,
-          user_id: user.id // Add authenticated user ID to metadata
+          plan_type: planType
         }
       }
     };
