@@ -26,7 +26,7 @@ const PreviewMemorial: React.FC = () => {
           .from('yampi_memorials')
           .select('*')
           .eq('custom_slug', slug)
-          .single();
+          .maybeSingle();
 
         // If not found, try stripe_memorials
         if (!yampiMemorial) {
@@ -34,7 +34,7 @@ const PreviewMemorial: React.FC = () => {
             .from('stripe_memorials')
             .select('*')
             .eq('custom_slug', slug)
-            .single();
+            .maybeSingle();
           
           if (stripeMemorial) {
             setMemorial(stripeMemorial);
