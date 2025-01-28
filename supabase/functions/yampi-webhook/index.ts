@@ -1,10 +1,31 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
-import { trackPurchase } from "@/lib/analytics/events";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+interface PurchaseEventData {
+  orderId: string;
+  planType: string;
+  price: number;
+  paymentMethod: string;
+  gateway: string;
+  user: {
+    email: string;
+    phone: string;
+    name: string;
+    country?: string;
+    region?: string;
+    city?: string;
+  };
+  status: string;
+}
+
+const trackPurchase = async (data: PurchaseEventData) => {
+  // Implement analytics tracking here if needed
+  console.log('Purchase event tracked:', data);
 };
 
 serve(async (req) => {
@@ -66,13 +87,13 @@ serve(async (req) => {
 
       // Track purchase event
       if (status === 'approved') {
-        trackPurchase(
-          orderId.toString(),
-          memorial.plan_type === 'basic' ? 'basic' : 'premium',
-          memorial.plan_price,
-          payload.data.payment_method,
-          'yampi',
-          {
+        await trackPurchase({
+          orderId: orderId.toString(),
+          planType: memorial.plan_type === 'basic' ? 'basic' : 'premium',
+          price: memorial.plan_price,
+          paymentMethod: payload.data.payment_method,
+          gateway: 'yampi',
+          user: {
             email: memorial.email,
             phone: memorial.phone,
             name: memorial.full_name,
@@ -81,7 +102,7 @@ serve(async (req) => {
             city: memorial.address_info?.city
           },
           status
-        );
+        });
       }
 
       // If payment approved, send confirmation email

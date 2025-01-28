@@ -39,6 +39,87 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_memorials: {
+        Row: {
+          address_info: Json | null
+          couple_name: string
+          created_at: string
+          custom_slug: string
+          email: string | null
+          full_name: string | null
+          id: string
+          message: string | null
+          payment_status: string | null
+          phone: string | null
+          photos: string[] | null
+          plan_price: number | null
+          plan_type: string | null
+          preferences: Json | null
+          qr_code_url: string | null
+          relationship_start: string
+          stripe_customer_id: string | null
+          stripe_session_id: string | null
+          stripe_subscription_id: string | null
+          time: string
+          unique_url: string
+          updated_at: string
+          user_id: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          address_info?: Json | null
+          couple_name: string
+          created_at?: string
+          custom_slug: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          message?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          photos?: string[] | null
+          plan_price?: number | null
+          plan_type?: string | null
+          preferences?: Json | null
+          qr_code_url?: string | null
+          relationship_start?: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          time?: string
+          unique_url: string
+          updated_at?: string
+          user_id?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          address_info?: Json | null
+          couple_name?: string
+          created_at?: string
+          custom_slug?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          message?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          photos?: string[] | null
+          plan_price?: number | null
+          plan_type?: string | null
+          preferences?: Json | null
+          qr_code_url?: string | null
+          relationship_start?: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          time?: string
+          unique_url?: string
+          updated_at?: string
+          user_id?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
       yampi_memorials: {
         Row: {
           address_info: Json | null
@@ -122,87 +203,6 @@ export type Database = {
           yampi_payment_id?: string | null
           yampi_payment_method?: string | null
           yampi_status?: string | null
-          youtube_url?: string | null
-        }
-        Relationships: []
-      }
-      stripe_memorials: {
-        Row: {
-          address_info: Json | null
-          couple_name: string
-          created_at: string
-          custom_slug: string
-          email: string | null
-          full_name: string | null
-          id: string
-          message: string | null
-          payment_status: string | null
-          phone: string | null
-          photos: string[] | null
-          plan_price: number | null
-          plan_type: string | null
-          preferences: Json | null
-          qr_code_url: string | null
-          relationship_start: string
-          stripe_customer_id: string | null
-          stripe_session_id: string | null
-          stripe_subscription_id: string | null
-          time: string
-          unique_url: string
-          updated_at: string
-          user_id: string | null
-          youtube_url: string | null
-        }
-        Insert: {
-          address_info?: Json | null
-          couple_name: string
-          created_at?: string
-          custom_slug: string
-          email?: string | null
-          full_name?: string | null
-          id?: string
-          message?: string | null
-          payment_status?: string | null
-          phone?: string | null
-          photos?: string[] | null
-          plan_price?: number | null
-          plan_type?: string | null
-          preferences?: Json | null
-          qr_code_url?: string | null
-          relationship_start?: string
-          stripe_customer_id?: string | null
-          stripe_session_id?: string | null
-          stripe_subscription_id?: string | null
-          time?: string
-          unique_url: string
-          updated_at?: string
-          user_id?: string | null
-          youtube_url?: string | null
-        }
-        Update: {
-          address_info?: Json | null
-          couple_name?: string
-          created_at?: string
-          custom_slug?: string
-          email?: string | null
-          full_name?: string | null
-          id?: string
-          message?: string | null
-          payment_status?: string | null
-          phone?: string | null
-          photos?: string[] | null
-          plan_price?: number | null
-          plan_type?: string | null
-          preferences?: Json | null
-          qr_code_url?: string | null
-          relationship_start?: string
-          stripe_customer_id?: string | null
-          stripe_session_id?: string | null
-          stripe_subscription_id?: string | null
-          time?: string
-          unique_url?: string
-          updated_at?: string
-          user_id?: string | null
           youtube_url?: string | null
         }
         Relationships: []
@@ -308,4 +308,19 @@ export type Enums<
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof PublicSchema["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
