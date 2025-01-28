@@ -34,7 +34,7 @@ serve(async (req) => {
     const fullName = memorialData.full_name || memorialData.couple_name;
     const nameParts = fullName.split(' ');
     const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(' ') || firstName; // Use first name as last name if no last name provided
+    const lastName = nameParts.slice(1).join(' ') || firstName;
 
     // Format phone number (remove non-digits and add country code if needed)
     const phone = memorialData.phone?.replace(/\D/g, '') || '';
@@ -80,9 +80,9 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('Yampi API error:', errorData);
-      throw new Error(`Yampi API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Yampi API error response:', errorText);
+      throw new Error(`Yampi API error: ${response.status} - ${errorText}`);
     }
 
     const orderData = await response.json();
