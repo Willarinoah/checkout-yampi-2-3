@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 
 const corsHeaders = {
@@ -13,51 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    // Log environment variables (safely)
-    console.log('Supabase URL exists:', !!Deno.env.get('SUPABASE_URL'));
-    console.log('Supabase Key exists:', !!Deno.env.get('SUPABASE_ANON_KEY'));
-
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-          detectSessionInUrl: false
-        }
-      }
-    );
-
-    // Get JWT token from request header
-    const authHeader = req.headers.get('Authorization');
-    console.log('Auth Header exists:', !!authHeader);
-    
-    if (!authHeader) {
-      throw new Error('Missing authorization header');
-    }
-
-    // Extract and verify JWT token
-    const jwt = authHeader.replace('Bearer ', '');
-    console.log('JWT token length:', jwt.length);
-
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(jwt);
-    
-    if (authError) {
-      console.error('Auth error details:', authError);
-      throw new Error(`Invalid JWT token: ${authError.message}`);
-    }
-
-    if (!user) {
-      throw new Error('No user found with provided token');
-    }
-
-    console.log('Successfully authenticated user:', user.id);
-
-    // Get request data
     const { planType, memorialData } = await req.json();
-    console.log('Creating Yampi checkout for:', { planType, memorialId: memorialData?.id });
+    console.log('Creating Yampi checkout for:', { planType, memorialData });
 
     // Validate required fields
     if (!memorialData.couple_name) {
@@ -73,16 +29,17 @@ serve(async (req) => {
       throw new Error('Missing Yampi configuration');
     }
 
-    // Format customer data
+    // Format customer name
     const fullName = memorialData.full_name || memorialData.couple_name;
     const nameParts = fullName.split(' ');
     const firstName = nameParts[0];
     const lastName = nameParts.slice(1).join(' ') || firstName;
 
+    // Format phone number (remove non-digits and add country code if needed)
     const phone = memorialData.phone?.replace(/\D/g, '') || '';
     const formattedPhone = phone.startsWith('55') ? phone : `55${phone}`;
 
-    // Prepare checkout data
+    // Prepare checkout data following Yampi's API structure
     const checkoutData = {
       order: {
         items: [{
@@ -104,13 +61,12 @@ serve(async (req) => {
         metadata: {
           memorial_id: memorialData.id,
           custom_slug: memorialData.custom_slug,
-          plan_type: planType,
-          user_id: user.id
+          plan_type: planType
         }
       }
     };
 
-    // Calculate HMAC signature
+    // Calculate HMAC signature for authentication
     const encoder = new TextEncoder();
     const message = encoder.encode(JSON.stringify(checkoutData));
     const key = encoder.encode(yampiSecretKey);
@@ -124,13 +80,9 @@ serve(async (req) => {
     const signature = await crypto.subtle.sign('HMAC', cryptoKey, message);
     const hmacSignature = base64Encode(new Uint8Array(signature));
 
-    console.log('Creating Yampi order with data:', {
-      orderId: memorialData.id,
-      customSlug: memorialData.custom_slug,
-      planType
-    });
+    console.log('Creating Yampi order with data:', checkoutData);
 
-    // Create order in Yampi
+    // Create order in Yampi with proper authentication headers
     const response = await fetch(`https://api.yampi.com.br/v2/${yampiAlias}/checkout/orders`, {
       method: 'POST',
       headers: {
@@ -156,12 +108,9 @@ serve(async (req) => {
     }
 
     const orderData = await response.json();
-    console.log('Yampi order created:', {
-      orderId: orderData.data?.id,
-      checkoutUrl: orderData.data?.checkout_url
-    });
+    console.log('Yampi order created:', orderData);
 
-    // Replace Yampi checkout domain
+    // Replace the Yampi checkout domain with our custom domain
     const checkoutUrl = orderData.data.checkout_url.replace(
       'https://pay.yampi.com.br',
       'https://seguro.memoryys.com'

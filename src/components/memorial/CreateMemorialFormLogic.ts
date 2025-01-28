@@ -61,24 +61,6 @@ export const useMemorialFormLogic = (
       onEmailSubmit(submittedEmail);
       setShowEmailDialog(false);
 
-      // First, ensure we have a session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('Session error:', sessionError);
-        // Try to sign in anonymously
-        const { data: { session: anonSession }, error: signInError } = await supabase.auth.signInWithPassword({
-          email: 'anonymous@lovecounter.app',
-          password: 'anonymous123'
-        });
-        
-        if (signInError) {
-          throw new Error('Authentication required. Please try again.');
-        }
-        
-        console.log('Anonymous session created:', !!anonSession);
-      }
-
       const customSlug = await generateUniqueSlug(coupleName);
       const baseUrl = sanitizeBaseUrl(window.location.origin);
       const uniqueUrl = constructMemorialUrl(baseUrl, `/memorial/${customSlug}`);
@@ -101,6 +83,7 @@ export const useMemorialFormLogic = (
         country_code: locationInfo.country_code,
         city: locationInfo.city,
         region: locationInfo.region,
+        // Add default address info for Yampi
         address: '',
         number: '',
         complement: '',
@@ -149,16 +132,6 @@ export const useMemorialFormLogic = (
 
       console.log('Successfully created memorial:', insertedMemorial);
 
-      // Get the current session again to ensure it's fresh
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      
-      if (!currentSession?.access_token) {
-        console.error('No access token available');
-        throw new Error('Authentication required');
-      }
-
-      console.log('Using access token:', currentSession.access_token.slice(0, 10) + '...');
-
       // Call appropriate checkout function based on location
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         isBrazil ? 'yampi-checkout' : 'create-checkout',
@@ -167,9 +140,6 @@ export const useMemorialFormLogic = (
             planType: selectedPlan,
             memorialData: insertedMemorial
           },
-          headers: {
-            Authorization: `Bearer ${currentSession.access_token}`
-          }
         }
       );
 
