@@ -6,7 +6,8 @@ interface YampiButtonProps {
 
 export const getYampiCheckoutUrl = (planType: "basic" | "premium"): string => {
   const productId = planType === 'basic' ? 'OPXBUXGO7X' : 'OXD2XK5KNZ';
-  return `https://seguro.memoryys.com/checkout/teste1970/${productId}`;
+  // A URL correta do checkout da Yampi
+  return `https://checkout.yampi.com.br/teste1970/checkout/product/${productId}`;
 };
 
 export const YampiButton = ({ planType }: YampiButtonProps) => {
