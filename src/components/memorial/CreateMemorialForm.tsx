@@ -29,6 +29,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   const { t } = useLanguage();
   const [startDate, setStartDate] = useState<Date>();
   const [startTime, setStartTime] = useState("00:00");
+  const [showYampiCheckout, setShowYampiCheckout] = useState(false);
   
   const {
     selectedPlan,
@@ -63,12 +64,12 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
-  const validateForm = () => {
+  const handleCreateMemorial = () => {
     if (!coupleName || photosPreviews.length === 0 || !startDate) {
       toast.error(t("fill_missing"));
-      return false;
+      return;
     }
-    return true;
+    setShowYampiCheckout(true);
   };
 
   return (
@@ -142,7 +143,19 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         </div>
       )}
 
-      {validateForm() && <YampiButton planType={selectedPlan} />}
+      <Button
+        className="w-full bg-lovepink hover:bg-lovepink/90"
+        disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
+        onClick={handleCreateMemorial}
+      >
+        {isLoading ? t("creating") : t("create_our_site")}
+      </Button>
+
+      {showYampiCheckout && (
+        <div className="mt-4">
+          <YampiButton planType={selectedPlan} />
+        </div>
+      )}
     </div>
   );
 };

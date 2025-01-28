@@ -6,19 +6,14 @@ interface YampiButtonProps {
 
 export const YampiButton = ({ planType }: YampiButtonProps) => {
   useEffect(() => {
-    // Remove any existing Yampi scripts to avoid duplicates
+    // Remove any existing Yampi scripts
     const existingScripts = document.getElementsByClassName('ymp-script');
     Array.from(existingScripts).forEach(script => script.remove());
 
-    // Create and add the new script
+    // Add the new script based on the plan
     const script = document.createElement('script');
     script.className = 'ymp-script';
     script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${planType === 'basic' ? 'OPXBUXGO7X' : 'OXD2XK5KNZ'}/js`;
-    
-    // Log para debug
-    console.log('Loading Yampi script for plan:', planType);
-    console.log('Script URL:', script.src);
-    
     document.body.appendChild(script);
 
     return () => {
@@ -29,8 +24,6 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
   }, [planType]);
 
   return (
-    <div className="w-full">
-      <div id="yampi-checkout-button" className="w-full" />
-    </div>
+    <div id="yampi-checkout-button" className="mt-4" />
   );
 };
