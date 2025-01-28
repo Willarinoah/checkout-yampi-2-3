@@ -10,7 +10,7 @@ import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
 import { PaymentModal } from './PaymentModals';
-import { YampiButton } from './YampiButton';
+import { getYampiCheckoutUrl } from './YampiButton';
 import { toast } from "sonner";
 
 interface CreateMemorialFormProps {
@@ -29,7 +29,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   const { t } = useLanguage();
   const [startDate, setStartDate] = useState<Date>();
   const [startTime, setStartTime] = useState("00:00");
-  const [showYampiCheckout, setShowYampiCheckout] = useState(false);
   
   const {
     selectedPlan,
@@ -69,8 +68,9 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       toast.error(t("fill_missing"));
       return;
     }
-    console.log('Showing Yampi checkout for plan:', selectedPlan);
-    setShowYampiCheckout(true);
+    console.log('Redirecting to Yampi checkout for plan:', selectedPlan);
+    const checkoutUrl = getYampiCheckoutUrl(selectedPlan);
+    window.location.href = checkoutUrl;
   };
 
   return (
@@ -151,12 +151,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       >
         {isLoading ? t("creating") : t("create_our_site")}
       </Button>
-
-      {showYampiCheckout && (
-        <div className="mt-4">
-          <YampiButton planType={selectedPlan} />
-        </div>
-      )}
     </div>
   );
 };
