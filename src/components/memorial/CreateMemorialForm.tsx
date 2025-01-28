@@ -49,7 +49,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     handleEmailSubmit
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
-  // Atualizar os dados do preview quando a data ou hora mudar
   useEffect(() => {
     const previewData: FormPreviewData = {
       coupleName,
@@ -65,13 +64,16 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
 
   return (
     <div className="space-y-6">
-      <PaymentModal
-        open={showEmailDialog}
-        onClose={() => setShowEmailDialog(false)}
-        onSubmit={handleEmailSubmit}
-        email={email}
-        isBrazil={isBrazil || false}
-      />
+      {/* Only show payment modal for non-Brazilian users */}
+      {!isBrazil && (
+        <PaymentModal
+          open={showEmailDialog}
+          onClose={() => setShowEmailDialog(false)}
+          onSubmit={handleEmailSubmit}
+          email={email}
+          isBrazil={false}
+        />
+      )}
       
       <PlanSelector 
         selectedPlan={selectedPlan} 

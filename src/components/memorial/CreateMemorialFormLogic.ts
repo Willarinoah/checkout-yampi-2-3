@@ -107,8 +107,10 @@ export const useMemorialFormLogic = (
 
       console.log('Inserting memorial data:', memorialData);
 
+      // Insert into the appropriate table based on location
+      const tableName = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
       const { data: insertedMemorial, error: insertError } = await supabase
-        .from('yampi_memorials')
+        .from(tableName)
         .insert(memorialData)
         .select()
         .maybeSingle();
@@ -124,8 +126,9 @@ export const useMemorialFormLogic = (
 
       console.log('Successfully created memorial:', insertedMemorial);
 
+      // Call appropriate checkout function based on location
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
-        'yampi-checkout',
+        isBrazil ? 'yampi-checkout' : 'create-checkout',
         {
           body: {
             planType: selectedPlan,
@@ -159,6 +162,14 @@ export const useMemorialFormLogic = (
       return;
     }
 
+    // For Brazilian customers, skip email dialog and use empty values
+    // They will fill this information in Yampi's checkout
+    if (isBrazil) {
+      handleEmailSubmit("", "", "");
+      return;
+    }
+
+    // For international customers, continue with Stripe flow
     if (!email) {
       setShowEmailDialog(true);
       return;
