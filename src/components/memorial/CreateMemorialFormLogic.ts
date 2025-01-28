@@ -83,7 +83,6 @@ export const useMemorialFormLogic = (
         country_code: locationInfo.country_code,
         city: locationInfo.city,
         region: locationInfo.region,
-        // Add default address info for Yampi
         address: '',
         number: '',
         complement: '',
@@ -132,6 +131,14 @@ export const useMemorialFormLogic = (
 
       console.log('Successfully created memorial:', insertedMemorial);
 
+      // Get the current session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        console.error('No access token available');
+        throw new Error('Authentication required');
+      }
+
       // Call appropriate checkout function based on location
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         isBrazil ? 'yampi-checkout' : 'create-checkout',
@@ -140,6 +147,9 @@ export const useMemorialFormLogic = (
             planType: selectedPlan,
             memorialData: insertedMemorial
           },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
         }
       );
 
