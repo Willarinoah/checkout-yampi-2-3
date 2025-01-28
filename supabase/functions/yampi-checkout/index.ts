@@ -66,20 +66,6 @@ serve(async (req) => {
       }
     };
 
-    // Calculate HMAC signature for authentication
-    const encoder = new TextEncoder();
-    const message = encoder.encode(JSON.stringify(checkoutData));
-    const key = encoder.encode(yampiSecretKey);
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      key,
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
-    const signature = await crypto.subtle.sign('HMAC', cryptoKey, message);
-    const hmacSignature = base64Encode(new Uint8Array(signature));
-
     console.log('Creating Yampi order with data:', checkoutData);
 
     // Create order in Yampi with proper authentication headers
@@ -90,7 +76,6 @@ serve(async (req) => {
         'User-Token': yampiToken,
         'Content-Type': 'application/json',
         'X-Store-ID': yampiStoreId,
-        'X-Yampi-Hmac-SHA256': hmacSignature,
         'Accept': 'application/json'
       },
       body: JSON.stringify(checkoutData)
