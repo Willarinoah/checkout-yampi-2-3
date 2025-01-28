@@ -10,12 +10,12 @@ interface UserData {
   city?: string;
 }
 
-// Função auxiliar para hash de dados sensíveis
+// Helper function for hashing sensitive data
 const hashData = (data: string): string => {
   return sha256(data).toString();
 };
 
-// Eventos de Página
+// Page View Event (already implemented)
 export const trackPageView = (pageType: string, userData?: UserData) => {
   const eventData: DataLayerEvent = {
     event: 'page_view',
@@ -42,9 +42,9 @@ export const trackPageView = (pageType: string, userData?: UserData) => {
   pushToDataLayer(eventData);
 };
 
-// Eventos de Clique em Botões
+// Button Click Events
 export const trackButtonClick = (
-  buttonType: string,
+  buttonType: 'create_site' | 'basic_plan' | 'premium_plan' | 'create_memorial' | 'payment',
   buttonLocation: string,
   planType?: 'basic' | 'premium'
 ) => {
@@ -60,29 +60,32 @@ export const trackButtonClick = (
   });
 };
 
-// Evento de Modal
-export const trackModalInteraction = (
-  action: 'open' | 'close' | 'button_click',
+// Payment Form Events
+export const trackPaymentFormInteraction = (
+  action: 'start' | 'field_complete' | 'submit',
   paymentProvider: 'stripe' | 'mercadopago',
+  fieldName?: string,
   userData?: UserData
 ) => {
   pushToDataLayer({
-    event: 'modal_interaction',
+    event: 'payment_form_interaction',
     button_type: action,
     payment_provider: paymentProvider,
+    form_field: fieldName,
+    form_status: action === 'start' ? 'started' : action === 'submit' ? 'completed' : undefined,
     user_data: userData ? {
       ...(userData.email && { email_sha256: hashData(userData.email) }),
       ...(userData.phone && { phone_sha256: hashData(userData.phone) }),
       ...(userData.name && { name_sha256: hashData(userData.name) })
     } : undefined,
     funnel_data: {
-      step_name: `modal_${action}`,
+      step_name: `payment_form_${action}`,
       step_number: 3
     }
   });
 };
 
-// Evento de Início do Checkout
+// Checkout Events
 export const trackBeginCheckout = (
   planType: 'basic' | 'premium',
   price: number,
@@ -116,7 +119,7 @@ export const trackBeginCheckout = (
   });
 };
 
-// Evento de Compra
+// Purchase Event
 export const trackPurchase = (
   transactionId: string,
   planType: 'basic' | 'premium',
@@ -124,7 +127,7 @@ export const trackPurchase = (
   paymentMethod: string,
   paymentProvider: 'stripe' | 'mercadopago',
   userData: UserData,
-  status: string
+  status: 'approved' | 'pending' | 'rejected' | 'succeeded' | 'failed' | 'canceled'
 ) => {
   pushToDataLayer({
     event: 'purchase',
@@ -142,7 +145,7 @@ export const trackPurchase = (
     user_data: {
       ...(userData.email && { email_sha256: hashData(userData.email) }),
       ...(userData.phone && { phone_sha256: hashData(userData.phone) }),
-      ...(userData.name && { name_sha256: hashData(userData.name) }),
+      ...(userData.name && { name_sha256: hashData.name) }),
       ...(userData.country && { country: userData.country }),
       ...(userData.region && { region: userData.region }),
       ...(userData.city && { city: userData.city })
@@ -157,29 +160,12 @@ export const trackPurchase = (
   });
 };
 
-// Evento de Erro no Pagamento
-export const trackPaymentError = (
-  errorType: string,
-  errorMessage: string,
-  paymentProvider: 'stripe' | 'mercadopago'
-) => {
-  pushToDataLayer({
-    event: 'payment_error',
-    payment_provider: paymentProvider,
-    payment_status: 'error',
-    funnel_data: {
-      step_name: 'payment_error',
-      step_number: 4
-    }
-  });
-};
-
-// Função auxiliar para determinar o número do passo no funil
+// Helper function to determine funnel step number
 const getStepNumber = (stepName: string): number => {
   const stepMap: Record<string, number> = {
     'homepage': 1,
     'create': 2,
-    'modal': 3,
+    'payment_form': 3,
     'checkout': 4,
     'purchase': 5
   };

@@ -1,4 +1,4 @@
-// Tipos base para eventos do DataLayer
+// Types for DataLayer events
 export interface DataLayerEvent {
   event: string;
   pageType?: string;
@@ -9,6 +9,8 @@ export interface DataLayerEvent {
   payment_method?: string;
   payment_status?: string;
   checkout_step?: string;
+  form_status?: 'started' | 'completed' | 'abandoned';
+  form_field?: string;
   page_path?: string;
   page_title?: string;
   ecommerce?: {
@@ -37,14 +39,12 @@ export interface DataLayerEvent {
   };
 }
 
-// Type-safe declaration for Google Tag Manager's dataLayer
 declare global {
   interface Window {
     dataLayer: DataLayerEvent[];
   }
 }
 
-// Função base para enviar eventos ao DataLayer
 export const pushToDataLayer = (data: DataLayerEvent) => {
   if (typeof window !== 'undefined') {
     window.dataLayer = window.dataLayer || [];
