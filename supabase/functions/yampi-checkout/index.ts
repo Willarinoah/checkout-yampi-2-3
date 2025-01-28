@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,14 +22,11 @@ serve(async (req) => {
 
     const yampiToken = Deno.env.get('YAMPI_ACCESS_TOKEN');
     const yampiStoreId = Deno.env.get('YAMPI_STORE_ID');
+    const yampiAlias = 'teste1970'; // Using the alias from the credentials
     
     if (!yampiToken || !yampiStoreId) {
       throw new Error('Missing Yampi configuration');
     }
-
-    // Get product SKU based on plan type
-    const skuId = planType === 'basic' ? 'BASIC-PLAN' : 'PREMIUM-PLAN';
-    const productName = planType === 'basic' ? 'Plano Basic Love Counter' : 'Plano Premium Love Counter';
 
     // Format customer name
     const fullName = memorialData.full_name || memorialData.couple_name;
@@ -44,10 +42,10 @@ serve(async (req) => {
     const checkoutData = {
       order: {
         items: [{
-          sku: skuId,
+          sku: planType === 'basic' ? 'BASIC-PLAN' : 'PREMIUM-PLAN',
           quantity: 1,
           price: memorialData.plan_price,
-          name: productName,
+          name: planType === 'basic' ? 'Plano Basic Love Counter' : 'Plano Premium Love Counter',
         }],
         customer: {
           first_name: firstName,
@@ -70,7 +68,7 @@ serve(async (req) => {
     console.log('Creating Yampi order with data:', checkoutData);
 
     // Create order in Yampi with proper authentication headers
-    const response = await fetch(`https://api.yampi.com.br/v2/orders`, {
+    const response = await fetch(`https://api.yampi.com.br/v2/${yampiAlias}/checkout/orders`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${yampiToken}`,

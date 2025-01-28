@@ -50,13 +50,13 @@ serve(async (req) => {
   }
 
   try {
-    const yampiSecretKey = Deno.env.get('YAMPI_SECRET_KEY');
+    const yampiSecretKey = Deno.env.get('YAMPI_WEBHOOK_SECRET');
     if (!yampiSecretKey) {
       throw new Error('Missing Yampi webhook secret key');
     }
 
     // Get the signature from headers
-    const signature = req.headers.get('X-Yampi-Signature');
+    const signature = req.headers.get('X-Yampi-Hmac-SHA256');
     
     // Get the raw payload
     const payload = await req.text();
@@ -124,17 +124,6 @@ serve(async (req) => {
         }
         break;
 
-      case 'order.canceled':
-        await supabase
-          .from('yampi_memorials')
-          .update({
-            payment_status: 'canceled',
-            yampi_status: 'canceled',
-            updated_at: new Date().toISOString()
-          })
-          .eq('yampi_order_id', webhookData.data.id.toString());
-        break;
-
       case 'order.status.updated':
         await supabase
           .from('yampi_memorials')
@@ -160,10 +149,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error processing webhook:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: error.stack 
-      }),
+      JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
