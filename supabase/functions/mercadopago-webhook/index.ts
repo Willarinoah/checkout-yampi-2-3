@@ -1,124 +1,97 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
-import { trackPurchase, trackPaymentError } from "@/lib/analytics/events";
+import { createClient } from '@supabase/supabase-js';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const fetchPaymentDetails = async (paymentId: string, token: string) => {
-  const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-  if (!response.ok) {
-    throw new Error(`Failed to fetch payment details: ${response.statusText}`);
-  }
-  return response.json();
-};
-
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const mercadopagoToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
-    if (!mercadopagoToken) {
-      throw new Error('Missing Mercado Pago configuration');
-    }
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-    // Create Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing Supabase configuration');
-    }
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Parse webhook payload
     const payload = await req.json();
-    console.log('Received Mercado Pago webhook:', payload);
+    console.log('Received Mercadopago webhook:', payload);
+
+    const { id, topic } = payload;
+
+    if (!id || !topic) {
+      console.error('Invalid webhook payload:', payload);
+      return new Response(
+        JSON.stringify({ error: 'Invalid webhook payload' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Track the event
+    const eventData = {
+      event_type: topic,
+      payment_id: id,
+      raw_data: payload
+    };
+
+    const { error: analyticsError } = await supabaseClient
+      .from('payment_events')
+      .insert(eventData);
+
+    if (analyticsError) {
+      console.error('Error saving payment event:', analyticsError);
+    }
 
     // Handle different webhook events
-    if (payload.type === 'payment' && payload.action === 'payment.updated') {
-      const paymentId = payload.data.id;
-      console.log('Processing payment update for payment ID:', paymentId);
-
-      // Fetch payment details from Mercado Pago API
-      const paymentData = await fetchPaymentDetails(paymentId, mercadopagoToken);
-
-      if (paymentData && paymentData.external_reference) {
-        const { data: memorial, error: memorialError } = await supabase
-          .from('mercadopago_memorials')
+    switch (topic) {
+      case 'payment':
+        const { data: memorial, error: memorialError } = await supabaseClient
+          .from('yampi_memorials')
           .update({ 
-            payment_status: paymentData.status,
-            mp_merchant_order_id: paymentData.order.id,
-            updated_at: new Date().toISOString(),
+            payment_status: payload.status,
+            yampi_payment_id: payload.id,
+            yampi_status: payload.status,
+            yampi_payment_method: payload.payment_method,
+            updated_at: new Date().toISOString()
           })
-          .eq('custom_slug', paymentData.external_reference)
+          .eq('yampi_order_id', payload.external_reference)
           .select()
           .single();
 
         if (memorialError) {
-          console.error('Error updating payment status:', memorialError);
-          throw memorialError;
+          console.error('Error updating memorial:', memorialError);
+          throw new Error('Failed to update memorial status');
         }
 
-        console.log('Successfully updated payment status for:', paymentData.external_reference);
-        console.log('Memorial data:', memorial);
+        console.log('Successfully updated memorial:', memorial);
+        break;
 
-        // Track purchase event
-        trackPurchase(
-          paymentData.id,
-          memorial.plan_type === 'basic' ? 'basic' : 'premium',
-          memorial.plan_price,
-          paymentData.payment_method_id,
-          'mercadopago',
-          {
-            email: memorial.email,
-            phone: memorial.phone,
-            name: memorial.full_name,
-            country: memorial.address_info?.country_code,
-            region: memorial.address_info?.region,
-            city: memorial.address_info?.city
-          },
-          paymentData.status
-        );
-
-        if (paymentData.status === 'rejected') {
-          trackPaymentError(
-            'payment_rejected',
-            paymentData.status_detail,
-            'mercadopago'
-          );
-        }
-      }
+      default:
+        console.log('Unhandled webhook topic:', topic);
     }
 
-    // Return success response
     return new Response(
       JSON.stringify({ received: true }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
+        status: 200
       }
     );
 
   } catch (error) {
     console.error('Error processing webhook:', error);
-    trackPaymentError('webhook_error', error.message, 'mercadopago');
-    // Return 200 to acknowledge receipt even for errors
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: error.stack 
-      }),
+      JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
+        status: 500
       }
     );
   }
