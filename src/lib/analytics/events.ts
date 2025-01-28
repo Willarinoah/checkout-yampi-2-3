@@ -145,7 +145,7 @@ export const trackPurchase = (
     user_data: {
       ...(userData.email && { email_sha256: hashData(userData.email) }),
       ...(userData.phone && { phone_sha256: hashData(userData.phone) }),
-      ...(userData.name && { name_sha256: hashData.name) }),
+      ...(userData.name && { name_sha256: hashData(userData.name) }),
       ...(userData.country && { country: userData.country }),
       ...(userData.region && { region: userData.region }),
       ...(userData.city && { city: userData.city })
