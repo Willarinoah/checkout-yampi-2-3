@@ -39,7 +39,7 @@ export type Database = {
         }
         Relationships: []
       }
-      mercadopago_memorials: {
+      yampi_memorials: {
         Row: {
           address_info: Json | null
           couple_name: string
@@ -49,9 +49,6 @@ export type Database = {
           full_name: string | null
           id: string
           message: string | null
-          mp_external_reference: string | null
-          mp_merchant_order_id: string | null
-          mp_preference_id: string | null
           payment_status: string | null
           phone: string | null
           photos: string[] | null
@@ -64,6 +61,11 @@ export type Database = {
           unique_url: string
           updated_at: string
           user_id: string | null
+          yampi_installments: number | null
+          yampi_order_id: string | null
+          yampi_payment_id: string | null
+          yampi_payment_method: string | null
+          yampi_status: string | null
           youtube_url: string | null
         }
         Insert: {
@@ -75,9 +77,6 @@ export type Database = {
           full_name?: string | null
           id?: string
           message?: string | null
-          mp_external_reference?: string | null
-          mp_merchant_order_id?: string | null
-          mp_preference_id?: string | null
           payment_status?: string | null
           phone?: string | null
           photos?: string[] | null
@@ -90,6 +89,11 @@ export type Database = {
           unique_url: string
           updated_at?: string
           user_id?: string | null
+          yampi_installments?: number | null
+          yampi_order_id?: string | null
+          yampi_payment_id?: string | null
+          yampi_payment_method?: string | null
+          yampi_status?: string | null
           youtube_url?: string | null
         }
         Update: {
@@ -101,9 +105,6 @@ export type Database = {
           full_name?: string | null
           id?: string
           message?: string | null
-          mp_external_reference?: string | null
-          mp_merchant_order_id?: string | null
-          mp_preference_id?: string | null
           payment_status?: string | null
           phone?: string | null
           photos?: string[] | null
@@ -116,6 +117,11 @@ export type Database = {
           unique_url?: string
           updated_at?: string
           user_id?: string | null
+          yampi_installments?: number | null
+          yampi_order_id?: string | null
+          yampi_payment_id?: string | null
+          yampi_payment_method?: string | null
+          yampi_status?: string | null
           youtube_url?: string | null
         }
         Relationships: []
@@ -302,19 +308,4 @@ export type Enums<
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof PublicSchema["CompositeTypes"]
-    | { schema: keyof Database },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
-    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never

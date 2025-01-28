@@ -22,6 +22,11 @@ export type UserConfig = {
   email: string | null;
   address_info: Json | null;
   preferences: Json | null;
+  yampi_order_id?: string;
+  yampi_payment_id?: string;
+  yampi_status?: string;
+  yampi_payment_method?: string;
+  yampi_installments?: number;
 };
 
 export type MemorialFormData = {

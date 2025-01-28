@@ -107,12 +107,8 @@ export const useMemorialFormLogic = (
 
       console.log('Inserting memorial data:', memorialData);
 
-      // Determinar qual tabela usar com base na localização
-      const tableName = isBrazil ? 'mercadopago_memorials' : 'stripe_memorials';
-      console.log('Using table:', tableName);
-
       const { data: insertedMemorial, error: insertError } = await supabase
-        .from(tableName)
+        .from('yampi_memorials')
         .insert(memorialData)
         .select()
         .maybeSingle();
@@ -128,9 +124,8 @@ export const useMemorialFormLogic = (
 
       console.log('Successfully created memorial:', insertedMemorial);
 
-      const checkoutEndpoint = isBrazil ? 'mercadopago-checkout' : 'create-checkout';
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
-        checkoutEndpoint,
+        'yampi-checkout',
         {
           body: {
             planType: selectedPlan,
