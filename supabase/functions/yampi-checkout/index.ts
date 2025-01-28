@@ -70,10 +70,9 @@ serve(async (req) => {
     const response = await fetch(`https://api.yampi.com.br/v2/${yampiAlias}/checkout/orders`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${yampiToken}`,
         'User-Token': yampiToken,
-        'Content-Type': 'application/json',
         'X-Store-ID': yampiStoreId,
+        'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
       body: JSON.stringify(checkoutData)
