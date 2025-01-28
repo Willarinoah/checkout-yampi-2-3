@@ -40,7 +40,7 @@ serve(async (req) => {
     const phone = memorialData.phone?.replace(/\D/g, '') || '';
     const formattedPhone = phone.startsWith('55') ? phone : `55${phone}`;
 
-    // Prepare checkout data
+    // Prepare checkout data following Yampi's API structure
     const checkoutData = {
       order: {
         items: [{
@@ -67,16 +67,17 @@ serve(async (req) => {
       }
     };
 
-    console.log('Creating Yampi order:', checkoutData);
+    console.log('Creating Yampi order with data:', checkoutData);
 
-    // Create order in Yampi with proper authentication
+    // Create order in Yampi with proper authentication headers
     const response = await fetch(`https://api.yampi.com.br/v2/orders`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${yampiToken}`,
         'User-Token': yampiToken,
         'Content-Type': 'application/json',
-        'X-Store-ID': yampiStoreId
+        'X-Store-ID': yampiStoreId,
+        'Accept': 'application/json'
       },
       body: JSON.stringify(checkoutData)
     });
@@ -95,13 +96,12 @@ serve(async (req) => {
     const orderData = await response.json();
     console.log('Yampi order created:', orderData);
 
-    // Use the secure checkout domain
+    // Replace the Yampi checkout domain with our custom domain
     const checkoutUrl = orderData.data.checkout_url.replace(
       'https://pay.yampi.com.br',
       'https://seguro.memoryys.com'
     );
 
-    // Return checkout URL with the correct domain
     return new Response(
       JSON.stringify({ url: checkoutUrl }),
       { 
