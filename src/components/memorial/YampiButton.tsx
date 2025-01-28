@@ -19,15 +19,25 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
     console.log('Loading Yampi script for plan:', planType);
     console.log('Script URL:', script.src);
     
-    document.body.appendChild(script);
-
-    // Simulate click after script loads
-    script.onload = () => {
+    // Função para tentar clicar no botão
+    const tryClickButton = () => {
       const yampiButton = document.querySelector('#yampi-checkout-button button') as HTMLButtonElement;
       if (yampiButton) {
+        console.log('Yampi button found, clicking...');
         yampiButton.click();
+      } else {
+        console.log('Yampi button not found yet, retrying...');
+        setTimeout(tryClickButton, 100); // Tenta novamente após 100ms
       }
     };
+
+    // Configura o evento onload do script
+    script.onload = () => {
+      console.log('Yampi script loaded, waiting for button...');
+      setTimeout(tryClickButton, 100); // Espera 100ms antes da primeira tentativa
+    };
+
+    document.body.appendChild(script);
 
     return () => {
       // Cleanup on unmount
