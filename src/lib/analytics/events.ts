@@ -165,9 +165,8 @@ export const trackPaymentError = (
 ) => {
   pushToDataLayer({
     event: 'payment_error',
-    error_type: errorType,
-    error_message: errorMessage,
     payment_provider: paymentProvider,
+    payment_status: 'error',
     funnel_data: {
       step_name: 'payment_error',
       step_number: 4

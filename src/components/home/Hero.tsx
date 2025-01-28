@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Instagram, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
-import { trackCreateSiteClick, trackPageView } from "@/lib/analytics/events";
+import { trackButtonClick, trackPageView } from "@/lib/analytics/events";
 import { useEffect } from "react";
 import { detectUserLocation } from "@/lib/location-detector";
 
@@ -31,14 +31,10 @@ const Hero = () => {
   const handleCreateSite = async () => {
     try {
       const locationInfo = await detectUserLocation();
-      trackCreateSiteClick({
-        country: locationInfo.country_code,
-        region: locationInfo.region,
-        city: locationInfo.city
-      });
+      trackButtonClick('create_site', 'homepage');
     } catch (error) {
       console.error('Error tracking create site click:', error);
-      trackCreateSiteClick();
+      trackButtonClick('create_site', 'homepage');
     }
     navigate('/create');
   };
@@ -61,7 +57,7 @@ const Hero = () => {
             </p>
             <motion.button
               whileHover={{ scale: 1.05 }}
-              onClick={handleCreateSite} // Adicionando o evento de clique
+              onClick={handleCreateSite}
               className="bg-lovepink text-white px-8 py-4 rounded-full font-semibold flex items-center gap-2 hover:bg-opacity-90 transition-colors"
             >
               {t("create_website")}
@@ -117,7 +113,7 @@ const Hero = () => {
                   animate={{ y: [0, -10, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}
                   className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
-                  >
+                >
                   <div className="w-60 h-60 bg-white rounded-lg flex items-center justify-center relative">
                     <div className="absolute -top-2 -right-2">
                       <motion.div
