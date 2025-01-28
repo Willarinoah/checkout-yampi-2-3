@@ -69,20 +69,27 @@ serve(async (req) => {
 
     console.log('Creating Yampi order:', checkoutData);
 
-    // Create order in Yampi
-    const response = await fetch(`https://api.yampi.com.br/v2/${yampiStoreId}/orders`, {
+    // Create order in Yampi with proper authentication
+    const response = await fetch(`https://api.yampi.com.br/v2/orders`, {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${yampiToken}`,
         'User-Token': yampiToken,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-Store-ID': yampiStoreId
       },
       body: JSON.stringify(checkoutData)
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Yampi API error response:', errorText);
-      throw new Error(`Yampi API error: ${response.status} - ${errorText}`);
+      console.error('Yampi API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+      throw new Error(`Yampi API error: ${response.status} ${response.statusText}`);
     }
 
     const orderData = await response.json();
