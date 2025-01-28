@@ -70,7 +70,7 @@ serve(async (req) => {
     console.log('Creating Yampi order:', checkoutData);
 
     // Create order in Yampi
-    const response = await fetch(`https://api.yampi.com.br/v1/stores/${yampiStoreId}/orders`, {
+    const response = await fetch(`https://api.yampi.com.br/v2/${yampiStoreId}/orders`, {
       method: 'POST',
       headers: {
         'User-Token': yampiToken,
@@ -88,9 +88,15 @@ serve(async (req) => {
     const orderData = await response.json();
     console.log('Yampi order created:', orderData);
 
-    // Return checkout URL
+    // Use the secure checkout domain
+    const checkoutUrl = orderData.data.checkout_url.replace(
+      'https://pay.yampi.com.br',
+      'https://seguro.memoryys.com'
+    );
+
+    // Return checkout URL with the correct domain
     return new Response(
-      JSON.stringify({ url: orderData.data.checkout_url }),
+      JSON.stringify({ url: checkoutUrl }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
