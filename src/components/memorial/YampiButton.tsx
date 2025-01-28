@@ -21,6 +21,14 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
     
     document.body.appendChild(script);
 
+    // Simulate click after script loads
+    script.onload = () => {
+      const yampiButton = document.querySelector('#yampi-checkout-button button') as HTMLButtonElement;
+      if (yampiButton) {
+        yampiButton.click();
+      }
+    };
+
     return () => {
       // Cleanup on unmount
       const scripts = document.getElementsByClassName('ymp-script');
@@ -29,7 +37,7 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
   }, [planType]);
 
   return (
-    <div>
+    <div style={{ display: 'none' }}>
       <div id="yampi-checkout-button" />
     </div>
   );
