@@ -61,6 +61,24 @@ export const useMemorialFormLogic = (
       onEmailSubmit(submittedEmail);
       setShowEmailDialog(false);
 
+      // First, ensure we have a session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        // Try to sign in anonymously
+        const { data: { session: anonSession }, error: signInError } = await supabase.auth.signInWithPassword({
+          email: 'anonymous@lovecounter.app',
+          password: 'anonymous123'
+        });
+        
+        if (signInError) {
+          throw new Error('Authentication required. Please try again.');
+        }
+        
+        console.log('Anonymous session created:', !!anonSession);
+      }
+
       const customSlug = await generateUniqueSlug(coupleName);
       const baseUrl = sanitizeBaseUrl(window.location.origin);
       const uniqueUrl = constructMemorialUrl(baseUrl, `/memorial/${customSlug}`);
@@ -131,13 +149,15 @@ export const useMemorialFormLogic = (
 
       console.log('Successfully created memorial:', insertedMemorial);
 
-      // Get the current session
-      const { data: { session } } = await supabase.auth.getSession();
+      // Get the current session again to ensure it's fresh
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
       
-      if (!session?.access_token) {
+      if (!currentSession?.access_token) {
         console.error('No access token available');
         throw new Error('Authentication required');
       }
+
+      console.log('Using access token:', currentSession.access_token.slice(0, 10) + '...');
 
       // Call appropriate checkout function based on location
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
@@ -148,7 +168,7 @@ export const useMemorialFormLogic = (
             memorialData: insertedMemorial
           },
           headers: {
-            Authorization: `Bearer ${session.access_token}`
+            Authorization: `Bearer ${currentSession.access_token}`
           }
         }
       );
