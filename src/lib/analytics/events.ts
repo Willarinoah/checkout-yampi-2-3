@@ -10,15 +10,7 @@ interface UserData {
   city?: string;
 }
 
-interface EcommerceItem {
-  item_id: string;
-  item_name: string;
-  item_category: string;
-  item_variant: string;
-  price: number;
-  quantity: number;
-}
-
+// Função auxiliar para hash de dados sensíveis
 const hashData = (data: string): string => {
   return sha256(data).toString();
 };
@@ -29,7 +21,11 @@ export const trackPageView = (pageType: string, userData?: UserData) => {
     event: 'page_view',
     pageType,
     page_path: window.location.pathname,
-    page_title: document.title
+    page_title: document.title,
+    funnel_data: {
+      step_name: pageType,
+      step_number: getStepNumber(pageType)
+    }
   };
 
   if (userData) {
@@ -46,22 +42,44 @@ export const trackPageView = (pageType: string, userData?: UserData) => {
   pushToDataLayer(eventData);
 };
 
-// Evento de Clique no Botão Criar Site
-export const trackCreateSiteClick = (userData?: UserData) => {
-  const eventData: DataLayerEvent = {
-    event: 'create_site_click',
-    pageType: 'Homepage'
-  };
+// Eventos de Clique em Botões
+export const trackButtonClick = (
+  buttonType: string,
+  buttonLocation: string,
+  planType?: 'basic' | 'premium'
+) => {
+  pushToDataLayer({
+    event: 'button_click',
+    button_type: buttonType,
+    button_location: buttonLocation,
+    plan_type: planType,
+    funnel_data: {
+      step_name: `${buttonLocation}_${buttonType}_click`,
+      step_number: getStepNumber(buttonLocation)
+    }
+  });
+};
 
-  if (userData) {
-    eventData.user_data = {
-      ...(userData.country && { country: userData.country }),
-      ...(userData.region && { region: userData.region }),
-      ...(userData.city && { city: userData.city })
-    };
-  }
-
-  pushToDataLayer(eventData);
+// Evento de Modal
+export const trackModalInteraction = (
+  action: 'open' | 'close' | 'button_click',
+  paymentProvider: 'stripe' | 'mercadopago',
+  userData?: UserData
+) => {
+  pushToDataLayer({
+    event: 'modal_interaction',
+    button_type: action,
+    payment_provider: paymentProvider,
+    user_data: userData ? {
+      ...(userData.email && { email_sha256: hashData(userData.email) }),
+      ...(userData.phone && { phone_sha256: hashData(userData.phone) }),
+      ...(userData.name && { name_sha256: hashData(userData.name) })
+    } : undefined,
+    funnel_data: {
+      step_name: `modal_${action}`,
+      step_number: 3
+    }
+  });
 };
 
 // Evento de Início do Checkout
@@ -90,6 +108,10 @@ export const trackBeginCheckout = (
       ...(userData.country && { country: userData.country }),
       ...(userData.region && { region: userData.region }),
       ...(userData.city && { city: userData.city })
+    },
+    funnel_data: {
+      step_name: 'begin_checkout',
+      step_number: 4
     }
   });
 };
@@ -127,7 +149,11 @@ export const trackPurchase = (
     },
     payment_provider: paymentProvider,
     payment_method: paymentMethod,
-    payment_status: status
+    payment_status: status,
+    funnel_data: {
+      step_name: 'purchase_complete',
+      step_number: 5
+    }
   });
 };
 
@@ -141,6 +167,23 @@ export const trackPaymentError = (
     event: 'payment_error',
     error_type: errorType,
     error_message: errorMessage,
-    payment_provider: paymentProvider
+    payment_provider: paymentProvider,
+    funnel_data: {
+      step_name: 'payment_error',
+      step_number: 4
+    }
   });
+};
+
+// Função auxiliar para determinar o número do passo no funil
+const getStepNumber = (stepName: string): number => {
+  const stepMap: Record<string, number> = {
+    'homepage': 1,
+    'create': 2,
+    'modal': 3,
+    'checkout': 4,
+    'purchase': 5
+  };
+  
+  return stepMap[stepName.toLowerCase()] || 0;
 };

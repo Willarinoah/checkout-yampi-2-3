@@ -2,11 +2,13 @@
 export interface DataLayerEvent {
   event: string;
   pageType?: string;
-  error_type?: string;
-  error_message?: string;
-  payment_provider?: string;
+  button_type?: string;
+  button_location?: string;
+  plan_type?: 'basic' | 'premium';
+  payment_provider?: 'stripe' | 'mercadopago';
   payment_method?: string;
   payment_status?: string;
+  checkout_step?: string;
   page_path?: string;
   page_title?: string;
   ecommerce?: {
@@ -27,6 +29,11 @@ export interface DataLayerEvent {
     country?: string;
     region?: string;
     city?: string;
+  };
+  funnel_data?: {
+    step_name: string;
+    step_number: number;
+    conversion_rate?: number;
   };
 }
 
