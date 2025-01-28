@@ -22,7 +22,6 @@ serve(async (req) => {
     const yampiToken = Deno.env.get('YAMPI_ACCESS_TOKEN');
     const yampiSecretKey = Deno.env.get('YAMPI_SECRET_KEY');
     const yampiStoreId = Deno.env.get('YAMPI_STORE_ID');
-    const yampiAlias = 'teste1970';
     
     if (!yampiToken || !yampiStoreId || !yampiSecretKey) {
       throw new Error('Missing Yampi configuration');
@@ -66,9 +65,14 @@ serve(async (req) => {
     };
 
     console.log('Creating Yampi order with data:', checkoutData);
+    console.log('Using Yampi credentials:', {
+      storeId: yampiStoreId,
+      hasToken: !!yampiToken,
+      hasSecretKey: !!yampiSecretKey
+    });
 
     // Create order in Yampi with proper authentication headers
-    const response = await fetch(`https://api.yampi.com.br/v2/${yampiAlias}/checkout/orders`, {
+    const response = await fetch(`https://api.yampi.com.br/v2/teste1970/checkout/orders`, {
       method: 'POST',
       headers: {
         'User-Token': yampiToken,
