@@ -82,7 +82,13 @@ export const useMemorialFormLogic = (
       const addressInfo = locationInfo ? {
         country_code: locationInfo.country_code,
         city: locationInfo.city,
-        region: locationInfo.region
+        region: locationInfo.region,
+        // Add default address info for Yampi
+        address: '',
+        number: '',
+        complement: '',
+        district: '',
+        zipcode: ''
       } : null;
 
       const memorialData = {
@@ -98,9 +104,9 @@ export const useMemorialFormLogic = (
         youtube_url: selectedPlan === "premium" && youtubeUrl ? youtubeUrl : null,
         relationship_start: startDate ? startDate.toISOString() : new Date().toISOString(),
         time: startTime,
-        email: submittedEmail,
-        full_name: fullName,
-        phone: phoneNumber,
+        email: submittedEmail || '',
+        full_name: fullName || coupleName,
+        phone: phoneNumber || '',
         address_info: addressInfo,
         preferences: null
       };
@@ -142,11 +148,12 @@ export const useMemorialFormLogic = (
         throw new Error(checkoutError.message);
       }
 
-      if (checkoutData?.url) {
-        window.location.href = checkoutData.url;
-      } else {
+      if (!checkoutData?.url) {
         throw new Error('No checkout URL received');
       }
+
+      // Redirect to checkout
+      window.location.href = checkoutData.url;
 
     } catch (error: unknown) {
       console.error('Error in create memorial flow:', error);

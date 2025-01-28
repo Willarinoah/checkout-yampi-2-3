@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,8 +14,9 @@ serve(async (req) => {
     const { planType, memorialData } = await req.json();
     console.log('Creating Yampi checkout for:', { planType, memorialData });
 
-    if (!memorialData.couple_name || !memorialData.email || !memorialData.full_name) {
-      throw new Error('Missing required fields');
+    // Validate required fields
+    if (!memorialData.couple_name) {
+      throw new Error('Missing couple name');
     }
 
     const yampiToken = Deno.env.get('YAMPI_ACCESS_TOKEN');
@@ -30,10 +30,11 @@ serve(async (req) => {
     const skuId = planType === 'basic' ? 'BASIC-PLAN' : 'PREMIUM-PLAN';
     const productName = planType === 'basic' ? 'Plano Basic Love Counter' : 'Plano Premium Love Counter';
 
-    // Split full name into first and last name
-    const nameParts = memorialData.full_name.split(' ');
+    // Format customer name
+    const fullName = memorialData.full_name || memorialData.couple_name;
+    const nameParts = fullName.split(' ');
     const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(' ');
+    const lastName = nameParts.slice(1).join(' ') || firstName; // Use first name as last name if no last name provided
 
     // Format phone number (remove non-digits and add country code if needed)
     const phone = memorialData.phone?.replace(/\D/g, '') || '';
@@ -51,7 +52,7 @@ serve(async (req) => {
         customer: {
           first_name: firstName,
           last_name: lastName,
-          email: memorialData.email,
+          email: memorialData.email || '',
           phone: {
             full_number: formattedPhone
           }
@@ -86,29 +87,6 @@ serve(async (req) => {
 
     const orderData = await response.json();
     console.log('Yampi order created:', orderData);
-
-    // Update memorial with Yampi order ID
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing Supabase configuration');
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const { error: updateError } = await supabase
-      .from('yampi_memorials')
-      .update({
-        yampi_order_id: orderData.data.id.toString(),
-        yampi_status: 'pending'
-      })
-      .eq('id', memorialData.id);
-
-    if (updateError) {
-      console.error('Error updating memorial:', updateError);
-      throw updateError;
-    }
 
     // Return checkout URL
     return new Response(
