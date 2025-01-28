@@ -10,6 +10,7 @@ import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
 import { PaymentModal } from './PaymentModals';
+import { YampiButton } from './YampiButton';
 import { toast } from "sonner";
 
 interface CreateMemorialFormProps {
@@ -62,16 +63,12 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
-  const handleCreateMemorial = () => {
+  const validateForm = () => {
     if (!coupleName || photosPreviews.length === 0 || !startDate) {
       toast.error(t("fill_missing"));
-      return;
+      return false;
     }
-
-    const productId = planType === 'basic' ? 'OPXBUXGO7X' : 'OXD2XK5KNZ';
-    const checkoutUrl = `https://seguro.memoryys.com/teste1970/checkout/product/${productId}`;
-    console.log('Redirecting to Yampi checkout:', checkoutUrl);
-    window.location.href = checkoutUrl;
+    return true;
   };
 
   return (
@@ -145,13 +142,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         </div>
       )}
 
-      <Button
-        className="w-full bg-lovepink hover:bg-lovepink/90"
-        disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
-        onClick={handleCreateMemorial}
-      >
-        {isLoading ? t("creating") : t("create_our_site")}
-      </Button>
+      {validateForm() && <YampiButton planType={selectedPlan} />}
     </div>
   );
 };

@@ -29,8 +29,8 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
   }, [planType]);
 
   return (
-    <div>
-      <div id="yampi-checkout-button" />
+    <div className="w-full">
+      <div id="yampi-checkout-button" className="w-full" />
     </div>
   );
 };
