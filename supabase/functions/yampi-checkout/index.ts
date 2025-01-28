@@ -20,10 +20,11 @@ serve(async (req) => {
     }
 
     const yampiToken = Deno.env.get('YAMPI_ACCESS_TOKEN');
+    const yampiSecretKey = Deno.env.get('YAMPI_SECRET_KEY');
     const yampiStoreId = Deno.env.get('YAMPI_STORE_ID');
     const yampiAlias = 'teste1970';
     
-    if (!yampiToken || !yampiStoreId) {
+    if (!yampiToken || !yampiStoreId || !yampiSecretKey) {
       throw new Error('Missing Yampi configuration');
     }
 
@@ -71,6 +72,7 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'User-Token': yampiToken,
+        'Secret-Key': yampiSecretKey,
         'X-Store-ID': yampiStoreId,
         'Content-Type': 'application/json',
         'Accept': 'application/json'
