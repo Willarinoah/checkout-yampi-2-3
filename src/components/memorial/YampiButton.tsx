@@ -4,18 +4,33 @@ interface YampiButtonProps {
   planType: "basic" | "premium";
 }
 
-export const getYampiCheckoutUrl = (planType: "basic" | "premium"): string => {
-  const productId = planType === 'basic' ? 'OPXBUXGO7X' : 'OXD2XK5KNZ';
-  // A URL correta do checkout da Yampi
-  return `https://checkout.yampi.com.br/teste1970/checkout/product/${productId}`;
-};
-
 export const YampiButton = ({ planType }: YampiButtonProps) => {
   useEffect(() => {
-    // Cleanup any existing scripts
+    // Remove any existing Yampi scripts to avoid duplicates
     const existingScripts = document.getElementsByClassName('ymp-script');
     Array.from(existingScripts).forEach(script => script.remove());
-  }, []);
 
-  return null;
+    // Create and add the new script
+    const script = document.createElement('script');
+    script.className = 'ymp-script';
+    script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${planType === 'basic' ? 'OPXBUXGO7X' : 'OXD2XK5KNZ'}/js`;
+    
+    // Log para debug
+    console.log('Loading Yampi script for plan:', planType);
+    console.log('Script URL:', script.src);
+    
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup on unmount
+      const scripts = document.getElementsByClassName('ymp-script');
+      Array.from(scripts).forEach(script => script.remove());
+    };
+  }, [planType]);
+
+  return (
+    <div>
+      <div id="yampi-checkout-button" />
+    </div>
+  );
 };
