@@ -68,7 +68,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       return;
     }
 
-    const productId = selectedPlan === "basic" ? "38416172" : "38416180";
+    const productId = planType === 'basic' ? 'OPXBUXGO7X' : 'OXD2XK5KNZ';
     const checkoutUrl = `https://seguro.memoryys.com/teste1970/checkout/product/${productId}`;
     console.log('Redirecting to Yampi checkout:', checkoutUrl);
     window.location.href = checkoutUrl;
