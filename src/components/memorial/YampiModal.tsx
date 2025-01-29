@@ -14,10 +14,10 @@ export const YampiModal = ({ open, onClose, planType }: YampiModalProps) => {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] bg-white p-6">
-        <DialogTitle className="text-xl font-semibold text-black">
+        <DialogTitle className="text-xl font-semibold text-black mb-4">
           Digite seus dados para receber o QR Code
         </DialogTitle>
-        <div className="mt-4 w-full">
+        <div className="mt-4 w-full h-[300px] flex items-center justify-center">
           <YampiButton planType={planType} />
         </div>
       </DialogContent>

@@ -13,16 +13,27 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
     const cleanupDOM = () => {
       console.log('Cleaning up Yampi DOM elements'); // Debug log
       
+      // Remove scripts
       document.querySelectorAll('script[src*="yampi"]').forEach(script => script.remove());
-      document.querySelectorAll('[id*="yampi"]').forEach(el => el.remove());
+      
+      // Remove elements
+      document.querySelectorAll('[id*="yampi"]').forEach(el => {
+        if (el.id !== 'yampi-checkout-button') {
+          el.remove();
+        }
+      });
+      
+      // Remove iframes
       document.querySelectorAll('iframe[src*="yampi"]').forEach(iframe => iframe.remove());
       
+      // Clean shadow roots
       document.querySelectorAll('*').forEach(element => {
         if (element.shadowRoot) {
           element.shadowRoot.querySelectorAll('[id*="yampi"]').forEach(el => el.remove());
         }
       });
 
+      // Remove Yampi classes
       document.querySelectorAll('[class*="ymp"]').forEach(el => el.remove());
     };
 
@@ -43,7 +54,6 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
       
       document.body.appendChild(script);
 
-      // Verificar se o script foi carregado
       script.onload = () => {
         console.log('Yampi script loaded successfully'); // Debug log
       };
@@ -51,7 +61,7 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
       script.onerror = (error) => {
         console.error('Error loading Yampi script:', error); // Debug log
       };
-    }, 300);
+    }, 500);
 
     return () => {
       clearTimeout(timeoutId);
@@ -60,7 +70,7 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
   }, [planType, mountId]);
 
   return (
-    <div className="yampi-button-container w-full">
+    <div className="yampi-button-container w-full h-full flex items-center justify-center">
       <div id="yampi-checkout-button" className="w-full" />
     </div>
   );
