@@ -51,7 +51,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     handleEmailSubmit
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
-  // Reset Yampi checkout when plan changes
+  // Reset Yampi checkout quando o plano muda
   useEffect(() => {
     setShowYampiCheckout(false);
   }, [selectedPlan]);
@@ -74,7 +74,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       toast.error(t("fill_missing"));
       return;
     }
-    console.log('Showing Yampi checkout for plan:', selectedPlan);
     setShowYampiCheckout(true);
   };
 
