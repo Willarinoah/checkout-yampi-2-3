@@ -5,37 +5,33 @@ interface YampiButtonProps {
 }
 
 export const YampiButton = ({ planType }: YampiButtonProps) => {
-  const [mountId] = useState(`yampi-${Date.now()}`); // ID único para cada montagem do componente
+  const [mountId] = useState(`yampi-${Date.now()}`);
 
   useEffect(() => {
+    console.log('YampiButton mounted with plan:', planType); // Debug log
+
     const cleanupDOM = () => {
-      // Remove TODOS os scripts Yampi anteriores
-      document.querySelectorAll('script[src*="yampi"]').forEach(script => script.remove());
+      console.log('Cleaning up Yampi DOM elements'); // Debug log
       
-      // Remove TODOS os botões e iframes Yampi anteriores
+      document.querySelectorAll('script[src*="yampi"]').forEach(script => script.remove());
       document.querySelectorAll('[id*="yampi"]').forEach(el => el.remove());
       document.querySelectorAll('iframe[src*="yampi"]').forEach(iframe => iframe.remove());
       
-      // Limpa elementos do shadow DOM
       document.querySelectorAll('*').forEach(element => {
         if (element.shadowRoot) {
           element.shadowRoot.querySelectorAll('[id*="yampi"]').forEach(el => el.remove());
         }
       });
 
-      // Remove quaisquer outros elementos relacionados ao Yampi
       document.querySelectorAll('[class*="ymp"]').forEach(el => el.remove());
     };
 
-    // Limpa o DOM antes de adicionar novo botão
     cleanupDOM();
 
-    // Aguarda um momento para garantir que a limpeza foi concluída
     const timeoutId = setTimeout(() => {
       const script = document.createElement('script');
       script.id = mountId;
       
-      // IDs específicos para cada plano
       const buttonIds = {
         basic: 'EPYNGGBFAY',
         premium: 'GMACVCTS2Q'
@@ -43,14 +39,20 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
       
       script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${buttonIds[planType]}/js`;
       
-      console.log('Loading Yampi script for plan:', planType);
-      console.log('Script URL:', script.src);
-      console.log('Mount ID:', mountId);
+      console.log('Loading Yampi script:', script.src); // Debug log
       
       document.body.appendChild(script);
-    }, 300); // Aumentado o delay para garantir limpeza completa
 
-    // Limpa ao desmontar
+      // Verificar se o script foi carregado
+      script.onload = () => {
+        console.log('Yampi script loaded successfully'); // Debug log
+      };
+
+      script.onerror = (error) => {
+        console.error('Error loading Yampi script:', error); // Debug log
+      };
+    }, 300);
+
     return () => {
       clearTimeout(timeoutId);
       cleanupDOM();
@@ -58,8 +60,8 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
   }, [planType, mountId]);
 
   return (
-    <div className="yampi-button-container">
-      <div id="yampi-checkout-button" />
+    <div className="yampi-button-container w-full">
+      <div id="yampi-checkout-button" className="w-full" />
     </div>
   );
 };
