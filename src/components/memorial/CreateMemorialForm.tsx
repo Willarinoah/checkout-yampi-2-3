@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +10,6 @@ import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
 import { PaymentModal } from './PaymentModals';
-import { YampiButton } from './YampiButton';
 import { toast } from "sonner";
 
 interface CreateMemorialFormProps {
@@ -27,9 +26,10 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   onFormDataChange,
 }) => {
   const { t } = useLanguage();
+  const buttonRef = useRef<HTMLDivElement>(null);
   const [startDate, setStartDate] = useState<Date>();
   const [startTime, setStartTime] = useState("00:00");
-  const [showYampiCheckout, setShowYampiCheckout] = useState(false);
+  const [showYampiButton, setShowYampiButton] = useState(false);
   
   const {
     selectedPlan,
@@ -51,11 +51,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     handleEmailSubmit
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
-  // Reset Yampi checkout quando o plano muda
-  useEffect(() => {
-    setShowYampiCheckout(false);
-  }, [selectedPlan]);
-
   useEffect(() => {
     const previewData: FormPreviewData = {
       coupleName,
@@ -69,12 +64,28 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
+  useEffect(() => {
+    // Limpa o script anterior se existir
+    const oldScript = document.querySelector('.ymp-script');
+    if (oldScript) {
+      oldScript.remove();
+    }
+
+    // Se showYampiButton for true, adiciona o novo script
+    if (showYampiButton && buttonRef.current) {
+      const script = document.createElement('script');
+      script.className = 'ymp-script';
+      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? 'EPYNGGBFAY' : 'GMACVCTS2Q'}/js`;
+      buttonRef.current.appendChild(script);
+    }
+  }, [showYampiButton, selectedPlan]);
+
   const handleCreateMemorial = () => {
     if (!coupleName || photosPreviews.length === 0 || !startDate) {
       toast.error(t("fill_missing"));
       return;
     }
-    setShowYampiCheckout(true);
+    setShowYampiButton(true);
   };
 
   return (
@@ -147,19 +158,17 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         </div>
       )}
 
-      <Button
-        className="w-full bg-lovepink hover:bg-lovepink/90"
-        disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
-        onClick={handleCreateMemorial}
-      >
-        {isLoading ? t("creating") : t("create_our_site")}
-      </Button>
-
-      {showYampiCheckout && (
-        <div className="mt-4">
-          <YampiButton planType={selectedPlan} />
-        </div>
-      )}
+      <div ref={buttonRef}>
+        {!showYampiButton && (
+          <Button
+            className="w-full bg-lovepink hover:bg-lovepink/90"
+            disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
+            onClick={handleCreateMemorial}
+          >
+            {isLoading ? t("creating") : t("create_our_site")}
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
