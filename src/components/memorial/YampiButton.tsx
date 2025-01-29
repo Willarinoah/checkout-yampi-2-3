@@ -6,9 +6,12 @@ interface YampiButtonProps {
 
 export const YampiButton = ({ planType }: YampiButtonProps) => {
   useEffect(() => {
-    // Remove any existing Yampi scripts to avoid duplicates
+    // Remove any existing Yampi scripts and buttons to avoid duplicates
     const existingScripts = document.getElementsByClassName('ymp-script');
     Array.from(existingScripts).forEach(script => script.remove());
+    
+    const existingButtons = document.querySelectorAll('#yampi-checkout-button');
+    Array.from(existingButtons).forEach(button => button.remove());
 
     // Create and add the new script
     const script = document.createElement('script');
@@ -43,6 +46,8 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
       // Cleanup on unmount
       const scripts = document.getElementsByClassName('ymp-script');
       Array.from(scripts).forEach(script => script.remove());
+      const buttons = document.querySelectorAll('#yampi-checkout-button');
+      Array.from(buttons).forEach(button => button.remove());
     };
   }, [planType]);
 

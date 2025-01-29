@@ -30,7 +30,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   const [startDate, setStartDate] = useState<Date>();
   const [startTime, setStartTime] = useState("00:00");
   const [showYampiCheckout, setShowYampiCheckout] = useState(false);
-  const [yampiButtonKey, setYampiButtonKey] = useState(0); // Add this line
   
   const {
     selectedPlan,
@@ -72,8 +71,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     }
     console.log('Showing Yampi checkout for plan:', selectedPlan);
     setShowYampiCheckout(true);
-    // Force YampiButton to remount with a new key
-    setYampiButtonKey(prev => prev + 1);
   };
 
   return (
@@ -156,7 +153,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       </Button>
 
       {showYampiCheckout && (
-        <YampiButton key={yampiButtonKey} planType={selectedPlan} />
+        <YampiButton planType={selectedPlan} />
       )}
     </div>
   );
