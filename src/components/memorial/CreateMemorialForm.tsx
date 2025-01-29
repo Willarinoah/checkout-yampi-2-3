@@ -10,7 +10,7 @@ import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
 import { PaymentModal } from './PaymentModals';
-import { YampiButton } from './YampiButton';
+import { YampiModal } from './YampiModal';
 import { toast } from "sonner";
 
 interface CreateMemorialFormProps {
@@ -27,9 +27,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   onFormDataChange,
 }) => {
   const { t } = useLanguage();
-  const [startDate, setStartDate] = useState<Date>();
-  const [startTime, setStartTime] = useState("00:00");
-  const [showYampiCheckout, setShowYampiCheckout] = useState(false);
+  const [showYampiModal, setShowYampiModal] = useState(false);
   
   const {
     selectedPlan,
@@ -48,12 +46,16 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     isBrazil,
     showEmailDialog,
     setShowEmailDialog,
-    handleEmailSubmit
+    handleEmailSubmit,
+    startDate,
+    setStartDate,
+    startTime,
+    setStartTime
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
-  // Reset Yampi checkout quando o plano muda
+  // Reset Yampi modal quando o plano muda
   useEffect(() => {
-    setShowYampiCheckout(false);
+    setShowYampiModal(false);
   }, [selectedPlan]);
 
   useEffect(() => {
@@ -74,7 +76,12 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       toast.error(t("fill_missing"));
       return;
     }
-    setShowYampiCheckout(true);
+    
+    if (isBrazil) {
+      setShowYampiModal(true);
+    } else {
+      setShowEmailDialog(true);
+    }
   };
 
   return (
@@ -86,6 +93,14 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
           onSubmit={handleEmailSubmit}
           email={email}
           isBrazil={false}
+        />
+      )}
+      
+      {isBrazil && (
+        <YampiModal
+          open={showYampiModal}
+          onClose={() => setShowYampiModal(false)}
+          planType={selectedPlan}
         />
       )}
       
@@ -154,12 +169,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       >
         {isLoading ? t("creating") : t("create_our_site")}
       </Button>
-
-      {showYampiCheckout && (
-        <div className="mt-4">
-          <YampiButton planType={selectedPlan} />
-        </div>
-      )}
     </div>
   );
 };
