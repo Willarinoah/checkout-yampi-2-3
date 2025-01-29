@@ -6,26 +6,31 @@ interface YampiButtonProps {
 
 export const YampiButton = ({ planType }: YampiButtonProps) => {
   useEffect(() => {
-    // Remove any existing Yampi scripts to avoid duplicates
-    const existingScripts = document.getElementsByClassName('ymp-script');
-    Array.from(existingScripts).forEach(script => script.remove());
+    // Limpa todos os scripts e botões Yampi existentes
+    const cleanup = () => {
+      const existingScripts = document.getElementsByClassName('ymp-script');
+      Array.from(existingScripts).forEach(script => script.remove());
+      
+      // Limpa também os botões existentes
+      const existingButtons = document.querySelectorAll('[id^="yampi-checkout"]');
+      existingButtons.forEach(button => button.remove());
+    };
 
-    // Create and add the new script
+    // Limpa antes de adicionar novo
+    cleanup();
+
+    // Cria e adiciona o novo script
     const script = document.createElement('script');
     script.className = 'ymp-script';
     script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${planType === 'basic' ? 'OPXBUXGO7X' : 'OXD2XK5KNZ'}/js`;
     
-    // Log para debug
     console.log('Loading Yampi script for plan:', planType);
     console.log('Script URL:', script.src);
     
     document.body.appendChild(script);
 
-    return () => {
-      // Cleanup on unmount
-      const scripts = document.getElementsByClassName('ymp-script');
-      Array.from(scripts).forEach(script => script.remove());
-    };
+    // Limpa ao desmontar
+    return cleanup;
   }, [planType]);
 
   return (

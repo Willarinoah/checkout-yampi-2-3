@@ -51,6 +51,11 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     handleEmailSubmit
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
+  // Reset Yampi checkout when plan changes
+  useEffect(() => {
+    setShowYampiCheckout(false);
+  }, [selectedPlan]);
+
   useEffect(() => {
     const previewData: FormPreviewData = {
       coupleName,
@@ -75,7 +80,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Only show payment modal for non-Brazilian users */}
       {!isBrazil && (
         <PaymentModal
           open={showEmailDialog}
