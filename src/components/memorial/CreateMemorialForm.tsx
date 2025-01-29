@@ -72,12 +72,15 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
   const handleCreateMemorial = () => {
+    console.log('handleCreateMemorial called, isBrazil:', isBrazil); // Debug log
+    
     if (!coupleName || photosPreviews.length === 0 || !startDate) {
       toast.error(t("fill_missing"));
       return;
     }
     
     if (isBrazil) {
+      console.log('Opening Yampi modal'); // Debug log
       setShowYampiModal(true);
     } else {
       setShowEmailDialog(true);
@@ -96,13 +99,11 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         />
       )}
       
-      {isBrazil && (
-        <YampiModal
-          open={showYampiModal}
-          onClose={() => setShowYampiModal(false)}
-          planType={selectedPlan}
-        />
-      )}
+      <YampiModal
+        open={showYampiModal}
+        onClose={() => setShowYampiModal(false)}
+        planType={selectedPlan}
+      />
       
       <PlanSelector 
         selectedPlan={selectedPlan} 
