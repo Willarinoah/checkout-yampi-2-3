@@ -6,7 +6,6 @@ interface YampiButtonProps {
 
 export const YampiButton = ({ planType }: YampiButtonProps) => {
   useEffect(() => {
-    // Função de limpeza que remove scripts e botões anteriores
     const cleanup = () => {
       // Remove scripts antigos
       const existingScripts = document.getElementsByClassName('ymp-script');
@@ -16,16 +15,24 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
       const existingButtons = document.querySelectorAll('[id^="yampi-checkout"]');
       existingButtons.forEach(button => button.remove());
       
-      // Remove também os iframes que o Yampi cria
+      // Remove iframes do Yampi
       const existingIframes = document.querySelectorAll('iframe[src*="yampi"]');
       existingIframes.forEach(iframe => iframe.remove());
 
-      // Remove divs que possam conter botões antigos
+      // Remove divs que contêm botões antigos
       const existingDivs = document.querySelectorAll('div[id^="yampi-checkout"]');
       existingDivs.forEach(div => div.remove());
+
+      // Remove elementos do shadow DOM que podem persistir
+      document.querySelectorAll('div').forEach(div => {
+        if (div.shadowRoot) {
+          const shadowElements = div.shadowRoot.querySelectorAll('[id^="yampi-checkout"]');
+          shadowElements.forEach(elem => elem.remove());
+        }
+      });
     };
 
-    // Limpa antes de adicionar novo
+    // Executa limpeza antes de adicionar novo botão
     cleanup();
 
     // Pequeno delay para garantir que a limpeza foi concluída
@@ -41,7 +48,7 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
       document.body.appendChild(script);
     }, 100);
 
-    // Limpa ao desmontar
+    // Limpa ao desmontar o componente
     return () => {
       clearTimeout(timeoutId);
       cleanup();
