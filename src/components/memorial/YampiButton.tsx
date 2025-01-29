@@ -16,7 +16,7 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
       // Remove scripts
       document.querySelectorAll('script[src*="yampi"]').forEach(script => script.remove());
       
-      // Remove elements
+      // Remove elements except the button container
       document.querySelectorAll('[id*="yampi"]').forEach(el => {
         if (el.id !== 'yampi-checkout-button') {
           el.remove();
@@ -34,7 +34,11 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
       });
 
       // Remove Yampi classes
-      document.querySelectorAll('[class*="ymp"]').forEach(el => el.remove());
+      document.querySelectorAll('[class*="ymp"]').forEach(el => {
+        if (!el.classList.contains('yampi-button-container')) {
+          el.remove();
+        }
+      });
     };
 
     cleanupDOM();
@@ -61,7 +65,7 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
       script.onerror = (error) => {
         console.error('Error loading Yampi script:', error); // Debug log
       };
-    }, 500);
+    }, 800); // Aumentado o tempo de espera para garantir que o DOM esteja pronto
 
     return () => {
       clearTimeout(timeoutId);
