@@ -153,7 +153,9 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       </Button>
 
       {showYampiCheckout && (
-        <YampiButton planType={selectedPlan} />
+        <div className="mt-4">
+          <YampiButton planType={selectedPlan} />
+        </div>
       )}
     </div>
   );
