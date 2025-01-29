@@ -54,8 +54,8 @@ const translations = {
   contact: "Contact",
   share: "Share",
   home: "Home",
-  contact_phone: "",
-  contact_email: "",
+  contact_phone: "Contact phone",
+  contact_email: "Contact email",
 
   // Memorial page
   memorial_not_available: "This memorial is not available yet. Please complete the payment to access it.",
