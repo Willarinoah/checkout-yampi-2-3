@@ -7,23 +7,23 @@ interface YampiButtonProps {
 export const YampiButton = ({ planType }: YampiButtonProps) => {
   useEffect(() => {
     const cleanup = () => {
-      // Remove scripts antigos
-      const existingScripts = document.getElementsByClassName('ymp-script');
-      Array.from(existingScripts).forEach(script => script.remove());
+      // Remove scripts antigos por ID específico
+      const basicScript = document.getElementById('yampi-basic-script');
+      const premiumScript = document.getElementById('yampi-premium-script');
+      basicScript?.remove();
+      premiumScript?.remove();
       
-      // Remove botões antigos
-      const existingButtons = document.querySelectorAll('[id^="yampi-checkout"]');
-      existingButtons.forEach(button => button.remove());
+      // Remove botões antigos por ID específico
+      const basicButton = document.getElementById('yampi-basic-button');
+      const premiumButton = document.getElementById('yampi-premium-button');
+      basicButton?.remove();
+      premiumButton?.remove();
       
-      // Remove iframes do Yampi
-      const existingIframes = document.querySelectorAll('iframe[src*="yampi"]');
-      existingIframes.forEach(iframe => iframe.remove());
+      // Remove iframes antigos
+      const iframes = document.querySelectorAll('iframe[src*="yampi"]');
+      iframes.forEach(iframe => iframe.remove());
 
-      // Remove divs que contêm botões antigos
-      const existingDivs = document.querySelectorAll('div[id^="yampi-checkout"]');
-      existingDivs.forEach(div => div.remove());
-
-      // Remove elementos do shadow DOM que podem persistir
+      // Remove elementos do shadow DOM
       document.querySelectorAll('div').forEach(div => {
         if (div.shadowRoot) {
           const shadowElements = div.shadowRoot.querySelectorAll('[id^="yampi-checkout"]');
@@ -37,10 +37,17 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
 
     // Pequeno delay para garantir que a limpeza foi concluída
     const timeoutId = setTimeout(() => {
-      // Cria e adiciona o novo script
+      // Cria o script com ID específico para o plano
       const script = document.createElement('script');
-      script.className = 'ymp-script';
-      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${planType === 'basic' ? 'OPXBUXGO7X' : 'OXD2XK5KNZ'}/js`;
+      script.id = `yampi-${planType}-script`; // ID único para cada tipo de plano
+      
+      // URLs específicas para cada plano
+      const scriptUrls = {
+        basic: 'https://api.yampi.io/v2/teste1970/public/buy-button/OPXBUXGO7X/js',
+        premium: 'https://api.yampi.io/v2/teste1970/public/buy-button/OXD2XK5KNZ/js'
+      };
+      
+      script.src = scriptUrls[planType];
       
       console.log('Loading Yampi script for plan:', planType);
       console.log('Script URL:', script.src);
@@ -57,7 +64,7 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
 
   return (
     <div>
-      <div id="yampi-checkout-button" />
+      <div id={`yampi-${planType}-button`} />
     </div>
   );
 };
