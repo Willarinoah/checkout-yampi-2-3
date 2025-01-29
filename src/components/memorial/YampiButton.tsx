@@ -37,8 +37,8 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
       
       // IDs específicos para cada plano
       const buttonIds = {
-        basic: 'OPXBUXGO7X',
-        premium: 'OXD2XK5KNZ'
+        basic: 'EPYNGGBFAY',
+        premium: 'GMACVCTS2Q'
       };
       
       script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${buttonIds[planType]}/js`;
