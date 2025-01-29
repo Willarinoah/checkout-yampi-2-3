@@ -19,6 +19,10 @@ export const YampiButton = ({ planType }: YampiButtonProps) => {
       // Remove também os iframes que o Yampi cria
       const existingIframes = document.querySelectorAll('iframe[src*="yampi"]');
       existingIframes.forEach(iframe => iframe.remove());
+
+      // Remove divs que possam conter botões antigos
+      const existingDivs = document.querySelectorAll('div[id^="yampi-checkout"]');
+      existingDivs.forEach(div => div.remove());
     };
 
     // Limpa antes de adicionar novo
