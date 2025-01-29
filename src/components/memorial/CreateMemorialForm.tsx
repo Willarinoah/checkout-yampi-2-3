@@ -51,6 +51,11 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     handleEmailSubmit
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
+  // Reset Yampi checkout quando o plano muda
+  useEffect(() => {
+    setShowYampiCheckout(false);
+  }, [selectedPlan]);
+
   useEffect(() => {
     const previewData: FormPreviewData = {
       coupleName,
@@ -86,10 +91,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       
       <PlanSelector 
         selectedPlan={selectedPlan} 
-        onPlanChange={(plan) => {
-          setSelectedPlan(plan);
-          setShowYampiCheckout(true);
-        }} 
+        onPlanChange={setSelectedPlan} 
       />
 
       <div>
