@@ -28,6 +28,8 @@ export const YampiModal = ({ open, onClose, planType }: YampiModalProps) => {
         planType === 'basic' ? 'EPYNGGBFAY' : 'GMACVCTS2Q'
       }/js`;
 
+      buttonRef.current.appendChild(script);
+
       script.onload = () => {
         console.log('Yampi script loaded successfully');
       };
@@ -35,8 +37,6 @@ export const YampiModal = ({ open, onClose, planType }: YampiModalProps) => {
       script.onerror = (error) => {
         console.error('Error loading Yampi script:', error);
       };
-
-      buttonRef.current.appendChild(script);
     }
 
     return () => {
