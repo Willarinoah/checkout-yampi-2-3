@@ -84,7 +84,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   const renderPaymentButton = () => {
     if (isBrazil) {
       return (
-        <div className="w-full h-[50px]">
+        <div className="flex items-center justify-center min-h-[50px]">
           {showYampiButton ? (
             <YampiButton 
               planType={selectedPlan} 
@@ -92,7 +92,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
             />
           ) : (
             <Button
-              className="w-full bg-lovepink hover:bg-lovepink/90 h-full"
+              className="w-full bg-lovepink hover:bg-lovepink/90"
               disabled={isLoading || !isFormValid}
               onClick={handleCreateMemorial}
             >
