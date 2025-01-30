@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { PhotoUpload } from './PhotoUpload';
 import { PlanSelector } from './PlanSelector';
@@ -66,6 +66,16 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
   const isFormValid = coupleName && photosPreviews.length > 0 && startDate;
+
+  const handleCreateMemorial = () => {
+    if (!isFormValid) {
+      toast.error(t("fill_missing"));
+      return;
+    }
+    if (isBrazil) {
+      setShowYampiButton(true);
+    }
+  };
 
   return (
     <div className="space-y-6">
