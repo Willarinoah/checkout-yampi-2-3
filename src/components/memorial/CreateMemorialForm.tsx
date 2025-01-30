@@ -94,7 +94,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
           onClose={() => setShowEmailDialog(false)}
           onSubmit={handleEmailSubmit}
           email={email}
-          isBrazil={false}
         />
       )}
       
