@@ -7,7 +7,7 @@ interface StripePaymentButtonProps {
   isLoading: boolean;
   showEmailDialog: boolean;
   setShowEmailDialog: (show: boolean) => void;
-  handleEmailSubmit: (email: string) => void;
+  handleEmailSubmit: (email: string, fullName: string, phoneNumber: string) => void;
   email: string;
   disabled?: boolean;
 }
@@ -29,7 +29,7 @@ export const StripePaymentButton: React.FC<StripePaymentButtonProps> = ({
         disabled={isLoading || disabled}
         onClick={() => setShowEmailDialog(true)}
       >
-        {isLoading ? t("creating") : t("create_our_site")}
+        {isLoading ? t("creating") : t("pay_with_card")}
       </Button>
 
       <UserDataCollectionDialog
