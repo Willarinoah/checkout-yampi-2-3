@@ -22,13 +22,22 @@ interface CreateMemorialFormProps {
 const YampiButton = ({ planType }: { planType: "basic" | "premium" }) => {
   const buttonId = planType === "basic" ? "59VB91DFBN" : "G55W9F5YZK";
   
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${buttonId}/js`;
+    script.className = 'ymp-script';
+    document.getElementById(`yampi-container-${buttonId}`)?.appendChild(script);
+
+    return () => {
+      script.remove();
+    };
+  }, [buttonId]);
+
   return (
     <div className="w-full">
-      <script 
-        className="ymp-script" 
-        src={`https://api.yampi.io/v2/teste1970/public/buy-button/${buttonId}/js`}
-      />
-      <div id={`yampi-button-${buttonId}`} />
+      <div id={`yampi-container-${buttonId}`}>
+        <div id={`yampi-button-${buttonId}`} />
+      </div>
     </div>
   );
 };
