@@ -70,14 +70,17 @@ export const useMemorialFormLogic = (
       const qrCodeUrl = await uploadQRCode(qrCodeBlob, customSlug);
       console.log('QR Code uploaded:', qrCodeUrl);
 
+      console.log('Uploading photos:', photos);
       const photoUrls = await uploadPhotosToStorage(photos, customSlug);
       console.log('Photos uploaded:', photoUrls);
 
       const planType = selectedPlan === "basic" 
-        ? "1 year, 3 photos and no music" 
-        : "Forever, 7 photos and music";
+        ? isBrazil ? "1 year, 3 photos and no music" : "1 year, 3 photos and no music (international)"
+        : isBrazil ? "Forever, 7 photos and music" : "Forever, 7 photos and music (international)";
       
-      const planPrice = selectedPlan === "basic" ? 29 : 49;
+      const planPrice = selectedPlan === "basic" 
+        ? isBrazil ? 29 : 9
+        : isBrazil ? 49 : 14;
 
       const addressInfo = locationInfo ? {
         country_code: locationInfo.country_code,
