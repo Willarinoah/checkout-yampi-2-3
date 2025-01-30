@@ -9,7 +9,7 @@ import { PlanSelector } from './PlanSelector';
 import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
-import { PaymentModal } from './PaymentModals';
+import { StripePaymentButton } from './StripePaymentButton';
 import { toast } from "sonner";
 
 interface CreateMemorialFormProps {
@@ -27,8 +27,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
 }) => {
   const { t } = useLanguage();
   const buttonRef = useRef<HTMLDivElement>(null);
-  const [startDate, setStartDate] = useState<Date>();
-  const [startTime, setStartTime] = useState("00:00");
   const [showYampiButton, setShowYampiButton] = useState(false);
   
   const {
@@ -48,7 +46,11 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     isBrazil,
     showEmailDialog,
     setShowEmailDialog,
-    handleEmailSubmit
+    handleEmailSubmit,
+    startDate,
+    setStartDate,
+    startTime,
+    setStartTime
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
   useEffect(() => {
@@ -88,15 +90,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
 
   return (
     <div className="space-y-6">
-      {!isBrazil && (
-        <PaymentModal
-          open={showEmailDialog}
-          onClose={() => setShowEmailDialog(false)}
-          onSubmit={handleEmailSubmit}
-          email={email}
-        />
-      )}
-      
       <PlanSelector 
         selectedPlan={selectedPlan} 
         onPlanChange={setSelectedPlan} 
@@ -155,7 +148,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         </div>
       )}
 
-      <div className="mt-12 flex flex-col items-center">
+      <div className="mt-12 flex flex-col items-center space-y-4">
         {!showYampiButton ? (
           <Button
             className="w-full bg-lovepink hover:bg-lovepink/90"
@@ -165,7 +158,19 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
             {isLoading ? t("creating") : t("create_our_site")}
           </Button>
         ) : (
-          <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />
+          <div className="w-full space-y-4">
+            {isBrazil ? (
+              <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />
+            ) : (
+              <StripePaymentButton
+                isLoading={isLoading}
+                showEmailDialog={showEmailDialog}
+                setShowEmailDialog={setShowEmailDialog}
+                handleEmailSubmit={handleEmailSubmit}
+                email={email}
+              />
+            )}
+          </div>
         )}
       </div>
     </div>
