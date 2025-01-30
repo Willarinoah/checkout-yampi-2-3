@@ -26,6 +26,7 @@ export const useMemorialFormLogic = (
   const [startDate, setStartDate] = useState<Date>();
   const [startTime, setStartTime] = useState("00:00");
   const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
+  const [memorialId, setMemorialId] = useState<string | null>(null);
 
   useEffect(() => {
     const checkLocation = async () => {
@@ -55,11 +56,14 @@ export const useMemorialFormLogic = (
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
-  const handleEmailSubmit = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
+  const handleCreateMemorial = async () => {
+    if (!coupleName || photos.length === 0 || !startDate) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
     try {
       setIsLoading(true);
-      onEmailSubmit(submittedEmail);
-      setShowEmailDialog(false);
 
       const customSlug = await generateUniqueSlug(coupleName);
       const baseUrl = sanitizeBaseUrl(window.location.origin);
@@ -83,7 +87,6 @@ export const useMemorialFormLogic = (
         country_code: locationInfo.country_code,
         city: locationInfo.city,
         region: locationInfo.region,
-        // Add default address info for Yampi
         address: '',
         number: '',
         complement: '',
@@ -104,19 +107,17 @@ export const useMemorialFormLogic = (
         youtube_url: selectedPlan === "premium" && youtubeUrl ? youtubeUrl : null,
         relationship_start: startDate ? startDate.toISOString() : new Date().toISOString(),
         time: startTime,
-        email: submittedEmail || '',
-        full_name: fullName || coupleName,
-        phone: phoneNumber || '',
+        email: email || '',
+        full_name: coupleName,
+        phone: '',
         address_info: addressInfo,
         preferences: null
       };
 
       console.log('Inserting memorial data:', memorialData);
 
-      // Insert into the appropriate table based on location
-      const tableName = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
       const { data: insertedMemorial, error: insertError } = await supabase
-        .from(tableName)
+        .from('yampi_memorials')
         .insert(memorialData)
         .select()
         .maybeSingle();
@@ -131,58 +132,16 @@ export const useMemorialFormLogic = (
       }
 
       console.log('Successfully created memorial:', insertedMemorial);
-
-      // Call appropriate checkout function based on location
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
-        isBrazil ? 'yampi-checkout' : 'create-checkout',
-        {
-          body: {
-            planType: selectedPlan,
-            memorialData: insertedMemorial
-          },
-        }
-      );
-
-      if (checkoutError) {
-        console.error('Error creating checkout:', checkoutError);
-        throw new Error(checkoutError.message);
-      }
-
-      if (!checkoutData?.url) {
-        throw new Error('No checkout URL received');
-      }
-
-      // Redirect to checkout
-      window.location.href = checkoutData.url;
+      setMemorialId(insertedMemorial.id);
+      return true;
 
     } catch (error: unknown) {
       console.error('Error in create memorial flow:', error);
       toast.error(error instanceof Error ? error.message : "Error creating memorial. Please try again.");
+      return false;
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleCreateMemorial = () => {
-    if (!coupleName || photos.length === 0) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    // For Brazilian customers, skip email dialog and use empty values
-    // They will fill this information in Yampi's checkout
-    if (isBrazil) {
-      handleEmailSubmit("", "", "");
-      return;
-    }
-
-    // For international customers, continue with Stripe flow
-    if (!email) {
-      setShowEmailDialog(true);
-      return;
-    }
-
-    handleEmailSubmit(email, "", "");
   };
 
   return {
@@ -203,10 +162,10 @@ export const useMemorialFormLogic = (
     isBrazil,
     showEmailDialog,
     setShowEmailDialog,
-    handleEmailSubmit,
     startDate,
     setStartDate,
     startTime,
-    setStartTime
+    setStartTime,
+    memorialId
   };
 };
