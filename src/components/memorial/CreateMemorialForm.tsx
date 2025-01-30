@@ -156,7 +156,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         </div>
       )}
 
-      <div className="mt-8 flex flex-col items-center">
+      <div className="mt-12 flex flex-col items-center">
         {!showYampiButton ? (
           <Button
             className="w-full bg-lovepink hover:bg-lovepink/90"
@@ -166,7 +166,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
             {isLoading ? t("creating") : t("create_our_site")}
           </Button>
         ) : (
-          <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />
+          <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[80px] py-4" />
         )}
       </div>
     </div>
