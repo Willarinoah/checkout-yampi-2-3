@@ -54,19 +54,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     setStartTime
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
-  useEffect(() => {
-    const previewData: FormPreviewData = {
-      coupleName,
-      photosPreviews,
-      message,
-      youtubeUrl,
-      selectedPlan,
-      startDate,
-      startTime
-    };
-    onFormDataChange(previewData);
-  }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
-
   // Reset Yampi button when plan changes
   useEffect(() => {
     setShowYampiButton(false);
@@ -83,7 +70,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     if (showYampiButton && buttonRef.current && isBrazil) {
       const scriptId = selectedPlan === 'basic' ? '59VB91DFBN' : 'G55W9F5YZK';
       
-      // Only add script if it's different from current
       if (currentYampiScript !== scriptId) {
         const oldScript = buttonRef.current.querySelector('.ymp-script');
         if (oldScript) {

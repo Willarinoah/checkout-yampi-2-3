@@ -55,7 +55,7 @@ export const useMemorialFormLogic = (
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
-  const handleEmailSubmit = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
+  const handleEmailSubmit = async (submittedEmail: string, fullName?: string, phoneNumber?: string) => {
     try {
       setIsLoading(true);
       onEmailSubmit(submittedEmail);
@@ -115,7 +115,6 @@ export const useMemorialFormLogic = (
 
       console.log('Inserting memorial data:', memorialData);
 
-      // Insert into the appropriate table based on location
       const tableName = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
       const { data: insertedMemorial, error: insertError } = await supabase
         .from(tableName)
@@ -134,7 +133,6 @@ export const useMemorialFormLogic = (
 
       console.log('Successfully created memorial:', insertedMemorial);
 
-      // Call appropriate checkout function based on location
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         isBrazil ? 'yampi-checkout' : 'create-checkout',
         {
@@ -154,7 +152,6 @@ export const useMemorialFormLogic = (
         throw new Error('No checkout URL received');
       }
 
-      // Redirect to checkout
       window.location.href = checkoutData.url;
 
     } catch (error: unknown) {
