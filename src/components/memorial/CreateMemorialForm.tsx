@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
 import { StripePaymentButton } from './StripePaymentButton';
+import { YampiButton } from './YampiButton';
 import { toast } from "sonner";
 
 interface CreateMemorialFormProps {
@@ -26,7 +27,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   onFormDataChange,
 }) => {
   const { t } = useLanguage();
-  const buttonRef = useRef<HTMLDivElement>(null);
   const [showYampiButton, setShowYampiButton] = useState(false);
   
   const {
@@ -53,6 +53,11 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     setStartTime
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
+  // Reset Yampi button when plan changes
+  useEffect(() => {
+    setShowYampiButton(false);
+  }, [selectedPlan]);
+
   useEffect(() => {
     const previewData: FormPreviewData = {
       coupleName,
@@ -65,20 +70,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     };
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
-
-  useEffect(() => {
-    if (showYampiButton && buttonRef.current && isBrazil) {
-      const oldScript = document.querySelector('.ymp-script');
-      if (oldScript) {
-        oldScript.remove();
-      }
-
-      const script = document.createElement('script');
-      script.className = 'ymp-script';
-      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? '59VB91DFBN' : 'G55W9F5YZK'}/js`;
-      buttonRef.current.appendChild(script);
-    }
-  }, [showYampiButton, selectedPlan, isBrazil]);
 
   const isFormValid = coupleName && startDate && photosPreviews.length > 0;
 
@@ -104,7 +95,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
           </Button>
         );
       }
-      return <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />;
+      return <YampiButton planType={selectedPlan} onCleanup={() => setShowYampiButton(false)} />;
     }
     
     return (
