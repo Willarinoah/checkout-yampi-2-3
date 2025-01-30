@@ -73,7 +73,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     if (showYampiButton && buttonRef.current) {
       const script = document.createElement('script');
       script.className = 'ymp-script';
-      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? 'EPYNGGBFAY' : 'GMACVCTS2Q'}/js`;
+      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? '59VB91DFBN' : 'G55W9F5YZK'}/js`;
       buttonRef.current.appendChild(script);
     }
   }, [showYampiButton, selectedPlan]);
