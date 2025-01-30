@@ -88,16 +88,11 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       return;
     }
     
-    // Se estiver no Brasil, mostra o botão da Yampi
-    if (isBrazil) {
-      setShowYampiButton(true);
-    }
+    setShowYampiButton(true);
   };
 
   const renderPaymentButton = () => {
-    // Se estiver no Brasil
     if (isBrazil) {
-      // Se o botão da Yampi ainda não foi mostrado
       if (!showYampiButton) {
         return (
           <Button
@@ -109,11 +104,9 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
           </Button>
         );
       }
-      // Mostra o container do botão da Yampi
       return <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />;
     }
     
-    // Se estiver fora do Brasil, mostra o botão do Stripe
     return (
       <StripePaymentButton
         isLoading={isLoading}
