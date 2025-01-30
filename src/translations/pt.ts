@@ -19,7 +19,7 @@ const translations = {
   receive_site: "Receba Seu Site",
   receive_site_qr: "Receba site + QR Code",
   in_minutes: "Em Minutos",
-  surprise_love: "Surpreenda Seu Amor",
+  surprise_love: "Surpreenda seu Amor",
   surprise_loved_one: "Surpreenda seu amor",
   share_special: "Compartilhe Algo Especial",
   prices: "Preços",
@@ -28,7 +28,7 @@ const translations = {
   year_access: "1 ano de acesso",
   forever_access: "Acesso vitalício",
   forever: "Para Sempre",
-  photos: "fotos",
+  photos: "Fotos",
   with_music: "com música",
   no_music: "sem música",
   make_website: "Quero fazer meu site",
@@ -36,7 +36,7 @@ const translations = {
   surprises_that: "Surpresas Que",
   went_viral: "Viralizaram",
   faq_title: "Perguntas Frequentes",
-  create_beautiful: "Crie lindos contadores de relacionamento",
+  create_beautiful: "Crie lindos contadores de relacionamento e compartilhe sua história de amor.",
   product: "Produto",
   legal: "Legal",
   follow_us: "Siga-nos",
@@ -55,7 +55,7 @@ const translations = {
   pricing_title: "Preços",
 
   // Memorial page
-  memorial_not_available: "Memorial não disponível",
+  memorial_not_available: "Este memorial ainda não está disponível. Por favor, complete o pagamento para acessá-lo.",
   loading: "Carregando...",
   error: "Erro",
   success: "Sucesso",
@@ -106,10 +106,7 @@ const translations = {
   faq_valid_forever: "É válido para sempre?",
   faq_valid_forever_answer: "Sim, se você escolher o plano premium, sua página será válida para sempre!",
   faq_can_edit: "Posso editar minha página depois?",
-  faq_can_edit_answer: "Sim, você pode editar sua página a qualquer momento fazendo login em sua conta.",
-
-  // Error messages
-  location_error: "Detecção de localização não concluída. Por favor, tente novamente."
+  faq_can_edit_answer: "Sim, você pode editar sua página a qualquer momento fazendo login em sua conta."
 };
 
 export default translations;

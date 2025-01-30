@@ -53,9 +53,6 @@ export type Translation = {
   home_title: string;
   how_it_works_title: string;
   pricing_title: string;
-
-  // Memorial page
-  memorial_not_available: string;
   loading: string;
   error: string;
   success: string;
@@ -83,6 +80,7 @@ export type Translation = {
   one_year: string;
   photos_no_music: string;
   photos_with_music: string;
+  memorial_not_available: string;
 
   // Form translations
   couple_name: string;
@@ -97,7 +95,7 @@ export type Translation = {
   almost_there: string;
   fill_data_counter: string;
   preview: string;
-
+  
   // FAQ translations
   faq_what_is: string;
   faq_what_is_answer: string;
@@ -107,9 +105,6 @@ export type Translation = {
   faq_valid_forever_answer: string;
   faq_can_edit: string;
   faq_can_edit_answer: string;
-
-  // Error messages
-  location_error: string;
 };
 
 export type TranslationKey = keyof Translation;

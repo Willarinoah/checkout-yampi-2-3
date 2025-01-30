@@ -27,6 +27,8 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
 }) => {
   const { t } = useLanguage();
   const buttonRef = useRef<HTMLDivElement>(null);
+  const [startDate, setStartDate] = useState<Date>();
+  const [startTime, setStartTime] = useState("00:00");
   const [showYampiButton, setShowYampiButton] = useState(false);
   
   const {
@@ -46,11 +48,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     isBrazil,
     showEmailDialog,
     setShowEmailDialog,
-    handleEmailSubmit,
-    startDate,
-    setStartDate,
-    startTime,
-    setStartTime
+    handleEmailSubmit
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
   useEffect(() => {
@@ -73,39 +71,21 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       oldScript.remove();
     }
 
-    // Se showYampiButton for true E o usuário estiver no Brasil, adiciona o novo script
-    if (showYampiButton && isBrazil && buttonRef.current) {
-      console.log('Adding Yampi script for Brazilian user');
+    // Se showYampiButton for true, adiciona o novo script
+    if (showYampiButton && buttonRef.current) {
       const script = document.createElement('script');
       script.className = 'ymp-script';
       script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? 'EPYNGGBFAY' : 'GMACVCTS2Q'}/js`;
       buttonRef.current.appendChild(script);
     }
-  }, [showYampiButton, selectedPlan, isBrazil]);
+  }, [showYampiButton, selectedPlan]);
 
   const handleCreateMemorial = () => {
-    console.log('handleCreateMemorial called, isBrazil:', isBrazil);
-    
     if (!coupleName || photosPreviews.length === 0 || !startDate) {
       toast.error(t("fill_missing"));
       return;
     }
-
-    // Se isBrazil for null, significa que a detecção ainda não terminou
-    if (isBrazil === null) {
-      console.error('Location detection not completed');
-      toast.error(t("location_error"));
-      return;
-    }
-
-    // Verifica se o usuário está no Brasil antes de mostrar o botão Yampi
-    if (isBrazil) {
-      console.log('Showing Yampi button for Brazilian user');
-      setShowYampiButton(true);
-    } else {
-      console.log('Showing email dialog for international user');
-      setShowEmailDialog(true);
-    }
+    setShowYampiButton(true);
   };
 
   return (
@@ -178,18 +158,16 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         </div>
       )}
 
-      <div className="w-full flex justify-center">
-        <div ref={buttonRef} className="w-full">
-          {!showYampiButton && (
-            <Button
-              className="w-full bg-lovepink hover:bg-lovepink/90"
-              disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
-              onClick={handleCreateMemorial}
-            >
-              {isLoading ? t("creating") : t("create_our_site")}
-            </Button>
-          )}
-        </div>
+      <div ref={buttonRef}>
+        {!showYampiButton && (
+          <Button
+            className="w-full bg-lovepink hover:bg-lovepink/90"
+            disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
+            onClick={handleCreateMemorial}
+          >
+            {isLoading ? t("creating") : t("create_our_site")}
+          </Button>
+        )}
       </div>
     </div>
   );

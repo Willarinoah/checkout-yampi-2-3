@@ -77,6 +77,5 @@
   "check_email": "Check your email for the magic link",
   "auth_error": "Authentication error",
   "sign_in_required": "Please sign in to continue",
-  "create_error": "Error creating memorial",
-  "location_error": "Location detection not completed. Please try again."
+  "create_error": "Error creating memorial"
 }
