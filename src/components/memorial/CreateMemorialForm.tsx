@@ -28,7 +28,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   const { t } = useLanguage();
   const buttonRef = useRef<HTMLDivElement>(null);
   const [showYampiButton, setShowYampiButton] = useState(false);
-  const [currentYampiScript, setCurrentYampiScript] = useState<string | null>(null);
   
   const {
     selectedPlan,
@@ -67,40 +66,24 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
-  // Reset Yampi button when plan changes
   useEffect(() => {
-    setShowYampiButton(false);
-    setCurrentYampiScript(null);
-    if (buttonRef.current) {
-      const oldScript = buttonRef.current.querySelector('.ymp-script');
+    if (showYampiButton && buttonRef.current && isBrazil) {
+      const oldScript = document.querySelector('.ymp-script');
       if (oldScript) {
         oldScript.remove();
       }
-    }
-  }, [selectedPlan]);
 
-  useEffect(() => {
-    if (showYampiButton && buttonRef.current && isBrazil) {
-      const scriptId = selectedPlan === 'basic' ? '59VB91DFBN' : 'G55W9F5YZK';
-      
-      // Only add script if it's different from current
-      if (currentYampiScript !== scriptId) {
-        const oldScript = buttonRef.current.querySelector('.ymp-script');
-        if (oldScript) {
-          oldScript.remove();
-        }
-
-        const script = document.createElement('script');
-        script.className = 'ymp-script';
-        script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${scriptId}/js`;
-        buttonRef.current.appendChild(script);
-        setCurrentYampiScript(scriptId);
-      }
+      const script = document.createElement('script');
+      script.className = 'ymp-script';
+      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? '59VB91DFBN' : 'G55W9F5YZK'}/js`;
+      buttonRef.current.appendChild(script);
     }
-  }, [showYampiButton, selectedPlan, isBrazil, currentYampiScript]);
+  }, [showYampiButton, selectedPlan, isBrazil]);
+
+  const isFormValid = coupleName && startDate && photosPreviews.length > 0;
 
   const handleCreateMemorial = () => {
-    if (!coupleName || photosPreviews.length === 0 || !startDate) {
+    if (!isFormValid) {
       toast.error(t("fill_missing"));
       return;
     }
@@ -110,21 +93,18 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
 
   const renderPaymentButton = () => {
     if (isBrazil) {
-      return (
-        <div className="w-full">
-          {!showYampiButton ? (
-            <Button
-              className="w-full bg-lovepink hover:bg-lovepink/90"
-              disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
-              onClick={handleCreateMemorial}
-            >
-              {isLoading ? t("creating") : t("create_our_site")}
-            </Button>
-          ) : (
-            <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />
-          )}
-        </div>
-      );
+      if (!showYampiButton) {
+        return (
+          <Button
+            className="w-full bg-lovepink hover:bg-lovepink/90"
+            disabled={isLoading || !isFormValid}
+            onClick={handleCreateMemorial}
+          >
+            {isLoading ? t("creating") : t("create_our_site")}
+          </Button>
+        );
+      }
+      return <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />;
     }
     
     return (
@@ -134,7 +114,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         setShowEmailDialog={setShowEmailDialog}
         handleEmailSubmit={handleEmailSubmit}
         email={email}
-        disabled={!coupleName || photosPreviews.length === 0 || !startDate}
+        isDisabled={!isFormValid}
       />
     );
   };
