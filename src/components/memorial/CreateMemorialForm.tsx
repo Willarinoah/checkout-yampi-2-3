@@ -85,26 +85,32 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       toast.error(t("fill_missing"));
       return;
     }
-    setShowYampiButton(true);
+    
+    if (isBrazil) {
+      setShowYampiButton(true);
+    } else {
+      setShowEmailDialog(true);
+    }
   };
 
   const renderPaymentButton = () => {
-    if (!showYampiButton) {
-      return (
-        <Button
-          className="w-full bg-lovepink hover:bg-lovepink/90"
-          disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
-          onClick={handleCreateMemorial}
-        >
-          {isLoading ? t("creating") : t("create_our_site")}
-        </Button>
-      );
-    }
-
+    // Se estiver no Brasil, mostra o botão "Criar Nosso Site" ou o botão da Yampi
     if (isBrazil) {
+      if (!showYampiButton) {
+        return (
+          <Button
+            className="w-full bg-lovepink hover:bg-lovepink/90"
+            disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
+            onClick={handleCreateMemorial}
+          >
+            {isLoading ? t("creating") : t("create_our_site")}
+          </Button>
+        );
+      }
       return <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />;
     }
-
+    
+    // Se estiver fora do Brasil, mostra o botão do Stripe
     return (
       <StripePaymentButton
         isLoading={isLoading}
