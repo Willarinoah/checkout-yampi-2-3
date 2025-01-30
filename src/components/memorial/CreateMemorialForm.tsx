@@ -84,18 +84,20 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
 
   const renderPaymentButton = () => {
     if (isBrazil) {
-      if (!showYampiButton) {
-        return (
-          <Button
-            className="w-full bg-lovepink hover:bg-lovepink/90"
-            disabled={isLoading || !isFormValid}
-            onClick={handleCreateMemorial}
-          >
-            {isLoading ? t("creating") : t("create_our_site")}
-          </Button>
-        );
-      }
-      return <YampiButton planType={selectedPlan} onCleanup={() => setShowYampiButton(false)} />;
+      return showYampiButton ? (
+        <YampiButton 
+          planType={selectedPlan} 
+          onCleanup={() => setShowYampiButton(false)} 
+        />
+      ) : (
+        <Button
+          className="w-full bg-lovepink hover:bg-lovepink/90"
+          disabled={isLoading || !isFormValid}
+          onClick={handleCreateMemorial}
+        >
+          {isLoading ? t("creating") : t("create_our_site")}
+        </Button>
+      );
     }
     
     return (
