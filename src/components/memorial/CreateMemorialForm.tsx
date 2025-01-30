@@ -78,6 +78,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       toast.error(t("fill_missing"));
       return;
     }
+    console.log("Setting showYampiButton to true");
     setShowYampiButton(true);
   };
 
