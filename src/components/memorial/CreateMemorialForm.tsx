@@ -67,14 +67,12 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
   useEffect(() => {
-    // Limpa o script antigo da Yampi se existir
-    const oldScript = document.querySelector('.ymp-script');
-    if (oldScript) {
-      oldScript.remove();
-    }
-
-    // Adiciona o novo script da Yampi se necessário
     if (showYampiButton && buttonRef.current && isBrazil) {
+      const oldScript = document.querySelector('.ymp-script');
+      if (oldScript) {
+        oldScript.remove();
+      }
+
       const script = document.createElement('script');
       script.className = 'ymp-script';
       script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? '59VB91DFBN' : 'G55W9F5YZK'}/js`;
