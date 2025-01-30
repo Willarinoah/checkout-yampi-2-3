@@ -9,7 +9,7 @@ const translations = {
   featured_on: "Featured on",
   happy_couples: "Happy Couples",
   
-  "how_it_works": "How It Works",
+  how_it_works: "How It Works",
   fill_data: "Fill Your Data",
   add_dates: "Add Important Dates",
   make_payment: "Make Payment",
@@ -69,17 +69,19 @@ const translations = {
   optional: "Optional",
   choose_photos: "Choose Photos",
   preview: "Preview",
-  sign_in: "Sign In",
-  sign_in_description: "Enter your email to receive a magic link",
-  email: "Email",
-  email_required: "Please enter your email",
-  sending: "Sending...",
-  send_magic_link: "Send Magic Link",
-  check_email: "Check your email for the magic link",
-  auth_error: "Authentication error",
-  sign_in_required: "Please sign in to continue",
-  create_error: "Error creating memorial",
-  location_error: "Location detection not completed. Please try again."
-}
+  
+  // FAQ translations
+  faq_what_is: "What is Love Counter?",
+  faq_what_is_answer: "Love Counter is a platform that helps you create beautiful relationship counters and share your love story.",
+  faq_receive_page: "How do I receive my page?",
+  faq_receive_page_answer: "After completing payment, you'll receive an email with your unique link and QR code.",
+  faq_valid_forever: "Is it valid forever?",
+  faq_valid_forever_answer: "Yes, if you choose the premium plan, your page will be valid forever!",
+  faq_can_edit: "Can I edit my page later?",
+  faq_can_edit_answer: "Yes, you can edit your page at any time by logging into your account.",
+
+  // Error messages
+  location_error: "Location detection not completed. Please try again.",
+};
 
 export default translations;

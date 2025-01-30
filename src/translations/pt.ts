@@ -106,7 +106,10 @@ const translations = {
   faq_valid_forever: "É válido para sempre?",
   faq_valid_forever_answer: "Sim, se você escolher o plano premium, sua página será válida para sempre!",
   faq_can_edit: "Posso editar minha página depois?",
-  faq_can_edit_answer: "Sim, você pode editar sua página a qualquer momento fazendo login em sua conta."
+  faq_can_edit_answer: "Sim, você pode editar sua página a qualquer momento fazendo login em sua conta.",
+
+  // Error messages
+  location_error: "Detecção de localização não concluída. Por favor, tente novamente.",
 };
 
 export default translations;
