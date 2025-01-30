@@ -80,10 +80,8 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     }
   }, [showYampiButton, selectedPlan, isBrazil]);
 
-  const isFormValid = coupleName && startDate && photosPreviews.length > 0;
-
   const handleCreateMemorial = () => {
-    if (!isFormValid) {
+    if (!coupleName || photosPreviews.length === 0 || !startDate) {
       toast.error(t("fill_missing"));
       return;
     }
@@ -97,7 +95,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         return (
           <Button
             className="w-full bg-lovepink hover:bg-lovepink/90"
-            disabled={isLoading || !isFormValid}
+            disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
             onClick={handleCreateMemorial}
           >
             {isLoading ? t("creating") : t("create_our_site")}
@@ -114,7 +112,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         setShowEmailDialog={setShowEmailDialog}
         handleEmailSubmit={handleEmailSubmit}
         email={email}
-        isDisabled={!isFormValid}
       />
     );
   };
