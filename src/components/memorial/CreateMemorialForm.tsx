@@ -19,25 +19,20 @@ interface CreateMemorialFormProps {
   onFormDataChange: (data: FormPreviewData) => void;
 }
 
-// Componente interno do Yampi Button
-const InternalYampiButton = ({ planType, onCleanup }: { planType: "basic" | "premium", onCleanup?: () => void }) => {
-  const [mountId] = useState(`yampi-${Date.now()}`);
+const InternalYampiButton = ({ planType }: { planType: "basic" | "premium" }) => {
   const [scriptLoaded, setScriptLoaded] = useState(false);
+  const mountId = React.useId();
 
   useEffect(() => {
     const cleanupDOM = () => {
-      console.log('Limpando elementos Yampi do DOM...');
-      try {
-        document.querySelectorAll('script[src*="yampi"]').forEach(script => script.remove());
-        document.querySelectorAll('[id*="yampi"]').forEach(el => el.remove());
-        document.querySelectorAll('iframe[src*="yampi"]').forEach(iframe => iframe.remove());
-        document.querySelectorAll('[class*="ymp"]').forEach(el => el.remove());
-      } catch (error) {
-        console.error('Erro ao limpar DOM:', error);
-      }
+      document.querySelectorAll('script[src*="yampi"]').forEach(script => script.remove());
+      document.querySelectorAll('[id*="yampi"]').forEach(el => {
+        if (el.id !== 'yampi-checkout-button') {
+          el.remove();
+        }
+      });
     };
 
-    console.log('Iniciando montagem do botão Yampi...');
     cleanupDOM();
 
     const script = document.createElement('script');
@@ -49,35 +44,25 @@ const InternalYampiButton = ({ planType, onCleanup }: { planType: "basic" | "pre
       setScriptLoaded(true);
     };
 
-    script.onerror = (error) => {
-      console.error('Erro ao carregar script Yampi:', error);
+    script.onerror = () => {
       toast.error("Erro ao carregar botão de pagamento. Por favor, tente novamente.");
     };
 
-    console.log('Adicionando script Yampi ao DOM...');
     document.body.appendChild(script);
 
-    // Verificação periódica do botão
-    const checkButton = setInterval(() => {
-      const button = document.querySelector('#yampi-checkout-button');
-      if (button) {
-        console.log('Botão Yampi encontrado no DOM');
-        clearInterval(checkButton);
-      }
-    }, 1000);
-
     return () => {
-      console.log('Desmontando componente Yampi...');
-      clearInterval(checkButton);
       cleanupDOM();
-      if (onCleanup) onCleanup();
     };
-  }, [planType, mountId, onCleanup]);
+  }, [planType, mountId]);
 
   return (
-    <div className="flex items-center justify-center min-h-[50px]">
-      <div id="yampi-checkout-button" />
-      {!scriptLoaded && <div>Carregando botão de pagamento...</div>}
+    <div className="w-full">
+      <div id="yampi-checkout-button" className="w-full" />
+      {!scriptLoaded && (
+        <Button disabled className="w-full bg-lovepink hover:bg-lovepink/90">
+          Carregando...
+        </Button>
+      )}
     </div>
   );
 };
@@ -116,55 +101,36 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
   useEffect(() => {
-    console.log('Estado do showYampiButton alterado:', showYampiButton);
     setShowYampiButton(false);
   }, [selectedPlan]);
 
-  useEffect(() => {
-    const previewData: FormPreviewData = {
-      coupleName,
-      photosPreviews,
-      message,
-      youtubeUrl,
-      selectedPlan,
-      startDate,
-      startTime
-    };
-    onFormDataChange(previewData);
-  }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
-
   const isFormValid = coupleName && startDate && photosPreviews.length > 0;
 
-  const handleCreateMemorial = () => {
-    if (!isFormValid) {
-      toast.error(t("fill_missing"));
-      return;
-    }
-    console.log("Ativando botão Yampi...");
-    setShowYampiButton(true);
-  };
-
   const renderPaymentButton = () => {
-    if (isBrazil) {
-      console.log('Renderizando botão para o Brasil, showYampiButton:', showYampiButton);
+    if (!isFormValid) {
       return (
-        <div className="flex items-center justify-center min-h-[50px]">
-          {showYampiButton ? (
-            <InternalYampiButton 
-              planType={selectedPlan} 
-              onCleanup={() => setShowYampiButton(false)} 
-            />
-          ) : (
-            <Button
-              className="w-full bg-lovepink hover:bg-lovepink/90"
-              disabled={isLoading || !isFormValid}
-              onClick={handleCreateMemorial}
-            >
-              {isLoading ? t("creating") : t("create_our_site")}
-            </Button>
-          )}
-        </div>
+        <Button
+          className="w-full bg-lovepink hover:bg-lovepink/90"
+          disabled={true}
+          onClick={() => toast.error(t("fill_missing"))}
+        >
+          {t("create_our_site")}
+        </Button>
       );
+    }
+
+    if (isBrazil) {
+      if (!showYampiButton) {
+        return (
+          <Button
+            className="w-full bg-lovepink hover:bg-lovepink/90"
+            onClick={() => setShowYampiButton(true)}
+          >
+            {t("create_our_site")}
+          </Button>
+        );
+      }
+      return <InternalYampiButton planType={selectedPlan} />;
     }
     
     return (
