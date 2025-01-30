@@ -22,31 +22,53 @@ interface CreateMemorialFormProps {
 // Componente interno do Yampi Button
 const InternalYampiButton = ({ planType, onCleanup }: { planType: "basic" | "premium", onCleanup?: () => void }) => {
   const [mountId] = useState(`yampi-${Date.now()}`);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
   useEffect(() => {
     const cleanupDOM = () => {
-      document.querySelectorAll('script[src*="yampi"]').forEach(script => script.remove());
-      document.querySelectorAll('[id*="yampi"]').forEach(el => el.remove());
-      document.querySelectorAll('iframe[src*="yampi"]').forEach(iframe => iframe.remove());
-      document.querySelectorAll('*').forEach(element => {
-        if (element.shadowRoot) {
-          element.shadowRoot.querySelectorAll('[id*="yampi"]').forEach(el => el.remove());
-        }
-      });
-      document.querySelectorAll('[class*="ymp"]').forEach(el => el.remove());
+      console.log('Limpando elementos Yampi do DOM...');
+      try {
+        document.querySelectorAll('script[src*="yampi"]').forEach(script => script.remove());
+        document.querySelectorAll('[id*="yampi"]').forEach(el => el.remove());
+        document.querySelectorAll('iframe[src*="yampi"]').forEach(iframe => iframe.remove());
+        document.querySelectorAll('[class*="ymp"]').forEach(el => el.remove());
+      } catch (error) {
+        console.error('Erro ao limpar DOM:', error);
+      }
     };
 
+    console.log('Iniciando montagem do botão Yampi...');
     cleanupDOM();
 
-    const timeoutId = setTimeout(() => {
-      const script = document.createElement('script');
-      script.id = mountId;
-      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${planType === 'basic' ? '59VB91DFBN' : 'G55W9F5YZK'}/js`;
-      document.body.appendChild(script);
-    }, 300);
+    const script = document.createElement('script');
+    script.id = mountId;
+    script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${planType === 'basic' ? '59VB91DFBN' : 'G55W9F5YZK'}/js`;
+    
+    script.onload = () => {
+      console.log('Script Yampi carregado com sucesso');
+      setScriptLoaded(true);
+    };
+
+    script.onerror = (error) => {
+      console.error('Erro ao carregar script Yampi:', error);
+      toast.error("Erro ao carregar botão de pagamento. Por favor, tente novamente.");
+    };
+
+    console.log('Adicionando script Yampi ao DOM...');
+    document.body.appendChild(script);
+
+    // Verificação periódica do botão
+    const checkButton = setInterval(() => {
+      const button = document.querySelector('#yampi-checkout-button');
+      if (button) {
+        console.log('Botão Yampi encontrado no DOM');
+        clearInterval(checkButton);
+      }
+    }, 1000);
 
     return () => {
-      clearTimeout(timeoutId);
+      console.log('Desmontando componente Yampi...');
+      clearInterval(checkButton);
       cleanupDOM();
       if (onCleanup) onCleanup();
     };
@@ -55,6 +77,7 @@ const InternalYampiButton = ({ planType, onCleanup }: { planType: "basic" | "pre
   return (
     <div className="flex items-center justify-center min-h-[50px]">
       <div id="yampi-checkout-button" />
+      {!scriptLoaded && <div>Carregando botão de pagamento...</div>}
     </div>
   );
 };
@@ -93,6 +116,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
   useEffect(() => {
+    console.log('Estado do showYampiButton alterado:', showYampiButton);
     setShowYampiButton(false);
   }, [selectedPlan]);
 
@@ -116,12 +140,13 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       toast.error(t("fill_missing"));
       return;
     }
-    console.log("Setting showYampiButton to true");
+    console.log("Ativando botão Yampi...");
     setShowYampiButton(true);
   };
 
   const renderPaymentButton = () => {
     if (isBrazil) {
+      console.log('Renderizando botão para o Brasil, showYampiButton:', showYampiButton);
       return (
         <div className="flex items-center justify-center min-h-[50px]">
           {showYampiButton ? (
@@ -219,4 +244,3 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       </div>
     </div>
   );
-};
