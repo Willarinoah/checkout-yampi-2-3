@@ -88,6 +88,34 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     setShowYampiButton(true);
   };
 
+  const renderPaymentButton = () => {
+    if (!showYampiButton) {
+      return (
+        <Button
+          className="w-full bg-lovepink hover:bg-lovepink/90"
+          disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
+          onClick={handleCreateMemorial}
+        >
+          {isLoading ? t("creating") : t("create_our_site")}
+        </Button>
+      );
+    }
+
+    if (isBrazil) {
+      return <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />;
+    }
+
+    return (
+      <StripePaymentButton
+        isLoading={isLoading}
+        showEmailDialog={showEmailDialog}
+        setShowEmailDialog={setShowEmailDialog}
+        handleEmailSubmit={handleEmailSubmit}
+        email={email}
+      />
+    );
+  };
+
   return (
     <div className="space-y-6">
       <PlanSelector 
@@ -149,29 +177,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       )}
 
       <div className="mt-12 flex flex-col items-center space-y-4">
-        {!showYampiButton ? (
-          <Button
-            className="w-full bg-lovepink hover:bg-lovepink/90"
-            disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
-            onClick={handleCreateMemorial}
-          >
-            {isLoading ? t("creating") : t("create_our_site")}
-          </Button>
-        ) : (
-          <>
-            {isBrazil ? (
-              <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />
-            ) : (
-              <StripePaymentButton
-                isLoading={isLoading}
-                showEmailDialog={showEmailDialog}
-                setShowEmailDialog={setShowEmailDialog}
-                handleEmailSubmit={handleEmailSubmit}
-                email={email}
-              />
-            )}
-          </>
-        )}
+        {renderPaymentButton()}
       </div>
     </div>
   );
