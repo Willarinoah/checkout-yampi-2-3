@@ -91,7 +91,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
 
   return (
     <div className="space-y-6">
-      {!isBrazil && (
+      {!isBrazil && showEmailDialog && (
         <PaymentModal
           open={showEmailDialog}
           onClose={() => setShowEmailDialog(false)}
