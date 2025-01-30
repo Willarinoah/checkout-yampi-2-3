@@ -71,21 +71,27 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       oldScript.remove();
     }
 
-    // Se showYampiButton for true, adiciona o novo script
-    if (showYampiButton && buttonRef.current) {
+    // Se showYampiButton for true E o usuário estiver no Brasil, adiciona o novo script
+    if (showYampiButton && isBrazil && buttonRef.current) {
       const script = document.createElement('script');
       script.className = 'ymp-script';
       script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? 'EPYNGGBFAY' : 'GMACVCTS2Q'}/js`;
       buttonRef.current.appendChild(script);
     }
-  }, [showYampiButton, selectedPlan]);
+  }, [showYampiButton, selectedPlan, isBrazil]);
 
   const handleCreateMemorial = () => {
     if (!coupleName || photosPreviews.length === 0 || !startDate) {
       toast.error(t("fill_missing"));
       return;
     }
-    setShowYampiButton(true);
+
+    // Verifica se o usuário está no Brasil antes de mostrar o botão Yampi
+    if (isBrazil) {
+      setShowYampiButton(true);
+    } else {
+      setShowEmailDialog(true);
+    }
   };
 
   return (
@@ -158,16 +164,18 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         </div>
       )}
 
-      <div ref={buttonRef}>
-        {!showYampiButton && (
-          <Button
-            className="w-full bg-lovepink hover:bg-lovepink/90"
-            disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
-            onClick={handleCreateMemorial}
-          >
-            {isLoading ? t("creating") : t("create_our_site")}
-          </Button>
-        )}
+      <div className="w-full flex justify-center">
+        <div ref={buttonRef} className="w-full">
+          {!showYampiButton && (
+            <Button
+              className="w-full bg-lovepink hover:bg-lovepink/90"
+              disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
+              onClick={handleCreateMemorial}
+            >
+              {isLoading ? t("creating") : t("create_our_site")}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
