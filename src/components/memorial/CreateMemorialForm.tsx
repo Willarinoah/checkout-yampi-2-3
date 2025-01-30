@@ -78,25 +78,28 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       toast.error(t("fill_missing"));
       return;
     }
-    
     setShowYampiButton(true);
   };
 
   const renderPaymentButton = () => {
     if (isBrazil) {
-      return showYampiButton ? (
-        <YampiButton 
-          planType={selectedPlan} 
-          onCleanup={() => setShowYampiButton(false)} 
-        />
-      ) : (
-        <Button
-          className="w-full bg-lovepink hover:bg-lovepink/90"
-          disabled={isLoading || !isFormValid}
-          onClick={handleCreateMemorial}
-        >
-          {isLoading ? t("creating") : t("create_our_site")}
-        </Button>
+      return (
+        <div className="w-full">
+          {showYampiButton ? (
+            <YampiButton 
+              planType={selectedPlan} 
+              onCleanup={() => setShowYampiButton(false)} 
+            />
+          ) : (
+            <Button
+              className="w-full bg-lovepink hover:bg-lovepink/90"
+              disabled={isLoading || !isFormValid}
+              onClick={handleCreateMemorial}
+            >
+              {isLoading ? t("creating") : t("create_our_site")}
+            </Button>
+          )}
+        </div>
       );
     }
     
@@ -172,7 +175,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         </div>
       )}
 
-      <div className="mt-12 flex flex-col items-center space-y-4">
+      <div className="mt-12">
         {renderPaymentButton()}
       </div>
     </div>
