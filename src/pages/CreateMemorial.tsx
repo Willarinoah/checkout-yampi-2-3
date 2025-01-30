@@ -85,8 +85,12 @@ const CreateMemorial = () => {
               onEmailSubmit={handleEmailSubmit}
               email={email}
               onShowEmailDialog={() => setShowEmailDialog(true)}
-              onFormDataChange={handleFormDataChange}
-              onYampiButtonShow={setShowYampiButton}
+              onFormDataChange={(data) => {
+                handleFormDataChange(data);
+                if (data.coupleName && data.photosPreviews?.length && data.startDate) {
+                  setShowYampiButton(true);
+                }
+              }}
             />
           </div>
 
