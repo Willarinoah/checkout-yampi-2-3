@@ -11,29 +11,23 @@ export const YampiModal = ({ open, onClose, planType }: YampiModalProps) => {
   const buttonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log('YampiModal rendered:', { open, planType });
+    // Limpa o script anterior se existir
+    const oldScript = document.querySelector('.ymp-script');
+    if (oldScript) {
+      console.log('Removing existing Yampi script');
+      oldScript.remove();
+    }
 
+    // Se o modal estiver aberto e tivermos a referência do botão, adiciona o novo script
     if (open && buttonRef.current) {
-      console.log('Initializing Yampi script');
+      console.log('Initializing Yampi script for plan:', planType);
       
-      // Cleanup any existing Yampi elements
-      const oldScript = document.querySelector('.ymp-script');
-      if (oldScript) {
-        console.log('Removing existing Yampi script');
-        oldScript.remove();
-      }
-
-      // Add new script
       const script = document.createElement('script');
       script.className = 'ymp-script';
-      
-      const buttonIds = {
-        basic: 'EPYNGGBFAY',
-        premium: 'GMACVCTS2Q'
-      };
-      
-      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${buttonIds[planType]}/js`;
-      
+      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${
+        planType === 'basic' ? 'EPYNGGBFAY' : 'GMACVCTS2Q'
+      }/js`;
+
       script.onload = () => {
         console.log('Yampi script loaded successfully');
       };
@@ -46,10 +40,9 @@ export const YampiModal = ({ open, onClose, planType }: YampiModalProps) => {
     }
 
     return () => {
-      // Cleanup on unmount or when modal closes
       const script = document.querySelector('.ymp-script');
       if (script) {
-        console.log('Cleaning up Yampi script on modal close/unmount');
+        console.log('Cleaning up Yampi script');
         script.remove();
       }
     };
