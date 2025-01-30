@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface YampiModalProps {
@@ -8,23 +8,24 @@ interface YampiModalProps {
 }
 
 export const YampiModal = ({ open, onClose, planType }: YampiModalProps) => {
-  const [mountId] = useState(`yampi-${Date.now()}`);
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log('YampiModal rendered:', { open, planType, mountId });
+    console.log('YampiModal rendered:', { open, planType });
 
-    if (open) {
+    if (open && buttonRef.current) {
       console.log('Initializing Yampi script');
       
       // Cleanup any existing Yampi elements
-      document.querySelectorAll('script[src*="yampi"]').forEach(script => {
+      const oldScript = document.querySelector('.ymp-script');
+      if (oldScript) {
         console.log('Removing existing Yampi script');
-        script.remove();
-      });
+        oldScript.remove();
+      }
 
       // Add new script
       const script = document.createElement('script');
-      script.id = mountId;
+      script.className = 'ymp-script';
       
       const buttonIds = {
         basic: 'EPYNGGBFAY',
@@ -41,16 +42,18 @@ export const YampiModal = ({ open, onClose, planType }: YampiModalProps) => {
         console.error('Error loading Yampi script:', error);
       };
 
-      document.body.appendChild(script);
+      buttonRef.current.appendChild(script);
     }
 
     return () => {
-      if (document.getElementById(mountId)) {
-        console.log('Cleaning up Yampi script:', mountId);
-        document.getElementById(mountId)?.remove();
+      // Cleanup on unmount or when modal closes
+      const script = document.querySelector('.ymp-script');
+      if (script) {
+        console.log('Cleaning up Yampi script on modal close/unmount');
+        script.remove();
       }
     };
-  }, [open, planType, mountId]);
+  }, [open, planType]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -59,7 +62,7 @@ export const YampiModal = ({ open, onClose, planType }: YampiModalProps) => {
           Digite seus dados para receber o QR Code
         </DialogTitle>
         <div className="mt-4 w-full h-[400px] flex items-center justify-center">
-          <div id="yampi-checkout-button" />
+          <div ref={buttonRef} id="yampi-checkout-button" />
         </div>
       </DialogContent>
     </Dialog>

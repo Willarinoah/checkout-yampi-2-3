@@ -91,7 +91,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       return;
     }
     
-    if (isBrazil === true) { // Verificação explícita
+    if (isBrazil === true) {
       console.log('Opening Yampi modal for Brazilian user');
       setShowYampiModal(true);
       setShowEmailDialog(false); // Garante que o modal do Stripe está fechado
@@ -104,7 +104,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Renderiza o PaymentModal apenas se NÃO for Brasil */}
       {isBrazil === false && (
         <PaymentModal
           open={showEmailDialog}
@@ -115,7 +114,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         />
       )}
       
-      {/* Renderiza o YampiModal apenas se for Brasil */}
       {isBrazil === true && (
         <YampiModal
           open={showYampiModal}
