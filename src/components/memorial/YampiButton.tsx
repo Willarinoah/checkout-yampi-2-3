@@ -47,7 +47,7 @@ export const YampiButton = ({ planType, onCleanup }: YampiButtonProps) => {
   }, [planType, mountId, onCleanup]);
 
   return (
-    <div className="w-full">
+    <div className="w-full h-[50px] flex items-center justify-center">
       <div id="yampi-checkout-button" className="w-full" />
     </div>
   );
