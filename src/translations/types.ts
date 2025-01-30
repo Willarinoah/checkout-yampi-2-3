@@ -95,16 +95,9 @@ export type Translation = {
   almost_there: string;
   fill_data_counter: string;
   preview: string;
-  
-  // FAQ translations
-  faq_what_is: string;
-  faq_what_is_answer: string;
-  faq_receive_page: string;
-  faq_receive_page_answer: string;
-  faq_valid_forever: string;
-  faq_valid_forever_answer: string;
-  faq_can_edit: string;
-  faq_can_edit_answer: string;
+
+  // New translation key
+  location_error: string;
 };
 
 export type TranslationKey = keyof Translation;
