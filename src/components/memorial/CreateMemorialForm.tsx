@@ -55,16 +55,15 @@ const InternalYampiButton = ({ planType }: { planType: "basic" | "premium" }) =>
     };
   }, [planType, mountId]);
 
-  return (
-    <div className="w-full">
-      <div id={mountId} className="w-full" />
-      {!scriptLoaded && (
-        <Button disabled className="w-full bg-lovepink hover:bg-lovepink/90">
-          Carregando...
-        </Button>
-      )}
-    </div>
-  );
+  if (!scriptLoaded) {
+    return (
+      <Button disabled className="w-full bg-lovepink hover:bg-lovepink/90">
+        Carregando...
+      </Button>
+    );
+  }
+
+  return <div id={mountId} />;
 };
 
 export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
