@@ -244,3 +244,4 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       </div>
     </div>
   );
+};
