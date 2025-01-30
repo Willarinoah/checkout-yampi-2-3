@@ -10,6 +10,7 @@ import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
 import { PaymentModal } from './PaymentModals';
+import { InternationalCreateButton } from './InternationalCreateButton';
 import { toast } from "sonner";
 
 interface CreateMemorialFormProps {
@@ -86,6 +87,8 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     setShowYampiButton(true);
   };
 
+  const isFormIncomplete = !coupleName || photosPreviews.length === 0 || !startDate;
+
   return (
     <div className="space-y-6">
       {!isBrazil && (
@@ -158,13 +161,21 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
 
       <div className="mt-12 flex flex-col items-center">
         {!showYampiButton ? (
-          <Button
-            className="w-full bg-lovepink hover:bg-lovepink/90"
-            disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
-            onClick={handleCreateMemorial}
-          >
-            {isLoading ? t("creating") : t("create_our_site")}
-          </Button>
+          isBrazil ? (
+            <Button
+              className="w-full bg-lovepink hover:bg-lovepink/90"
+              disabled={isLoading || isFormIncomplete}
+              onClick={handleCreateMemorial}
+            >
+              {isLoading ? t("creating") : t("create_our_site")}
+            </Button>
+          ) : (
+            <InternationalCreateButton
+              isLoading={isLoading}
+              isDisabled={isFormIncomplete}
+              onShowEmailDialog={onShowEmailDialog}
+            />
+          )
         ) : (
           <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />
         )}
