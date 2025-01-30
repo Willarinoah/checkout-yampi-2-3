@@ -31,6 +31,7 @@ export const useMemorialFormLogic = (
     const checkLocation = async () => {
       try {
         const info = await detectUserLocation();
+        console.log('Location detected:', info); // Debug log
         setLocationInfo(info);
         setIsBrazil(info.is_brazil);
         await saveLocationAnalytics(info);
@@ -83,7 +84,6 @@ export const useMemorialFormLogic = (
         country_code: locationInfo.country_code,
         city: locationInfo.city,
         region: locationInfo.region,
-        // Add default address info for Yampi
         address: '',
         number: '',
         complement: '',
@@ -169,20 +169,17 @@ export const useMemorialFormLogic = (
       return;
     }
 
-    // For Brazilian customers, skip email dialog and use empty values
-    // They will fill this information in Yampi's checkout
+    console.log('handleCreateMemorial called, isBrazil:', isBrazil); // Debug log
+
+    // Para clientes brasileiros, pula o diálogo de email e usa valores vazios
     if (isBrazil) {
       handleEmailSubmit("", "", "");
       return;
     }
 
-    // For international customers, continue with Stripe flow
-    if (!email) {
-      setShowEmailDialog(true);
-      return;
-    }
-
-    handleEmailSubmit(email, "", "");
+    // Para clientes internacionais, continua com o fluxo do Stripe
+    setShowEmailDialog(true); // Corrigido: Movido para fora da condição de email
+    onShowEmailDialog(); // Adicionado para garantir que o diálogo seja mostrado
   };
 
   return {
