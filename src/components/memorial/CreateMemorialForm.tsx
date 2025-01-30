@@ -67,11 +67,13 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
   useEffect(() => {
+    // Limpa o script antigo da Yampi se existir
     const oldScript = document.querySelector('.ymp-script');
     if (oldScript) {
       oldScript.remove();
     }
 
+    // Adiciona o novo script da Yampi se necessário
     if (showYampiButton && buttonRef.current && isBrazil) {
       const script = document.createElement('script');
       script.className = 'ymp-script';
