@@ -72,13 +72,13 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       oldScript.remove();
     }
 
-    if (showYampiButton && buttonRef.current) {
+    if (showYampiButton && buttonRef.current && isBrazil) {
       const script = document.createElement('script');
       script.className = 'ymp-script';
       script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? '59VB91DFBN' : 'G55W9F5YZK'}/js`;
       buttonRef.current.appendChild(script);
     }
-  }, [showYampiButton, selectedPlan]);
+  }, [showYampiButton, selectedPlan, isBrazil]);
 
   const handleCreateMemorial = () => {
     if (!coupleName || photosPreviews.length === 0 || !startDate) {
@@ -158,7 +158,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
             {isLoading ? t("creating") : t("create_our_site")}
           </Button>
         ) : (
-          <div className="w-full space-y-4">
+          <>
             {isBrazil ? (
               <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />
             ) : (
@@ -170,7 +170,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
                 email={email}
               />
             )}
-          </div>
+          </>
         )}
       </div>
     </div>
