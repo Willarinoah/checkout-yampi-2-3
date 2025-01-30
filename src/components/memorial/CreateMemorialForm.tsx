@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,51 +19,18 @@ interface CreateMemorialFormProps {
   onFormDataChange: (data: FormPreviewData) => void;
 }
 
-const InternalYampiButton = ({ planType }: { planType: "basic" | "premium" }) => {
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const mountId = React.useId();
-
-  useEffect(() => {
-    const cleanupDOM = () => {
-      document.querySelectorAll('script[src*="yampi"]').forEach(script => script.remove());
-      document.querySelectorAll('[id*="yampi"]').forEach(el => {
-        if (el.id !== mountId) {
-          el.remove();
-        }
-      });
-    };
-
-    cleanupDOM();
-
-    const script = document.createElement('script');
-    script.id = mountId;
-    script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${planType === 'basic' ? '59VB91DFBN' : 'G55W9F5YZK'}/js`;
-    
-    script.onload = () => {
-      console.log('Script Yampi carregado com sucesso');
-      setScriptLoaded(true);
-    };
-
-    script.onerror = () => {
-      toast.error("Erro ao carregar botão de pagamento. Por favor, tente novamente.");
-    };
-
-    document.body.appendChild(script);
-
-    return () => {
-      cleanupDOM();
-    };
-  }, [planType, mountId]);
-
-  if (!scriptLoaded) {
-    return (
-      <Button disabled className="w-full bg-lovepink hover:bg-lovepink/90">
-        Carregando...
-      </Button>
-    );
-  }
-
-  return <div id={mountId} />;
+const YampiButton = ({ planType }: { planType: "basic" | "premium" }) => {
+  const buttonId = planType === "basic" ? "59VB91DFBN" : "G55W9F5YZK";
+  
+  return (
+    <div className="w-full">
+      <script 
+        className="ymp-script" 
+        src={`https://api.yampi.io/v2/teste1970/public/buy-button/${buttonId}/js`}
+      />
+      <div id={`yampi-button-${buttonId}`} />
+    </div>
+  );
 };
 
 export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
@@ -129,7 +96,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
           </Button>
         );
       }
-      return <InternalYampiButton planType={selectedPlan} />;
+      return <YampiButton planType={selectedPlan} />;
     }
     
     return (
