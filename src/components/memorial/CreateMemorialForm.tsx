@@ -1,4 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Music } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { PhotoUpload } from './PhotoUpload';
 import { PlanSelector } from './PlanSelector';
@@ -6,11 +10,7 @@ import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
 import { PaymentModal } from './PaymentModals';
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Music } from "lucide-react";
 import { toast } from "sonner";
-import { BrazilCreateButton, InternationalCreateButton } from './CreateButtons';
 
 interface CreateMemorialFormProps {
   onEmailSubmit: (email: string) => void;
@@ -26,6 +26,9 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   onFormDataChange,
 }) => {
   const { t } = useLanguage();
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const [startDate, setStartDate] = useState<Date>();
+  const [startTime, setStartTime] = useState("00:00");
   const [showYampiButton, setShowYampiButton] = useState(false);
   
   const {
@@ -45,11 +48,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     isBrazil,
     showEmailDialog,
     setShowEmailDialog,
-    handleEmailSubmit,
-    startDate,
-    setStartDate,
-    startTime,
-    setStartTime
+    handleEmailSubmit
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
   useEffect(() => {
@@ -65,7 +64,27 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
-  const isFormValid = coupleName && photosPreviews.length > 0 && startDate;
+  useEffect(() => {
+    const oldScript = document.querySelector('.ymp-script');
+    if (oldScript) {
+      oldScript.remove();
+    }
+
+    if (showYampiButton && buttonRef.current) {
+      const script = document.createElement('script');
+      script.className = 'ymp-script';
+      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? 'EPYNGGBFAY' : 'GMACVCTS2Q'}/js`;
+      buttonRef.current.appendChild(script);
+    }
+  }, [showYampiButton, selectedPlan]);
+
+  const handleCreateMemorial = () => {
+    if (!coupleName || photosPreviews.length === 0 || !startDate) {
+      toast.error(t("fill_missing"));
+      return;
+    }
+    setShowYampiButton(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -138,20 +157,16 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       )}
 
       <div className="mt-12 flex flex-col items-center">
-        {isBrazil ? (
-          <BrazilCreateButton
-            isLoading={isLoading}
-            isValid={isFormValid}
-            selectedPlan={selectedPlan}
-            showYampiButton={showYampiButton}
-            onShowEmailDialog={onShowEmailDialog}
-          />
+        {!showYampiButton ? (
+          <Button
+            className="w-full bg-lovepink hover:bg-lovepink/90"
+            disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
+            onClick={handleCreateMemorial}
+          >
+            {isLoading ? t("creating") : t("create_our_site")}
+          </Button>
         ) : (
-          <InternationalCreateButton
-            isLoading={isLoading}
-            isValid={isFormValid}
-            onShowEmailDialog={onShowEmailDialog}
-          />
+          <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />
         )}
       </div>
     </div>
