@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +10,6 @@ import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
 import { PaymentModal } from './PaymentModals';
-import { YampiModal } from './YampiModal';
 import { toast } from "sonner";
 
 interface CreateMemorialFormProps {
@@ -27,7 +26,10 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   onFormDataChange,
 }) => {
   const { t } = useLanguage();
-  const [showYampiModal, setShowYampiModal] = useState(false);
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const [startDate, setStartDate] = useState<Date>();
+  const [startTime, setStartTime] = useState("00:00");
+  const [showYampiButton, setShowYampiButton] = useState(false);
   
   const {
     selectedPlan,
@@ -46,24 +48,8 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     isBrazil,
     showEmailDialog,
     setShowEmailDialog,
-    handleEmailSubmit,
-    startDate,
-    setStartDate,
-    startTime,
-    setStartTime
+    handleEmailSubmit
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
-
-  useEffect(() => {
-    console.log('Location status:', { isBrazil, showYampiModal, showEmailDialog });
-  }, [isBrazil, showYampiModal, showEmailDialog]);
-
-  // Reset Yampi modal quando o plano muda
-  useEffect(() => {
-    if (showYampiModal) {
-      console.log('Closing Yampi modal due to plan change');
-      setShowYampiModal(false);
-    }
-  }, [selectedPlan]);
 
   useEffect(() => {
     const previewData: FormPreviewData = {
@@ -78,47 +64,39 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
+  useEffect(() => {
+    // Limpa o script anterior se existir
+    const oldScript = document.querySelector('.ymp-script');
+    if (oldScript) {
+      oldScript.remove();
+    }
+
+    // Se showYampiButton for true, adiciona o novo script
+    if (showYampiButton && buttonRef.current) {
+      const script = document.createElement('script');
+      script.className = 'ymp-script';
+      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? 'EPYNGGBFAY' : 'GMACVCTS2Q'}/js`;
+      buttonRef.current.appendChild(script);
+    }
+  }, [showYampiButton, selectedPlan]);
+
   const handleCreateMemorial = () => {
-    console.log('handleCreateMemorial called:', { 
-      isBrazil, 
-      coupleName, 
-      photosLength: photosPreviews.length, 
-      startDate 
-    });
-    
     if (!coupleName || photosPreviews.length === 0 || !startDate) {
       toast.error(t("fill_missing"));
       return;
     }
-    
-    if (isBrazil === true) {
-      console.log('Opening Yampi modal for Brazilian user');
-      setShowYampiModal(true);
-      setShowEmailDialog(false); // Garante que o modal do Stripe está fechado
-    } else {
-      console.log('Opening Stripe modal for international user');
-      setShowEmailDialog(true);
-      setShowYampiModal(false); // Garante que o modal da Yampi está fechado
-    }
+    setShowYampiButton(true);
   };
 
   return (
     <div className="space-y-6">
-      {isBrazil === false && (
+      {!isBrazil && (
         <PaymentModal
           open={showEmailDialog}
           onClose={() => setShowEmailDialog(false)}
           onSubmit={handleEmailSubmit}
           email={email}
           isBrazil={false}
-        />
-      )}
-      
-      {isBrazil === true && (
-        <YampiModal
-          open={showYampiModal}
-          onClose={() => setShowYampiModal(false)}
-          planType={selectedPlan}
         />
       )}
       
@@ -180,13 +158,17 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         </div>
       )}
 
-      <Button
-        className="w-full bg-lovepink hover:bg-lovepink/90"
-        disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
-        onClick={handleCreateMemorial}
-      >
-        {isLoading ? t("creating") : t("create_our_site")}
-      </Button>
+      <div ref={buttonRef}>
+        {!showYampiButton && (
+          <Button
+            className="w-full bg-lovepink hover:bg-lovepink/90"
+            disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
+            onClick={handleCreateMemorial}
+          >
+            {isLoading ? t("creating") : t("create_our_site")}
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
