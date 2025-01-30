@@ -10,7 +10,6 @@ interface PaymentModalProps {
   onClose: () => void;
   email: string;
   onSubmit: (email: string, fullName: string, phoneNumber: string) => void;
-  isBrazil: boolean;
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({
@@ -18,7 +17,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   onClose,
   email,
   onSubmit,
-  isBrazil
 }) => {
   const [localEmail, setLocalEmail] = React.useState(email);
   const [firstName, setFirstName] = React.useState("");
@@ -26,19 +24,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [phoneNumber, setPhoneNumber] = React.useState("");
 
   const sanitizePhoneNumber = (value: string) => {
-    const digitsOnly = value.replace(/[^\d]/g, '');
-    return value.startsWith('+') ? `+${digitsOnly}` : digitsOnly;
+    return value.replace(/[^\d+]/g, '');
   };
 
   const formatPhoneNumber = (rawNumber: string) => {
     const cleanNumber = sanitizePhoneNumber(rawNumber);
-    
-    if (isBrazil) {
-      if (cleanNumber.startsWith('+55')) return cleanNumber;
-      if (cleanNumber.length <= 11) return `+55${cleanNumber}`;
-      return cleanNumber;
-    }
-    
     if (cleanNumber.startsWith('+')) return cleanNumber;
     return `+${cleanNumber}`;
   };
@@ -51,15 +41,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const validateName = (name: string, field: string) => {
     const trimmedName = name.trim();
     if (trimmedName.length < 2) {
-      toast.error(isBrazil 
-        ? `${field} deve ter pelo menos 2 caracteres` 
-        : `${field} must be at least 2 characters long`);
+      toast.error(`${field} must be at least 2 characters long`);
       return false;
     }
     if (trimmedName.length > 50) {
-      toast.error(isBrazil 
-        ? `${field} deve ter no máximo 50 caracteres` 
-        : `${field} must be at most 50 characters long`);
+      toast.error(`${field} must be at most 50 characters long`);
       return false;
     }
     return true;
@@ -67,22 +53,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   const validateForm = () => {
     if (!localEmail || !firstName || !lastName || !phoneNumber) {
-      toast.error(isBrazil 
-        ? "Por favor, preencha todos os campos" 
-        : "Please fill in all fields");
+      toast.error("Please fill in all fields");
       return false;
     }
 
-    if (!validateName(firstName, isBrazil ? "Nome" : "First name")) return false;
-    if (!validateName(lastName, isBrazil ? "Sobrenome" : "Last name")) return false;
+    if (!validateName(firstName, "First name")) return false;
+    if (!validateName(lastName, "Last name")) return false;
 
     const cleanNumber = sanitizePhoneNumber(phoneNumber);
-    const minLength = isBrazil ? 11 : 6;
-    
-    if (cleanNumber.length < minLength) {
-      toast.error(isBrazil 
-        ? "Número de telefone inválido" 
-        : "Invalid phone number");
+    if (cleanNumber.length < 6) {
+      toast.error("Invalid phone number");
       return false;
     }
 
@@ -100,75 +80,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   React.useEffect(() => {
     setLocalEmail(email);
   }, [email]);
-
-  if (isBrazil) {
-    return (
-      <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[425px] bg-white p-6">
-          <DialogTitle className="text-xl font-semibold text-black">
-            Digite seus dados para receber o QR Code
-          </DialogTitle>
-          <div className="space-y-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Nome"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="pl-10 bg-white border-gray-300"
-                  required
-                  maxLength={50}
-                />
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              </div>
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Sobrenome"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="pl-10 bg-white border-gray-300"
-                  required
-                  maxLength={50}
-                />
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              </div>
-              <div className="relative">
-                <Input
-                  type="email"
-                  placeholder="Seu melhor e-mail"
-                  value={localEmail}
-                  onChange={(e) => setLocalEmail(e.target.value)}
-                  onFocus={(e) => e.target.select()}
-                  className="pl-10 bg-white border-gray-300"
-                  required
-                />
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              </div>
-              <div className="relative">
-                <Input
-                  type="tel"
-                  placeholder="Telefone com DDD"
-                  value={phoneNumber}
-                  onChange={handlePhoneChange}
-                  className="pl-10 bg-white border-gray-300"
-                  required
-                />
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-[#6C8CFF] hover:bg-[#6C8CFF]/90 text-white"
-              >
-                Pagar com Pix ou Cartão
-              </Button>
-            </form>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
