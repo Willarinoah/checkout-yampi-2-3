@@ -1,6 +1,7 @@
-import React from 'react';
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { PaymentModal } from './PaymentModals';
+import { useLanguage } from "@/contexts/LanguageContext";
+import UserDataCollectionDialog from "./UserDataCollectionDialog";
 
 interface StripePaymentButtonProps {
   isLoading: boolean;
@@ -8,6 +9,7 @@ interface StripePaymentButtonProps {
   setShowEmailDialog: (show: boolean) => void;
   handleEmailSubmit: (email: string, fullName: string, phoneNumber: string) => void;
   email: string;
+  disabled?: boolean;
 }
 
 export const StripePaymentButton: React.FC<StripePaymentButtonProps> = ({
@@ -16,22 +18,27 @@ export const StripePaymentButton: React.FC<StripePaymentButtonProps> = ({
   setShowEmailDialog,
   handleEmailSubmit,
   email,
+  disabled
 }) => {
+  const { t } = useLanguage();
+
   return (
     <>
       <Button
         className="w-full bg-lovepink hover:bg-lovepink/90"
-        disabled={isLoading}
+        disabled={isLoading || disabled}
         onClick={() => setShowEmailDialog(true)}
       >
-        Pay with Credit Card
+        {isLoading ? t("creating") : t("pay_with_card")}
       </Button>
 
-      <PaymentModal
+      <UserDataCollectionDialog
         open={showEmailDialog}
         onClose={() => setShowEmailDialog(false)}
         onSubmit={handleEmailSubmit}
         email={email}
+        onEmailChange={() => {}}
+        isBrazil={false}
       />
     </>
   );
