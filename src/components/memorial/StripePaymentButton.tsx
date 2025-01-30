@@ -7,7 +7,7 @@ interface StripePaymentButtonProps {
   isLoading: boolean;
   showEmailDialog: boolean;
   setShowEmailDialog: (show: boolean) => void;
-  handleEmailSubmit: (email: string, fullName?: string, phoneNumber?: string) => void;
+  handleEmailSubmit: (email: string) => void;
   email: string;
   disabled?: boolean;
 }
