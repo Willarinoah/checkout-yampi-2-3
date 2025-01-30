@@ -83,7 +83,6 @@ export const useMemorialFormLogic = (
         country_code: locationInfo.country_code,
         city: locationInfo.city,
         region: locationInfo.region,
-        // Add default address info for Yampi
         address: '',
         number: '',
         complement: '',
@@ -163,28 +162,6 @@ export const useMemorialFormLogic = (
     }
   };
 
-  const handleCreateMemorial = () => {
-    if (!coupleName || photos.length === 0) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    // For Brazilian customers, skip email dialog and use empty values
-    // They will fill this information in Yampi's checkout
-    if (isBrazil) {
-      handleEmailSubmit("", "", "");
-      return;
-    }
-
-    // For international customers, continue with Stripe flow
-    if (!email) {
-      setShowEmailDialog(true);
-      return;
-    }
-
-    handleEmailSubmit(email, "", "");
-  };
-
   return {
     selectedPlan,
     setSelectedPlan,
@@ -199,7 +176,6 @@ export const useMemorialFormLogic = (
     photosPreviews,
     setPhotosPreviews,
     isLoading,
-    handleCreateMemorial,
     isBrazil,
     showEmailDialog,
     setShowEmailDialog,

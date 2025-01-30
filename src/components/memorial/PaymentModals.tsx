@@ -34,7 +34,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     const cleanNumber = sanitizePhoneNumber(rawNumber);
     
     if (isBrazil) {
-      // Formato brasileiro: +55 (XX) XXXXX-XXXX
       if (cleanNumber.startsWith('+55')) return cleanNumber;
       if (cleanNumber.length <= 11) return `+55${cleanNumber}`;
       return cleanNumber;
