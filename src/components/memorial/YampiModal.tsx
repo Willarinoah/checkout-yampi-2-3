@@ -11,11 +11,16 @@ export const YampiModal = ({ open, onClose, planType }: YampiModalProps) => {
   const [mountId] = useState(`yampi-${Date.now()}`);
 
   useEffect(() => {
-    console.log('YampiModal rendered with:', { open, planType }); // Debug log
+    console.log('YampiModal rendered:', { open, planType, mountId });
 
     if (open) {
+      console.log('Initializing Yampi script');
+      
       // Cleanup any existing Yampi elements
-      document.querySelectorAll('script[src*="yampi"]').forEach(script => script.remove());
+      document.querySelectorAll('script[src*="yampi"]').forEach(script => {
+        console.log('Removing existing Yampi script');
+        script.remove();
+      });
 
       // Add new script
       const script = document.createElement('script');
@@ -27,15 +32,21 @@ export const YampiModal = ({ open, onClose, planType }: YampiModalProps) => {
       };
       
       script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${buttonIds[planType]}/js`;
-      document.body.appendChild(script);
-
+      
       script.onload = () => {
-        console.log('Yampi script loaded successfully'); // Debug log
+        console.log('Yampi script loaded successfully');
       };
+
+      script.onerror = (error) => {
+        console.error('Error loading Yampi script:', error);
+      };
+
+      document.body.appendChild(script);
     }
 
     return () => {
       if (document.getElementById(mountId)) {
+        console.log('Cleaning up Yampi script:', mountId);
         document.getElementById(mountId)?.remove();
       }
     };

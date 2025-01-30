@@ -53,9 +53,16 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     setStartTime
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
+  useEffect(() => {
+    console.log('Location status:', { isBrazil, showYampiModal, showEmailDialog });
+  }, [isBrazil, showYampiModal, showEmailDialog]);
+
   // Reset Yampi modal quando o plano muda
   useEffect(() => {
-    setShowYampiModal(false);
+    if (showYampiModal) {
+      console.log('Closing Yampi modal due to plan change');
+      setShowYampiModal(false);
+    }
   }, [selectedPlan]);
 
   useEffect(() => {
@@ -72,24 +79,33 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
   const handleCreateMemorial = () => {
-    console.log('handleCreateMemorial called, isBrazil:', isBrazil); // Debug log
+    console.log('handleCreateMemorial called:', { 
+      isBrazil, 
+      coupleName, 
+      photosLength: photosPreviews.length, 
+      startDate 
+    });
     
     if (!coupleName || photosPreviews.length === 0 || !startDate) {
       toast.error(t("fill_missing"));
       return;
     }
     
-    if (isBrazil) {
-      console.log('Opening Yampi modal'); // Debug log
+    if (isBrazil === true) { // Verificação explícita
+      console.log('Opening Yampi modal for Brazilian user');
       setShowYampiModal(true);
+      setShowEmailDialog(false); // Garante que o modal do Stripe está fechado
     } else {
+      console.log('Opening Stripe modal for international user');
       setShowEmailDialog(true);
+      setShowYampiModal(false); // Garante que o modal da Yampi está fechado
     }
   };
 
   return (
     <div className="space-y-6">
-      {!isBrazil && (
+      {/* Renderiza o PaymentModal apenas se NÃO for Brasil */}
+      {isBrazil === false && (
         <PaymentModal
           open={showEmailDialog}
           onClose={() => setShowEmailDialog(false)}
@@ -99,11 +115,14 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         />
       )}
       
-      <YampiModal
-        open={showYampiModal}
-        onClose={() => setShowYampiModal(false)}
-        planType={selectedPlan}
-      />
+      {/* Renderiza o YampiModal apenas se for Brasil */}
+      {isBrazil === true && (
+        <YampiModal
+          open={showYampiModal}
+          onClose={() => setShowYampiModal(false)}
+          planType={selectedPlan}
+        />
+      )}
       
       <PlanSelector 
         selectedPlan={selectedPlan} 
