@@ -27,7 +27,7 @@ const InternalYampiButton = ({ planType }: { planType: "basic" | "premium" }) =>
     const cleanupDOM = () => {
       document.querySelectorAll('script[src*="yampi"]').forEach(script => script.remove());
       document.querySelectorAll('[id*="yampi"]').forEach(el => {
-        if (el.id !== 'yampi-checkout-button') {
+        if (el.id !== mountId) {
           el.remove();
         }
       });
@@ -57,7 +57,7 @@ const InternalYampiButton = ({ planType }: { planType: "basic" | "premium" }) =>
 
   return (
     <div className="w-full">
-      <div id="yampi-checkout-button" className="w-full" />
+      <div id={mountId} className="w-full" />
       {!scriptLoaded && (
         <Button disabled className="w-full bg-lovepink hover:bg-lovepink/90">
           Carregando...
