@@ -166,7 +166,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
             {isLoading ? t("creating") : t("create_our_site")}
           </Button>
         ) : (
-          <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[80px] py-4" />
+          <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />
         )}
       </div>
     </div>
