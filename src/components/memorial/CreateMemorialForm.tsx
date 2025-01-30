@@ -10,7 +10,6 @@ import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
 import { PaymentModal } from './PaymentModals';
-import { InternationalCreateButton } from './InternationalCreateButton';
 import { toast } from "sonner";
 
 interface CreateMemorialFormProps {
@@ -74,7 +73,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     if (showYampiButton && buttonRef.current) {
       const script = document.createElement('script');
       script.className = 'ymp-script';
-      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? '59VB91DFBN' : 'G55W9F5YZK'}/js`;
+      script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${selectedPlan === 'basic' ? 'EPYNGGBFAY' : 'GMACVCTS2Q'}/js`;
       buttonRef.current.appendChild(script);
     }
   }, [showYampiButton, selectedPlan]);
@@ -87,11 +86,9 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     setShowYampiButton(true);
   };
 
-  const isFormIncomplete = !coupleName || photosPreviews.length === 0 || !startDate;
-
   return (
     <div className="space-y-6">
-      {!isBrazil && showEmailDialog && (
+      {!isBrazil && (
         <PaymentModal
           open={showEmailDialog}
           onClose={() => setShowEmailDialog(false)}
@@ -161,21 +158,13 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
 
       <div className="mt-12 flex flex-col items-center">
         {!showYampiButton ? (
-          isBrazil ? (
-            <Button
-              className="w-full bg-lovepink hover:bg-lovepink/90"
-              disabled={isLoading || isFormIncomplete}
-              onClick={handleCreateMemorial}
-            >
-              {isLoading ? t("creating") : t("create_our_site")}
-            </Button>
-          ) : (
-            <InternationalCreateButton
-              isLoading={isLoading}
-              isDisabled={isFormIncomplete}
-              onShowEmailDialog={onShowEmailDialog}
-            />
-          )
+          <Button
+            className="w-full bg-lovepink hover:bg-lovepink/90"
+            disabled={isLoading || !coupleName || photosPreviews.length === 0 || !startDate}
+            onClick={handleCreateMemorial}
+          >
+            {isLoading ? t("creating") : t("create_our_site")}
+          </Button>
         ) : (
           <div ref={buttonRef} className="w-full flex justify-center items-center min-h-[50px]" />
         )}
