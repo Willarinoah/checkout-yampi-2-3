@@ -2,8 +2,8 @@
 type YampiPlan = "basic" | "premium";
 
 const YAMPI_SCRIPTS = {
-  basic: "https://api.yampi.io/v2/teste1970/public/buy-button/59VB91DFBN/js",
-  premium: "https://api.yampi.io/v2/teste1970/public/buy-button/G55W9F5YZK/js",
+  basic: "https://api.yampi.io/v2/teste1970/public/buy-button/TNJONVV5OA/js",
+  premium: "https://api.yampi.io/v2/teste1970/public/buy-button/PG25RIM4UK/js",
 };
 
 export function useYampiScript(plan: YampiPlan) {
