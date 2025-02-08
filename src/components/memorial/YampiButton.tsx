@@ -20,8 +20,9 @@ export function YampiButton({ plan, isModalOpen }: YampiButtonProps) {
     
     const timeout = setTimeout(() => {
       setIsLoading(false);
-      if ('YampiCheckout' in window && window.YampiCheckout) {
-        window.YampiCheckout.init();
+      const yampiCheckout = (window as Window & typeof globalThis & { YampiCheckout?: { init: () => void } }).YampiCheckout;
+      if (yampiCheckout) {
+        yampiCheckout.init();
       }
     }, 1000);
 
