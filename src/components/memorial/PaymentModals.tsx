@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -93,8 +94,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           Almost there!
         </DialogTitle>
         {showYampiButton ? (
-          <div className="w-full">
-            <YampiButton plan={selectedPlan} isModalOpen={open} />
+          <div className="w-full flex flex-col items-center justify-center">
+            <div className="w-full flex items-center justify-center mx-auto" style={{ maxWidth: '300px' }}>
+              <YampiButton plan={selectedPlan} isModalOpen={open} />
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
