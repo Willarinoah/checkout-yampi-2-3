@@ -40,6 +40,8 @@ export function YampiButton({ plan, isModalOpen }: YampiButtonProps) {
   }
 
   return (
-    <div id={`yampi-button-${plan}`} className="w-full h-12" />
+    <div className="flex items-center justify-center w-full">
+      <div id={`yampi-button-${plan}`} className="w-full max-w-[300px] h-12" />
+    </div>
   );
 }
