@@ -4,12 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Mail, User, Phone } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { YampiButton } from "./YampiButton";
 
 interface PaymentModalProps {
   open: boolean;
   onClose: () => void;
   email: string;
   onSubmit: (email: string, fullName: string, phoneNumber: string) => void;
+  selectedPlan?: "basic" | "premium";
+  showYampiButton?: boolean;
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({
@@ -17,6 +20,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   onClose,
   email,
   onSubmit,
+  selectedPlan = "basic",
+  showYampiButton = false,
 }) => {
   const [localEmail, setLocalEmail] = React.useState(email);
   const [firstName, setFirstName] = React.useState("");
@@ -87,68 +92,74 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         <DialogTitle className="text-xl font-semibold text-black">
           Almost there!
         </DialogTitle>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <p className="text-sm text-gray-500">
-              Please enter your information to continue creating your memorial.
-            </p>
+        {showYampiButton ? (
+          <div className="w-full">
+            <YampiButton plan={selectedPlan} isModalOpen={open} />
           </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="First name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="pl-10 bg-white border-gray-300"
-                required
-                maxLength={50}
-              />
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        ) : (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm text-gray-500">
+                Please enter your information to continue creating your memorial.
+              </p>
             </div>
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Last name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="pl-10 bg-white border-gray-300"
-                required
-                maxLength={50}
-              />
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            </div>
-            <div className="relative">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                value={localEmail}
-                onChange={(e) => setLocalEmail(e.target.value)}
-                onFocus={(e) => e.target.select()}
-                className="pl-10 bg-white border-gray-300"
-                required
-              />
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            </div>
-            <div className="relative">
-              <Input
-                type="tel"
-                placeholder="Phone number (e.g. +1234567890)"
-                value={phoneNumber}
-                onChange={handlePhoneChange}
-                className="pl-10 bg-white border-gray-300"
-                required
-              />
-              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full bg-[#0B1221] hover:bg-[#0B1221]/90 text-white"
-            >
-              Continue
-            </Button>
-          </form>
-        </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="First name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="pl-10 bg-white border-gray-300"
+                  required
+                  maxLength={50}
+                />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              </div>
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Last name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="pl-10 bg-white border-gray-300"
+                  required
+                  maxLength={50}
+                />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              </div>
+              <div className="relative">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={localEmail}
+                  onChange={(e) => setLocalEmail(e.target.value)}
+                  onFocus={(e) => e.target.select()}
+                  className="pl-10 bg-white border-gray-300"
+                  required
+                />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              </div>
+              <div className="relative">
+                <Input
+                  type="tel"
+                  placeholder="Phone number (e.g. +1234567890)"
+                  value={phoneNumber}
+                  onChange={handlePhoneChange}
+                  className="pl-10 bg-white border-gray-300"
+                  required
+                />
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full bg-[#0B1221] hover:bg-[#0B1221]/90 text-white"
+              >
+                Continue
+              </Button>
+            </form>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

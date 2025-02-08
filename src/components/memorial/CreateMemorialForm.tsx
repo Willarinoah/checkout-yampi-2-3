@@ -10,6 +10,7 @@ import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
 import { StripePaymentButton } from './StripePaymentButton';
+import { PaymentModal } from './PaymentModals';
 import { toast } from "sonner";
 
 interface CreateMemorialFormProps {
@@ -19,29 +20,6 @@ interface CreateMemorialFormProps {
   onFormDataChange: (data: FormPreviewData) => void;
 }
 
-const YampiButton = ({ planType }: { planType: "basic" | "premium" }) => {
-  const buttonId = planType === "basic" ? "59VB91DFBN" : "G55W9F5YZK";
-  
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = `https://api.yampi.io/v2/teste1970/public/buy-button/${buttonId}/js`;
-    script.className = 'ymp-script';
-    document.getElementById(`yampi-container-${buttonId}`)?.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
-  }, [buttonId]);
-
-  return (
-    <div className="w-full">
-      <div id={`yampi-container-${buttonId}`}>
-        <div id={`yampi-button-${buttonId}`} />
-      </div>
-    </div>
-  );
-};
-
 export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   onEmailSubmit,
   onShowEmailDialog,
@@ -49,7 +27,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
   onFormDataChange,
 }) => {
   const { t } = useLanguage();
-  const [showYampiButton, setShowYampiButton] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   
   const {
     selectedPlan,
@@ -75,10 +53,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     setStartTime
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
-  useEffect(() => {
-    setShowYampiButton(false);
-  }, [selectedPlan]);
-
   const isFormValid = coupleName && startDate && photosPreviews.length > 0;
 
   const renderPaymentButton = () => {
@@ -95,17 +69,14 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     }
 
     if (isBrazil) {
-      if (!showYampiButton) {
-        return (
-          <Button
-            className="w-full bg-lovepink hover:bg-lovepink/90"
-            onClick={() => setShowYampiButton(true)}
-          >
-            {t("create_our_site")}
-          </Button>
-        );
-      }
-      return <YampiButton planType={selectedPlan} />;
+      return (
+        <Button
+          className="w-full bg-lovepink hover:bg-lovepink/90"
+          onClick={() => setShowPaymentModal(true)}
+        >
+          {t("create_our_site")}
+        </Button>
+      );
     }
     
     return (
@@ -183,6 +154,15 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       <div className="mt-12">
         {renderPaymentButton()}
       </div>
+
+      <PaymentModal
+        open={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        email={email}
+        onSubmit={handleEmailSubmit}
+        selectedPlan={selectedPlan}
+        showYampiButton={true}
+      />
     </div>
   );
 };
