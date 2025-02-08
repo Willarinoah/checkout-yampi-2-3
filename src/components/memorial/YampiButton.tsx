@@ -20,9 +20,8 @@ export function YampiButton({ plan, isModalOpen }: YampiButtonProps) {
     
     const timeout = setTimeout(() => {
       setIsLoading(false);
-      const yampiCheckout = (window as Window & typeof globalThis & { YampiCheckout?: { init: () => void } }).YampiCheckout;
-      if (yampiCheckout) {
-        yampiCheckout.init();
+      if ('YampiCheckout' in window && window.YampiCheckout) {
+        window.YampiCheckout.init();
       }
     }, 1000);
 
@@ -41,7 +40,7 @@ export function YampiButton({ plan, isModalOpen }: YampiButtonProps) {
   }
 
   return (
-    <div className="flex items-center justify-center w-full">
+    <div className="w-full flex items-center justify-center">
       <div id={`yampi-button-${plan}`} className="w-full max-w-[300px] h-12" />
     </div>
   );
