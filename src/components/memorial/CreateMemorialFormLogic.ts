@@ -67,10 +67,12 @@ export const useMemorialFormLogic = (
       const uniqueUrl = constructMemorialUrl(baseUrl, `/memorial/${customSlug}`);
       console.log('Generated unique URL:', uniqueUrl);
 
+      // Upload QR Code
       const qrCodeBlob = await generateQRCodeBlob(uniqueUrl);
       const qrCodeUrl = await uploadQRCode(qrCodeBlob, customSlug);
       console.log('QR Code uploaded:', qrCodeUrl);
 
+      // Upload photos
       console.log('Uploading photos:', photos);
       const photoUrls = await uploadPhotosToStorage(photos, customSlug);
       console.log('Photos uploaded:', photoUrls);
