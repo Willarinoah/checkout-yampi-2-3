@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { PaymentModal } from './PaymentModals';
@@ -29,7 +30,7 @@ export const StripePaymentButton: React.FC<StripePaymentButtonProps> = ({
         disabled={isLoading || isDisabled}
         onClick={() => setShowEmailDialog(true)}
       >
-        {isLoading ? t("creating") : "Pay with Credit Card"}
+        {isLoading ? t("creating") : t("create_our_site")}
       </Button>
 
       <PaymentModal
