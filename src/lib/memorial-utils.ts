@@ -39,7 +39,7 @@ export const createNewMemorial = async (
       ...memorialData,
       custom_slug: customSlug,
       unique_url: uniqueUrl,
-      plan_type: getPlanTypeFromSelection(memorialData.plan_type)
+      plan_type: getPlanTypeFromSelection(memorialData.plan_type, isBrazil)
     }, isBrazil);
     
     if (!memorial) {

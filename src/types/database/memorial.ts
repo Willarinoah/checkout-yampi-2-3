@@ -1,3 +1,4 @@
+
 import type { Json } from "@/integrations/supabase/types";
 
 export type UserConfig = {
@@ -11,7 +12,7 @@ export type UserConfig = {
   qr_code_url: string | null;
   custom_slug: string;
   unique_url: string;
-  plan_type: "1 year, 3 photos and no music" | "Forever, 7 photos and music";
+  plan_type: "1 year, 3 photos and no music" | "Forever, 7 photos and music" | "1 year, 3 photos and no music (international)" | "Forever, 7 photos and music (international)";
   plan_price: number;
   created_at: string;
   updated_at: string;
@@ -49,8 +50,17 @@ export type MemorialFormData = {
   preferences?: Json | null;
 };
 
-export const getPlanTypeFromSelection = (planType: "basic" | "premium"): "1 year, 3 photos and no music" | "Forever, 7 photos and music" => {
-  return planType === "basic" 
-    ? "1 year, 3 photos and no music" 
-    : "Forever, 7 photos and music";
+export const getPlanTypeFromSelection = (
+  planType: "basic" | "premium", 
+  isBrazil: boolean = false
+): "1 year, 3 photos and no music" | "Forever, 7 photos and music" | "1 year, 3 photos and no music (international)" | "Forever, 7 photos and music (international)" => {
+  if (isBrazil) {
+    return planType === "basic" 
+      ? "1 year, 3 photos and no music" 
+      : "Forever, 7 photos and music";
+  } else {
+    return planType === "basic" 
+      ? "1 year, 3 photos and no music (international)" 
+      : "Forever, 7 photos and music (international)";
+  }
 };
