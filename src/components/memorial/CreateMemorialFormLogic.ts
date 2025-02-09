@@ -56,67 +56,70 @@ export const useMemorialFormLogic = (
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
+  const createMemorialData = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
+    const customSlug = await generateUniqueSlug(coupleName);
+    const baseUrl = sanitizeBaseUrl(window.location.origin);
+    const uniqueUrl = constructMemorialUrl(baseUrl, `/memorial/${customSlug}`);
+    console.log('Generated unique URL:', uniqueUrl);
+
+    // Upload QR Code
+    const qrCodeBlob = await generateQRCodeBlob(uniqueUrl);
+    const qrCodeUrl = await uploadQRCode(qrCodeBlob, customSlug);
+    console.log('QR Code uploaded:', qrCodeUrl);
+
+    // Upload photos
+    console.log('Uploading photos:', photos);
+    const photoUrls = await uploadPhotosToStorage(photos, customSlug);
+    console.log('Photos uploaded:', photoUrls);
+
+    const planType = selectedPlan === "basic" 
+      ? isBrazil ? "1 year, 3 photos and no music" : "1 year, 3 photos and no music (international)"
+      : isBrazil ? "Forever, 7 photos and music" : "Forever, 7 photos and music (international)";
+    
+    const planPrice = selectedPlan === "basic" 
+      ? isBrazil ? 29 : 9
+      : isBrazil ? 49 : 14;
+
+    const addressInfo = locationInfo ? {
+      country_code: locationInfo.country_code,
+      city: locationInfo.city,
+      region: locationInfo.region,
+      address: '',
+      number: '',
+      complement: '',
+      district: '',
+      zipcode: ''
+    } : null;
+
+    return {
+      couple_name: coupleName,
+      message: message || null,
+      plan_type: planType,
+      plan_price: planPrice,
+      custom_slug: customSlug,
+      unique_url: uniqueUrl,
+      payment_status: "pending",
+      qr_code_url: qrCodeUrl,
+      photos: photoUrls,
+      youtube_url: selectedPlan === "premium" && youtubeUrl ? youtubeUrl : null,
+      relationship_start: startDate ? startDate.toISOString() : new Date().toISOString(),
+      time: startTime,
+      email: submittedEmail || '',
+      full_name: fullName || coupleName,
+      phone: phoneNumber || '',
+      address_info: addressInfo,
+      preferences: null
+    };
+  };
+
   const handleEmailSubmit = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
     try {
       setIsLoading(true);
       onEmailSubmit(submittedEmail);
       setShowEmailDialog(false);
 
-      const customSlug = await generateUniqueSlug(coupleName);
-      const baseUrl = sanitizeBaseUrl(window.location.origin);
-      const uniqueUrl = constructMemorialUrl(baseUrl, `/memorial/${customSlug}`);
-      console.log('Generated unique URL:', uniqueUrl);
-
-      // Upload QR Code
-      const qrCodeBlob = await generateQRCodeBlob(uniqueUrl);
-      const qrCodeUrl = await uploadQRCode(qrCodeBlob, customSlug);
-      console.log('QR Code uploaded:', qrCodeUrl);
-
-      // Upload photos
-      console.log('Uploading photos:', photos);
-      const photoUrls = await uploadPhotosToStorage(photos, customSlug);
-      console.log('Photos uploaded:', photoUrls);
-
-      const planType = selectedPlan === "basic" 
-        ? isBrazil ? "1 year, 3 photos and no music" : "1 year, 3 photos and no music (international)"
-        : isBrazil ? "Forever, 7 photos and music" : "Forever, 7 photos and music (international)";
-      
-      const planPrice = selectedPlan === "basic" 
-        ? isBrazil ? 29 : 9
-        : isBrazil ? 49 : 14;
-
-      const addressInfo = locationInfo ? {
-        country_code: locationInfo.country_code,
-        city: locationInfo.city,
-        region: locationInfo.region,
-        address: '',
-        number: '',
-        complement: '',
-        district: '',
-        zipcode: ''
-      } : null;
-
-      const memorialData = {
-        couple_name: coupleName,
-        message: message || null,
-        plan_type: planType,
-        plan_price: planPrice,
-        custom_slug: customSlug,
-        unique_url: uniqueUrl,
-        payment_status: "pending",
-        qr_code_url: qrCodeUrl,
-        photos: photoUrls,
-        youtube_url: selectedPlan === "premium" && youtubeUrl ? youtubeUrl : null,
-        relationship_start: startDate ? startDate.toISOString() : new Date().toISOString(),
-        time: startTime,
-        email: submittedEmail || '',
-        full_name: fullName || coupleName,
-        phone: phoneNumber || '',
-        address_info: addressInfo,
-        preferences: null
-      };
-
-      console.log('Inserting memorial data:', memorialData);
+      const memorialData = await createMemorialData(submittedEmail, fullName, phoneNumber);
+      console.log('Memorial data prepared:', memorialData);
       
       if (isBrazil) {
         // Para o Brasil, primeiro salvamos os dados na tabela yampi_memorials
@@ -138,7 +141,7 @@ export const useMemorialFormLogic = (
 
         console.log('Successfully created memorial in yampi_memorials:', insertedMemorial);
 
-        // Chama a função yampi-checkout
+        // Chama a função yampi-checkout para obter a URL do checkout
         console.log('Calling yampi-checkout function...');
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
           'yampi-checkout',
