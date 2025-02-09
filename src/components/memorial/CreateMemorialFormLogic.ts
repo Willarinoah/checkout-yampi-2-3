@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { uploadPhotosToStorage, uploadQRCode } from '@/lib/file-upload';
@@ -114,49 +115,87 @@ export const useMemorialFormLogic = (
       };
 
       console.log('Inserting memorial data:', memorialData);
+      
+      if (isBrazil) {
+        // Para o Brasil, primeiro salvamos os dados e depois chamamos a API da Yampi
+        const { data: insertedMemorial, error: insertError } = await supabase
+          .from('yampi_memorials')
+          .insert(memorialData)
+          .select()
+          .maybeSingle();
 
-      // Insert into the appropriate table based on location
-      const tableName = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
-      const { data: insertedMemorial, error: insertError } = await supabase
-        .from(tableName)
-        .insert(memorialData)
-        .select()
-        .maybeSingle();
-
-      if (insertError) {
-        console.error('Error inserting memorial:', insertError);
-        throw new Error(insertError.message);
-      }
-
-      if (!insertedMemorial) {
-        throw new Error('Failed to create memorial');
-      }
-
-      console.log('Successfully created memorial:', insertedMemorial);
-
-      // Call appropriate checkout function based on location
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
-        isBrazil ? 'yampi-checkout' : 'create-checkout',
-        {
-          body: {
-            planType: selectedPlan,
-            memorialData: insertedMemorial
-          },
+        if (insertError) {
+          console.error('Error inserting memorial:', insertError);
+          throw new Error(insertError.message);
         }
-      );
 
-      if (checkoutError) {
-        console.error('Error creating checkout:', checkoutError);
-        throw new Error(checkoutError.message);
+        if (!insertedMemorial) {
+          throw new Error('Failed to create memorial');
+        }
+
+        console.log('Successfully created memorial:', insertedMemorial);
+
+        // Chama a função yampi-checkout
+        const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
+          'yampi-checkout',
+          {
+            body: {
+              planType: selectedPlan,
+              memorialData: insertedMemorial
+            },
+          }
+        );
+
+        if (checkoutError) {
+          console.error('Error creating Yampi checkout:', checkoutError);
+          throw new Error(checkoutError.message);
+        }
+
+        if (!checkoutData?.url) {
+          throw new Error('No Yampi checkout URL received');
+        }
+
+        window.location.href = checkoutData.url;
+      } else {
+        // Para outros países, mantém o fluxo do Stripe
+        const { data: insertedMemorial, error: insertError } = await supabase
+          .from('stripe_memorials')
+          .insert(memorialData)
+          .select()
+          .maybeSingle();
+
+        if (insertError) {
+          console.error('Error inserting memorial:', insertError);
+          throw new Error(insertError.message);
+        }
+
+        if (!insertedMemorial) {
+          throw new Error('Failed to create memorial');
+        }
+
+        console.log('Successfully created memorial:', insertedMemorial);
+
+        const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
+          'create-checkout',
+          {
+            body: {
+              planType: selectedPlan,
+              memorialData: insertedMemorial
+            },
+          }
+        );
+
+        if (checkoutError) {
+          console.error('Error creating Stripe checkout:', checkoutError);
+          throw new Error(checkoutError.message);
+        }
+
+        if (!checkoutData?.url) {
+          throw new Error('No checkout URL received');
+        }
+
+        window.location.href = checkoutData.url;
       }
-
-      if (!checkoutData?.url) {
-        throw new Error('No checkout URL received');
-      }
-
-      // Redirect to checkout
-      window.location.href = checkoutData.url;
-
     } catch (error: unknown) {
       console.error('Error in create memorial flow:', error);
       toast.error(error instanceof Error ? error.message : "Error creating memorial. Please try again.");
