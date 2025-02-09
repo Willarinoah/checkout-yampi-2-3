@@ -2,8 +2,8 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 import { MercadoPagoConfig, Preference } from 'https://esm.sh/mercadopago@2.0.6';
 
-const BASIC_PRICE_ID = 'price_1QgdpvBZoAuGJOIj2NVvP2EZ';
-const PREMIUM_PRICE_ID = 'price_1QgdqPBZoAuGJOIjB63PoQ3d';
+const BASIC_PRICE_ID = 'price_1QZFcpHqzrKr0Po5Yi7TwA6u';
+const PREMIUM_PRICE_ID = 'price_1QZFeeHqzrKr0Po5eUPMHE2B';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

@@ -5,7 +5,7 @@ export const getPlans = (t: (key: TranslationKey) => string): Plan[] => [
   {
     plan: "basic",
     price: "29",
-    priceId: "price_1QgdpvBZoAuGJOIj2NVvP2EZ",
+    priceId: "price_1QZFcpHqzrKr0Po5Yi7TwA6u",
     features: [
       { text: "year_access", available: true },
       { text: "photos_no_music", available: true },
@@ -16,7 +16,7 @@ export const getPlans = (t: (key: TranslationKey) => string): Plan[] => [
   {
     plan: "premium",
     price: "49",
-    priceId: "price_1QgdqPBZoAuGJOIjB63PoQ3d",
+    priceId: "price_1QZFeeHqzrKr0Po5eUPMHE2B",
     features: [
       { text: "forever_access", available: true },
       { text: "photos_with_music", available: true },
