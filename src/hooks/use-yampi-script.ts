@@ -6,6 +6,17 @@ const YAMPI_SCRIPTS = {
   premium: "https://api.yampi.io/v2/teste1970/public/buy-button/PG25RIM4UK/js",
 };
 
+interface YampiWindow extends Window {
+  YampiCheckout?: {
+    init: () => void;
+    beforeCheckout?: () => Promise<boolean>;
+  };
+}
+
+declare global {
+  interface Window extends YampiWindow {}
+}
+
 export function useYampiScript(plan: YampiPlan) {
   const loadScript = (modalOpen: boolean) => {
     if (!modalOpen) return () => {};
