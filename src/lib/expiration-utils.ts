@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { getMemorialBySlug, updateMemorialData, getMemorialPaymentStatus } from './memorial-data-utils';
 

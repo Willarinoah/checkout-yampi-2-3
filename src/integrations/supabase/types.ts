@@ -42,59 +42,170 @@ export type Database = {
         }
         Relationships: []
       }
-      user_configs: {
+      stripe_memorials: {
         Row: {
+          address_info: Json | null
           couple_name: string
-          created_at: string
+          created_at: string | null
           custom_slug: string
-          email: string
+          email: string | null
+          full_name: string | null
           id: string
           message: string | null
-          payment_status: Database["public"]["Enums"]["payment_status"]
+          payment_status: string
+          phone: string | null
           photos: string[] | null
           plan_price: number
-          plan_type: Database["public"]["Enums"]["plan_type"]
+          plan_type: string
+          preferences: Json | null
+          qr_code_url: string | null
+          relationship_start: string
+          stripe_customer_id: string | null
+          stripe_session_id: string | null
+          stripe_subscription_id: string | null
+          time: string
+          unique_url: string
+          updated_at: string | null
+          user_id: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          address_info?: Json | null
+          couple_name: string
+          created_at?: string | null
+          custom_slug: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          message?: string | null
+          payment_status?: string
+          phone?: string | null
+          photos?: string[] | null
+          plan_price: number
+          plan_type: string
+          preferences?: Json | null
+          qr_code_url?: string | null
+          relationship_start: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          time: string
+          unique_url: string
+          updated_at?: string | null
+          user_id?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          address_info?: Json | null
+          couple_name?: string
+          created_at?: string | null
+          custom_slug?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          message?: string | null
+          payment_status?: string
+          phone?: string | null
+          photos?: string[] | null
+          plan_price?: number
+          plan_type?: string
+          preferences?: Json | null
+          qr_code_url?: string | null
+          relationship_start?: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          time?: string
+          unique_url?: string
+          updated_at?: string | null
+          user_id?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
+      yampi_memorials: {
+        Row: {
+          address_info: Json | null
+          couple_name: string
+          created_at: string | null
+          custom_slug: string
+          email: string | null
+          full_name: string | null
+          id: string
+          message: string | null
+          payment_status: string
+          phone: string | null
+          photos: string[] | null
+          plan_price: number
+          plan_type: string
+          preferences: Json | null
           qr_code_url: string | null
           relationship_start: string
           time: string
           unique_url: string
-          updated_at: string
+          updated_at: string | null
+          user_id: string | null
+          yampi_installments: number | null
+          yampi_order_id: string | null
+          yampi_payment_id: string | null
+          yampi_payment_method: string | null
+          yampi_status: string | null
           youtube_url: string | null
         }
         Insert: {
+          address_info?: Json | null
           couple_name: string
-          created_at?: string
+          created_at?: string | null
           custom_slug: string
-          email: string
+          email?: string | null
+          full_name?: string | null
           id?: string
           message?: string | null
-          payment_status?: Database["public"]["Enums"]["payment_status"]
+          payment_status?: string
+          phone?: string | null
           photos?: string[] | null
           plan_price: number
-          plan_type: Database["public"]["Enums"]["plan_type"]
+          plan_type: string
+          preferences?: Json | null
           qr_code_url?: string | null
           relationship_start: string
           time: string
           unique_url: string
-          updated_at?: string
+          updated_at?: string | null
+          user_id?: string | null
+          yampi_installments?: number | null
+          yampi_order_id?: string | null
+          yampi_payment_id?: string | null
+          yampi_payment_method?: string | null
+          yampi_status?: string | null
           youtube_url?: string | null
         }
         Update: {
+          address_info?: Json | null
           couple_name?: string
-          created_at?: string
+          created_at?: string | null
           custom_slug?: string
-          email?: string
+          email?: string | null
+          full_name?: string | null
           id?: string
           message?: string | null
-          payment_status?: Database["public"]["Enums"]["payment_status"]
+          payment_status?: string
+          phone?: string | null
           photos?: string[] | null
           plan_price?: number
-          plan_type?: Database["public"]["Enums"]["plan_type"]
+          plan_type?: string
+          preferences?: Json | null
           qr_code_url?: string | null
           relationship_start?: string
           time?: string
           unique_url?: string
-          updated_at?: string
+          updated_at?: string | null
+          user_id?: string | null
+          yampi_installments?: number | null
+          yampi_order_id?: string | null
+          yampi_payment_id?: string | null
+          yampi_payment_method?: string | null
+          yampi_status?: string | null
           youtube_url?: string | null
         }
         Relationships: []
