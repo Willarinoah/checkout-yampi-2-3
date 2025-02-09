@@ -75,17 +75,21 @@ type RequiredMemorialFields = {
   couple_name: string;
   custom_slug: string;
   unique_url: string;
+  plan_type: string;
+  plan_price: number;
+  relationship_start: string;
+  time: string;
 };
 
 export const createMemorial = async (
-  data: RequiredMemorialFields & Partial<Memorial>,
+  data: RequiredMemorialFields & Partial<Omit<Memorial, keyof RequiredMemorialFields>>,
   isBrazil: boolean
 ): Promise<Memorial | null> => {
   const tableName = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
   
   const { data: memorial, error } = await supabase
     .from(tableName)
-    .insert([data])
+    .insert(data)
     .select()
     .maybeSingle();
 
