@@ -66,7 +66,6 @@ export type Database = {
           time: string
           unique_url: string
           updated_at: string | null
-          user_id: string | null
           youtube_url: string | null
         }
         Insert: {
@@ -92,7 +91,6 @@ export type Database = {
           time: string
           unique_url: string
           updated_at?: string | null
-          user_id?: string | null
           youtube_url?: string | null
         }
         Update: {
@@ -118,7 +116,6 @@ export type Database = {
           time?: string
           unique_url?: string
           updated_at?: string | null
-          user_id?: string | null
           youtube_url?: string | null
         }
         Relationships: []
@@ -144,7 +141,6 @@ export type Database = {
           time: string
           unique_url: string
           updated_at: string | null
-          user_id: string | null
           yampi_installments: number | null
           yampi_order_id: string | null
           yampi_payment_id: string | null
@@ -172,7 +168,6 @@ export type Database = {
           time: string
           unique_url: string
           updated_at?: string | null
-          user_id?: string | null
           yampi_installments?: number | null
           yampi_order_id?: string | null
           yampi_payment_id?: string | null
@@ -200,7 +195,6 @@ export type Database = {
           time?: string
           unique_url?: string
           updated_at?: string | null
-          user_id?: string | null
           yampi_installments?: number | null
           yampi_order_id?: string | null
           yampi_payment_id?: string | null

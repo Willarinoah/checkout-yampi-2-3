@@ -85,25 +85,13 @@ export const createMemorial = async (
   data: RequiredMemorialFields & Partial<Omit<Memorial, keyof RequiredMemorialFields>>,
   isBrazil: boolean
 ): Promise<Memorial | null> => {
-  const { data: session } = await supabase.auth.getSession();
-  const userId = session?.session?.user?.id;
-
-  if (!userId) {
-    throw new Error('User must be authenticated to create a memorial');
-  }
-
   const tableName = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
   
-  const memorialData = {
-    ...data,
-    user_id: userId
-  };
-
-  console.log('Creating memorial with data:', memorialData);
+  console.log('Creating memorial with data:', data);
   
   const { data: memorial, error: insertError } = await supabase
     .from(tableName)
-    .insert(memorialData)
+    .insert(data)
     .select()
     .maybeSingle();
 
@@ -119,4 +107,3 @@ export const getMemorialPaymentStatus = async (slug: string): Promise<string> =>
   const { memorial } = await getMemorialBySlug(slug);
   return memorial?.payment_status || 'pending';
 };
-

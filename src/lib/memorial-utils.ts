@@ -29,11 +29,6 @@ export const createNewMemorial = async (
   isBrazil: boolean
 ): Promise<Memorial | null> => {
   try {
-    const { data: session } = await supabase.auth.getSession();
-    if (!session?.session?.user?.id) {
-      throw new Error('User must be authenticated to create a memorial');
-    }
-
     console.log(`Creating memorial for ${isBrazil ? 'Brazil' : 'International'}:`, memorialData);
     
     const customSlug = await generateUniqueSlug(memorialData.couple_name);
@@ -44,8 +39,7 @@ export const createNewMemorial = async (
       ...memorialData,
       custom_slug: customSlug,
       unique_url: uniqueUrl,
-      plan_type: getPlanTypeFromSelection(memorialData.plan_type),
-      user_id: session.session.user.id
+      plan_type: getPlanTypeFromSelection(memorialData.plan_type)
     }, isBrazil);
     
     if (!memorial) {
