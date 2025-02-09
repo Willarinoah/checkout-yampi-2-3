@@ -119,7 +119,8 @@ export const useMemorialFormLogic = (
       console.log('Inserting memorial data:', memorialData);
       
       if (isBrazil) {
-        // Para o Brasil, primeiro salvamos os dados e depois chamamos a API da Yampi
+        // Para o Brasil, primeiro salvamos os dados na tabela yampi_memorials
+        console.log('Saving memorial data for Brazil...');
         const { data: insertedMemorial, error: insertError } = await supabase
           .from('yampi_memorials')
           .insert(memorialData)
@@ -135,9 +136,10 @@ export const useMemorialFormLogic = (
           throw new Error('Failed to create memorial');
         }
 
-        console.log('Successfully created memorial:', insertedMemorial);
+        console.log('Successfully created memorial in yampi_memorials:', insertedMemorial);
 
         // Chama a função yampi-checkout
+        console.log('Calling yampi-checkout function...');
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
           'yampi-checkout',
           {
@@ -157,6 +159,7 @@ export const useMemorialFormLogic = (
           throw new Error('No Yampi checkout URL received');
         }
 
+        console.log('Redirecting to Yampi checkout:', checkoutData.url);
         window.location.href = checkoutData.url;
       } else {
         // Para outros países, mantém o fluxo do Stripe
