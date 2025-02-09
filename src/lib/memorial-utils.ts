@@ -2,6 +2,7 @@
 import { createMemorial, checkMemorialExists } from './memorial-data-utils';
 import type { Memorial } from './memorial-data-utils';
 import { constructMemorialUrl, sanitizeBaseUrl } from './url-sanitizer';
+import { getPlanTypeFromSelection } from '@/types/database/memorial';
 
 export const generateUniqueSlug = async (coupleName: string): Promise<string> => {
   const baseSlug = generateSlug(coupleName);
@@ -17,7 +18,13 @@ export const generateUniqueSlug = async (coupleName: string): Promise<string> =>
 };
 
 export const createNewMemorial = async (
-  memorialData: Partial<Memorial> & { couple_name: string },
+  memorialData: Partial<Memorial> & { 
+    couple_name: string;
+    plan_type: "basic" | "premium";
+    plan_price: number;
+    relationship_start: string;
+    time: string;
+  },
   isBrazil: boolean
 ): Promise<Memorial | null> => {
   try {
@@ -28,9 +35,10 @@ export const createNewMemorial = async (
     const uniqueUrl = constructMemorialUrl(baseUrl, `/memorial/${customSlug}`);
     
     const memorial = await createMemorial({ 
-      ...memorialData, 
+      ...memorialData,
       custom_slug: customSlug,
-      unique_url: uniqueUrl
+      unique_url: uniqueUrl,
+      plan_type: getPlanTypeFromSelection(memorialData.plan_type)
     }, isBrazil);
     
     if (!memorial) {
