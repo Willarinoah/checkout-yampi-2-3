@@ -1,13 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import { PostgrestError } from "@supabase/supabase-js";
 import type { Json } from "@/integrations/supabase/types";
-import { uploadPhotosToStorage, uploadQRCode } from './file-upload';
-import { generateQRCodeBlob } from './qr-utils';
-import { generateUniqueSlug } from './memorial-utils';
-import { sanitizeBaseUrl, constructMemorialUrl } from './url-sanitizer';
-import { toast } from "sonner";
 
 export type YampiMemorial = Database['public']['Tables']['yampi_memorials']['Row'];
 export type StripeMemorial = Database['public']['Tables']['stripe_memorials']['Row'];
@@ -29,7 +23,7 @@ interface SaveMemorialInput {
   isBrazil: boolean;
 }
 
-type RequiredMemorialFields = {
+export type RequiredMemorialFields = {
   couple_name: string;
   custom_slug: string;
   plan_type: string;
@@ -133,23 +127,22 @@ export const saveMemorialData = async (input: SaveMemorialInput): Promise<{ succ
   try {
     console.log('Starting memorial data save process...', input);
 
-    // Validação básica
     if (!input.coupleName || !input.startDate || !input.photos.length) {
       throw new Error('Missing required fields');
     }
 
-    // Gerar slug e URL única
+    // Generate unique slug and URL
     const customSlug = await generateUniqueSlug(input.coupleName);
     const baseUrl = sanitizeBaseUrl(window.location.origin);
     const uniqueUrl = constructMemorialUrl(baseUrl, `/memorial/${customSlug}`);
     console.log('Generated unique URL:', uniqueUrl);
 
-    // Gerar e fazer upload do QR Code
+    // Generate and upload QR Code
     const qrCodeBlob = await generateQRCodeBlob(uniqueUrl);
     const qrCodeUrl = await uploadQRCode(qrCodeBlob, customSlug);
     console.log('QR Code uploaded:', qrCodeUrl);
 
-    // Upload das fotos
+    // Upload photos
     const photoUrls = await uploadPhotosToStorage(input.photos, customSlug);
     console.log('Photos uploaded:', photoUrls);
 
