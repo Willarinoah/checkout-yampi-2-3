@@ -20,12 +20,20 @@ interface WebhookPayload {
 }
 
 const verifyYampiSignature = async (payload: string, signature: string | null, secret: string) => {
-  if (!signature) return false;
+  if (!signature) {
+    console.error('No signature provided');
+    return false;
+  }
 
   try {
     const encoder = new TextEncoder();
     const key = encoder.encode(secret);
     const message = encoder.encode(payload);
+    
+    // Log para debug
+    console.log('Payload being verified:', payload);
+    console.log('Received signature:', signature);
+    console.log('Secret key length:', secret.length);
     
     const cryptoKey = await crypto.subtle.importKey(
       'raw',
@@ -37,6 +45,10 @@ const verifyYampiSignature = async (payload: string, signature: string | null, s
     
     const signed = await crypto.subtle.sign('HMAC', cryptoKey, message);
     const calculatedSignature = base64Encode(new Uint8Array(signed));
+    
+    // Log para debug
+    console.log('Calculated signature:', calculatedSignature);
+    console.log('Signatures match?', signature === calculatedSignature);
     
     return signature === calculatedSignature;
   } catch (error) {
@@ -54,11 +66,16 @@ serve(async (req) => {
   try {
     const yampiSecretKey = Deno.env.get('YAMPI_WEBHOOK_SECRET');
     if (!yampiSecretKey) {
+      console.error('Missing Yampi webhook secret key');
       throw new Error('Missing Yampi webhook secret key');
     }
 
+    // Log para debug
+    console.log('YAMPI_WEBHOOK_SECRET length:', yampiSecretKey.length);
+    
     // Get the signature from headers (case insensitive)
     const signature = req.headers.get('X-Yampi-Hmac-SHA256') || req.headers.get('x-yampi-hmac-sha256');
+    console.log('Received headers:', Object.fromEntries(req.headers.entries()));
     console.log('Received signature:', signature);
     
     // Get the raw payload
@@ -106,6 +123,8 @@ serve(async (req) => {
           throw updateError;
         }
 
+        console.log('Memorial updated successfully:', memorial);
+
         // Send confirmation email
         if (memorial) {
           try {
@@ -121,6 +140,7 @@ serve(async (req) => {
                 qrCodeUrl: memorial.qr_code_url
               })
             });
+            console.log('Confirmation email sent successfully');
           } catch (emailError) {
             console.error('Error sending confirmation email:', emailError);
           }
@@ -128,13 +148,19 @@ serve(async (req) => {
         break;
 
       case 'order.status.updated':
-        await supabase
+        const { error: statusError } = await supabase
           .from('yampi_memorials')
           .update({
             yampi_status: webhookData.data.status,
             updated_at: new Date().toISOString()
           })
           .eq('yampi_order_id', webhookData.data.id.toString());
+
+        if (statusError) {
+          console.error('Error updating memorial status:', statusError);
+          throw statusError;
+        }
+        console.log('Memorial status updated successfully');
         break;
 
       default:
