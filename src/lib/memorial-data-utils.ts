@@ -2,6 +2,10 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import type { Json } from "@/integrations/supabase/types";
+import { uploadPhotosToStorage, uploadQRCode } from './file-upload';
+import { generateQRCodeBlob } from './qr-utils';
+import { generateUniqueSlug } from './memorial-utils';
+import { sanitizeBaseUrl, constructMemorialUrl } from './url-sanitizer';
 
 export type YampiMemorial = Database['public']['Tables']['yampi_memorials']['Row'];
 export type StripeMemorial = Database['public']['Tables']['stripe_memorials']['Row'];
@@ -150,7 +154,7 @@ export const saveMemorialData = async (input: SaveMemorialInput): Promise<{ succ
       ? input.isBrazil ? "1 year, 3 photos and no music" : "1 year, 3 photos and no music (international)"
       : input.isBrazil ? "Forever, 7 photos and music" : "Forever, 7 photos and music (international)";
 
-    const memorialData = {
+    const memorialData: RequiredMemorialFields & Partial<Memorial> = {
       couple_name: input.coupleName,
       message: input.message || null,
       plan_type: planType,
@@ -173,7 +177,7 @@ export const saveMemorialData = async (input: SaveMemorialInput): Promise<{ succ
         creation_timestamp: new Date().toISOString(),
         initial_save: true
       }
-    } as RequiredMemorialFields & Partial<Memorial>;
+    };
 
     const tableName = input.isBrazil ? 'yampi_memorials' : 'stripe_memorials';
     console.log(`Saving memorial data to ${tableName}...`);

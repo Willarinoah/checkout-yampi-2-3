@@ -19,7 +19,7 @@ export const generateUniqueSlug = async (coupleName: string): Promise<string> =>
 };
 
 export const createNewMemorial = async (
-  memorialData: Partial<Memorial> & { 
+  memorialData: { 
     couple_name: string;
     plan_type: "basic" | "premium";
     plan_price: number;
@@ -35,12 +35,15 @@ export const createNewMemorial = async (
     const baseUrl = sanitizeBaseUrl(window.location.origin);
     const uniqueUrl = constructMemorialUrl(baseUrl, `/memorial/${customSlug}`);
     
-    const memorial = await createMemorial({ 
+    const requiredMemorialData = { 
       ...memorialData,
       custom_slug: customSlug,
       unique_url: uniqueUrl,
-      plan_type: getPlanTypeFromSelection(memorialData.plan_type, isBrazil)
-    }, isBrazil);
+      plan_type: getPlanTypeFromSelection(memorialData.plan_type, isBrazil),
+      payment_status: "pending"
+    };
+    
+    const memorial = await createMemorial(requiredMemorialData, isBrazil);
     
     if (!memorial) {
       throw new Error('Failed to create memorial');
