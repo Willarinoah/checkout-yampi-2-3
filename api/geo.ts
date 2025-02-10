@@ -1,13 +1,9 @@
-import { geolocation, ipAddress, getEnv, waitUntil } from '@vercel/functions';
+
+import { geolocation, ipAddress, getEnv } from '@vercel/functions';
 
 export const config = {
   runtime: 'edge',
-  regions: 'all',
 };
-
-async function logGeoRequest(data: any) {
-  console.log('Geo request data:', data);
-}
 
 export default async function handler(request: Request) {
   try {
@@ -15,20 +11,18 @@ export default async function handler(request: Request) {
     const ip = ipAddress(request);
     const { VERCEL_REGION } = getEnv();
 
-    // Log raw data to see what Vercel is actually returning
-    console.log('Raw Vercel geo data:', geo);
-
     const locationData = {
       country: geo.country,
       city: geo.city,
-      region: geo.countryRegion, // Usando countryRegion ao invés de region
+      region: geo.countryRegion,
       ip,
       timestamp: new Date().toISOString(),
       vercelRegion: VERCEL_REGION || 'unknown',
     };
 
-    waitUntil(logGeoRequest(locationData));
-
+    // Remove the waitUntil and logging since they might be causing issues
+    // with the response format
+    
     return new Response(JSON.stringify(locationData), {
       headers: {
         'content-type': 'application/json',
