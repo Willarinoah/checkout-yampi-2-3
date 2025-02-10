@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { getMemorialBySlug, updateMemorialData } from './memorial-data-utils';
+import { getMemorialBySlug, updateMemorialData, type Memorial } from './memorial-data-utils';
 
 export const uploadPhotosToStorage = async (photos: File[], memorialId: string): Promise<string[]> => {
   console.log('Starting photo upload process for memorial:', memorialId);
@@ -68,7 +69,11 @@ export const uploadQRCode = async (qrCodeBlob: Blob, memorialId: string): Promis
   return publicUrl;
 };
 
-export const updateMemorialFiles = async (slug: string, files: { [key: string]: string }, isBrazil: boolean) => {
+export const updateMemorialFiles = async (
+  slug: string, 
+  files: Partial<Pick<Memorial, 'photos' | 'qr_code_url'>>, 
+  isBrazil: boolean
+) => {
   return updateMemorialData(slug, files, isBrazil);
 };
 

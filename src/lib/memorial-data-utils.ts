@@ -29,6 +29,17 @@ interface SaveMemorialInput {
   isBrazil: boolean;
 }
 
+type RequiredMemorialFields = {
+  couple_name: string;
+  custom_slug: string;
+  plan_type: string;
+  plan_price: number;
+  payment_status: string;
+  unique_url: string;
+  relationship_start: string;
+  time: string;
+};
+
 export const getMemorialBySlug = async (slug: string): Promise<{ memorial: Memorial | null; error?: string }> => {
   try {
     // Try yampi_memorials first
@@ -62,7 +73,7 @@ export const getMemorialBySlug = async (slug: string): Promise<{ memorial: Memor
 
 export const updateMemorialData = async (
   slug: string,
-  data: Partial<Memorial>,
+  data: Partial<RequiredMemorialFields & Partial<Memorial>>,
   isBrazil: boolean
 ): Promise<{ success: boolean; error?: string }> => {
   const tableName = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
@@ -98,7 +109,7 @@ export const checkMemorialExists = async (slug: string): Promise<boolean> => {
 };
 
 export const createMemorial = async (
-  memorialData: Partial<Memorial>,
+  memorialData: RequiredMemorialFields & Partial<Memorial>,
   isBrazil: boolean
 ): Promise<Memorial | null> => {
   const tableName = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
@@ -169,7 +180,7 @@ export const saveMemorialData = async (input: SaveMemorialInput): Promise<{ succ
         creation_timestamp: new Date().toISOString(),
         initial_save: true
       }
-    };
+    } as RequiredMemorialFields & Partial<Memorial>;
 
     const tableName = input.isBrazil ? 'yampi_memorials' : 'stripe_memorials';
     console.log(`Saving memorial data to ${tableName}...`);
