@@ -1,3 +1,4 @@
+
 const translations = {
   // Home page
   surprise: "Surprise",
@@ -86,6 +87,7 @@ const translations = {
   one_year: "One Year",
   photos_no_music: "photos without music",
   photos_with_music: "photos with music",
+  plan_change_to_continue: "Change plan to continue",
 
   // Form translations
   couple_name: "Couple's Name",
@@ -113,3 +115,4 @@ const translations = {
 };
 
 export default translations;
+

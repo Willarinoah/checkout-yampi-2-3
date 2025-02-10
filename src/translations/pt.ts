@@ -1,3 +1,4 @@
+
 const translations = {
   // Home page
   surprise: "Surpreenda",
@@ -83,6 +84,7 @@ const translations = {
   one_year: "Um Ano",
   photos_no_music: "fotos sem música",
   photos_with_music: "fotos com música",
+  plan_change_to_continue: "Troque de plano para continuar",
 
   // Form translations
   couple_name: "Nome do Casal",
@@ -110,3 +112,4 @@ const translations = {
 };
 
 export default translations;
+
