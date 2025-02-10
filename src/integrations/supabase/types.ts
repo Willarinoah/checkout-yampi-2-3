@@ -48,9 +48,11 @@ export type Database = {
           couple_name: string
           created_at: string | null
           custom_slug: string
+          data_validated: boolean | null
           email: string | null
           full_name: string | null
           id: string
+          last_error: string | null
           message: string | null
           payment_status: string
           phone: string | null
@@ -60,6 +62,7 @@ export type Database = {
           preferences: Json | null
           qr_code_url: string | null
           relationship_start: string
+          status_details: Json | null
           stripe_customer_id: string | null
           stripe_session_id: string | null
           stripe_subscription_id: string | null
@@ -73,9 +76,11 @@ export type Database = {
           couple_name: string
           created_at?: string | null
           custom_slug: string
+          data_validated?: boolean | null
           email?: string | null
           full_name?: string | null
           id?: string
+          last_error?: string | null
           message?: string | null
           payment_status?: string
           phone?: string | null
@@ -85,6 +90,7 @@ export type Database = {
           preferences?: Json | null
           qr_code_url?: string | null
           relationship_start: string
+          status_details?: Json | null
           stripe_customer_id?: string | null
           stripe_session_id?: string | null
           stripe_subscription_id?: string | null
@@ -98,9 +104,11 @@ export type Database = {
           couple_name?: string
           created_at?: string | null
           custom_slug?: string
+          data_validated?: boolean | null
           email?: string | null
           full_name?: string | null
           id?: string
+          last_error?: string | null
           message?: string | null
           payment_status?: string
           phone?: string | null
@@ -110,6 +118,7 @@ export type Database = {
           preferences?: Json | null
           qr_code_url?: string | null
           relationship_start?: string
+          status_details?: Json | null
           stripe_customer_id?: string | null
           stripe_session_id?: string | null
           stripe_subscription_id?: string | null
@@ -126,9 +135,11 @@ export type Database = {
           couple_name: string
           created_at: string | null
           custom_slug: string
+          data_validated: boolean | null
           email: string | null
           full_name: string | null
           id: string
+          last_error: string | null
           message: string | null
           payment_status: string
           phone: string | null
@@ -138,6 +149,7 @@ export type Database = {
           preferences: Json | null
           qr_code_url: string | null
           relationship_start: string
+          status_details: Json | null
           time: string
           unique_url: string
           updated_at: string | null
@@ -153,9 +165,11 @@ export type Database = {
           couple_name: string
           created_at?: string | null
           custom_slug: string
+          data_validated?: boolean | null
           email?: string | null
           full_name?: string | null
           id?: string
+          last_error?: string | null
           message?: string | null
           payment_status?: string
           phone?: string | null
@@ -165,6 +179,7 @@ export type Database = {
           preferences?: Json | null
           qr_code_url?: string | null
           relationship_start: string
+          status_details?: Json | null
           time: string
           unique_url: string
           updated_at?: string | null
@@ -180,9 +195,11 @@ export type Database = {
           couple_name?: string
           created_at?: string | null
           custom_slug?: string
+          data_validated?: boolean | null
           email?: string | null
           full_name?: string | null
           id?: string
+          last_error?: string | null
           message?: string | null
           payment_status?: string
           phone?: string | null
@@ -192,6 +209,7 @@ export type Database = {
           preferences?: Json | null
           qr_code_url?: string | null
           relationship_start?: string
+          status_details?: Json | null
           time?: string
           unique_url?: string
           updated_at?: string | null

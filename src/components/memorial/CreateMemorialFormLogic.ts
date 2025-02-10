@@ -1,10 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from "@/integrations/supabase/client";
-import { uploadPhotosToStorage, uploadQRCode } from '@/lib/file-upload';
-import { generateQRCodeBlob } from '@/lib/qr-utils';
-import { generateUniqueSlug } from "@/lib/memorial-utils";
-import { sanitizeBaseUrl, constructMemorialUrl } from '@/lib/url-sanitizer';
+import { saveMemorialData } from '@/lib/memorial-data-utils';
 import { detectUserLocation, saveLocationAnalytics, type LocationInfo } from '@/lib/location-detector';
 import type { FormPreviewData } from './types';
 import { toast } from "sonner";
@@ -56,145 +52,77 @@ export const useMemorialFormLogic = (
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
-  const createMemorialData = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
-    const customSlug = await generateUniqueSlug(coupleName);
-    const baseUrl = sanitizeBaseUrl(window.location.origin);
-    const uniqueUrl = constructMemorialUrl(baseUrl, `/memorial/${customSlug}`);
-    console.log('Generated unique URL:', uniqueUrl);
-
-    // Upload QR Code
-    const qrCodeBlob = await generateQRCodeBlob(uniqueUrl);
-    const qrCodeUrl = await uploadQRCode(qrCodeBlob, customSlug);
-    console.log('QR Code uploaded:', qrCodeUrl);
-
-    // Upload photos
-    console.log('Uploading photos:', photos);
-    const photoUrls = await uploadPhotosToStorage(photos, customSlug);
-    console.log('Photos uploaded:', photoUrls);
-
-    const planType = selectedPlan === "basic" 
-      ? isBrazil ? "1 year, 3 photos and no music" : "1 year, 3 photos and no music (international)"
-      : isBrazil ? "Forever, 7 photos and music" : "Forever, 7 photos and music (international)";
-    
-    const planPrice = selectedPlan === "basic" 
-      ? isBrazil ? 29 : 9
-      : isBrazil ? 49 : 14;
-
-    const addressInfo = locationInfo ? {
-      country_code: locationInfo.country_code,
-      city: locationInfo.city,
-      region: locationInfo.region,
-      address: '',
-      number: '',
-      complement: '',
-      district: '',
-      zipcode: ''
-    } : null;
-
-    return {
-      couple_name: coupleName,
-      message: message || null,
-      plan_type: planType,
-      plan_price: planPrice,
-      custom_slug: customSlug,
-      unique_url: uniqueUrl,
-      payment_status: "pending",
-      qr_code_url: qrCodeUrl,
-      photos: photoUrls,
-      youtube_url: selectedPlan === "premium" && youtubeUrl ? youtubeUrl : null,
-      relationship_start: startDate ? startDate.toISOString() : new Date().toISOString(),
-      time: startTime,
-      email: submittedEmail || '',
-      full_name: fullName || coupleName,
-      phone: phoneNumber || '',
-      address_info: addressInfo,
-      preferences: null
-    };
-  };
-
   const handleEmailSubmit = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
     try {
       setIsLoading(true);
       console.log('Starting memorial creation process...');
 
-      // Validação dos campos obrigatórios
       if (!coupleName || !startDate || !photos.length) {
         toast.error('Por favor, preencha todos os campos obrigatórios');
-        setIsLoading(false);
         return;
       }
 
-      // Criação dos dados do memorial
-      const memorialData = await createMemorialData(submittedEmail, fullName, phoneNumber);
-      console.log('Memorial data prepared:', memorialData);
+      const planPrice = selectedPlan === "basic" 
+        ? isBrazil ? 29 : 9
+        : isBrazil ? 49 : 14;
+
+      const result = await saveMemorialData({
+        coupleName,
+        message,
+        photos,
+        youtubeUrl,
+        planType: selectedPlan,
+        planPrice,
+        startDate,
+        startTime,
+        email: submittedEmail,
+        fullName,
+        phone: phoneNumber,
+        addressInfo: locationInfo ? {
+          country_code: locationInfo.country_code,
+          city: locationInfo.city,
+          region: locationInfo.region,
+          address: '',
+          number: '',
+          complement: '',
+          district: '',
+          zipcode: ''
+        } : null,
+        isBrazil: isBrazil || false
+      });
+
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Failed to save memorial data');
+      }
+
+      console.log('Memorial data saved successfully:', result.data);
+      toast.success('Memorial criado com sucesso!');
       
       if (isBrazil) {
-        console.log('Saving memorial data for Brazil...');
-        const { data: insertedMemorial, error: insertError } = await supabase
-          .from('yampi_memorials')
-          .insert(memorialData)
-          .select()
-          .maybeSingle();
-
-        if (insertError) {
-          console.error('Error inserting memorial:', insertError);
-          toast.error('Erro ao criar memorial. Por favor, tente novamente.');
-          throw new Error(insertError.message);
-        }
-
-        if (!insertedMemorial) {
-          toast.error('Erro ao criar memorial. Por favor, tente novamente.');
-          throw new Error('Failed to create memorial');
-        }
-
-        console.log('Successfully created memorial in yampi_memorials:', insertedMemorial);
         onEmailSubmit(submittedEmail);
         setShowEmailDialog(false);
-        toast.success('Memorial criado com sucesso! Redirecionando para o pagamento...');
-        
+        toast.success('Redirecionando para o pagamento...');
       } else {
-        // Para outros países, mantém o fluxo do Stripe
-        const { data: insertedMemorial, error: insertError } = await supabase
-          .from('stripe_memorials')
-          .insert(memorialData)
-          .select()
-          .maybeSingle();
-
-        if (insertError) {
-          console.error('Error inserting memorial:', insertError);
-          throw new Error(insertError.message);
-        }
-
-        if (!insertedMemorial) {
-          throw new Error('Failed to create memorial');
-        }
-
-        console.log('Successfully created memorial:', insertedMemorial);
-
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
           'create-checkout',
           {
             body: {
               planType: selectedPlan,
-              memorialData: insertedMemorial
+              memorialData: result.data
             },
           }
         );
 
-        if (checkoutError) {
-          console.error('Error creating Stripe checkout:', checkoutError);
-          throw new Error(checkoutError.message);
-        }
-
-        if (!checkoutData?.url) {
-          throw new Error('No checkout URL received');
+        if (checkoutError || !checkoutData?.url) {
+          throw new Error('Error creating checkout session');
         }
 
         window.location.href = checkoutData.url;
       }
-    } catch (error: unknown) {
-      console.error('Error in create memorial flow:', error);
-      toast.error(error instanceof Error ? error.message : "Error creating memorial. Please try again.");
+
+    } catch (error) {
+      console.error('Error in handleEmailSubmit:', error);
+      toast.error(error instanceof Error ? error.message : 'Erro ao criar memorial. Por favor, tente novamente.');
     } finally {
       setIsLoading(false);
     }
@@ -224,3 +152,4 @@ export const useMemorialFormLogic = (
     setStartTime
   };
 };
+
