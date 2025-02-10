@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { uploadPhotosToStorage, uploadQRCode } from '@/lib/file-upload';
@@ -122,7 +121,7 @@ export const useMemorialFormLogic = (
       console.log('Memorial data prepared:', memorialData);
       
       if (isBrazil) {
-        // Para o Brasil, primeiro salvamos os dados na tabela yampi_memorials
+        // Para o Brasil, salvamos os dados na tabela yampi_memorials
         console.log('Saving memorial data for Brazil...');
         const { data: insertedMemorial, error: insertError } = await supabase
           .from('yampi_memorials')
@@ -140,30 +139,9 @@ export const useMemorialFormLogic = (
         }
 
         console.log('Successfully created memorial in yampi_memorials:', insertedMemorial);
-
-        // Chama a função yampi-checkout para obter a URL do checkout
-        console.log('Calling yampi-checkout function...');
-        const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
-          'yampi-checkout',
-          {
-            body: {
-              planType: selectedPlan,
-              memorialData: insertedMemorial
-            },
-          }
-        );
-
-        if (checkoutError) {
-          console.error('Error creating Yampi checkout:', checkoutError);
-          throw new Error(checkoutError.message);
-        }
-
-        if (!checkoutData?.url) {
-          throw new Error('No Yampi checkout URL received');
-        }
-
-        console.log('Redirecting to Yampi checkout:', checkoutData.url);
-        window.location.href = checkoutData.url;
+        // O botão da Yampi já está configurado para redirecionar para o checkout
+        // Não precisamos mais chamar a função yampi-checkout
+        
       } else {
         // Para outros países, mantém o fluxo do Stripe
         const { data: insertedMemorial, error: insertError } = await supabase
