@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +51,9 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     startDate,
     setStartDate,
     startTime,
-    setStartTime
+    setStartTime,
+    isDataSaved,
+    memorialData
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
   const isFormValid = coupleName && startDate && photosPreviews.length > 0;
@@ -73,8 +76,9 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         <Button
           className="w-full bg-lovepink hover:bg-lovepink/90"
           onClick={() => setShowPaymentModal(true)}
+          disabled={isLoading}
         >
-          {t("create_our_site")}
+          {isLoading ? t("creating") : t("create_our_site")}
         </Button>
       );
     }
@@ -162,6 +166,8 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         onSubmit={handleEmailSubmit}
         selectedPlan={selectedPlan}
         showYampiButton={true}
+        isLoading={isLoading}
+        isDataSaved={isDataSaved}
       />
     </div>
   );

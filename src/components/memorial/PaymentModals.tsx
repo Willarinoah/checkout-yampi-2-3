@@ -6,6 +6,7 @@ import { Mail, User, Phone } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { YampiButton } from "./YampiButton";
+import { Loader2 } from "lucide-react";
 
 interface PaymentModalProps {
   open: boolean;
@@ -14,6 +15,8 @@ interface PaymentModalProps {
   onSubmit: (email: string, fullName: string, phoneNumber: string) => void;
   selectedPlan?: "basic" | "premium";
   showYampiButton?: boolean;
+  isLoading?: boolean;
+  isDataSaved?: boolean;
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({
@@ -23,6 +26,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   onSubmit,
   selectedPlan = "basic",
   showYampiButton = false,
+  isLoading = false,
+  isDataSaved = false,
 }) => {
   const [localEmail, setLocalEmail] = React.useState(email);
   const [firstName, setFirstName] = React.useState("");
@@ -95,9 +100,80 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         </DialogTitle>
         {showYampiButton ? (
           <div className="w-full flex flex-col items-center justify-center">
-            <div className="w-full flex items-center justify-center mx-auto" style={{ maxWidth: '300px' }}>
-              <YampiButton plan={selectedPlan} isModalOpen={open} />
-            </div>
+            {isLoading ? (
+              <div className="flex items-center justify-center p-4">
+                <Loader2 className="h-8 w-8 animate-spin text-lovepink" />
+                <span className="ml-2 text-gray-600">Salvando dados...</span>
+              </div>
+            ) : isDataSaved ? (
+              <div className="w-full flex items-center justify-center mx-auto" style={{ maxWidth: '300px' }}>
+                <YampiButton plan={selectedPlan} isModalOpen={open} />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500">
+                    Please enter your information to continue creating your memorial.
+                  </p>
+                </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="First name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="pl-10 bg-white border-gray-300"
+                      required
+                      maxLength={50}
+                    />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  </div>
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Last name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="pl-10 bg-white border-gray-300"
+                      required
+                      maxLength={50}
+                    />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  </div>
+                  <div className="relative">
+                    <Input
+                      type="email"
+                      placeholder="Enter your email"
+                      value={localEmail}
+                      onChange={(e) => setLocalEmail(e.target.value)}
+                      onFocus={(e) => e.target.select()}
+                      className="pl-10 bg-white border-gray-300"
+                      required
+                    />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  </div>
+                  <div className="relative">
+                    <Input
+                      type="tel"
+                      placeholder="Phone number (e.g. +1234567890)"
+                      value={phoneNumber}
+                      onChange={handlePhoneChange}
+                      className="pl-10 bg-white border-gray-300"
+                      required
+                    />
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  </div>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-[#0B1221] hover:bg-[#0B1221]/90 text-white"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Salvando...' : 'Continue'}
+                  </Button>
+                </form>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-4">

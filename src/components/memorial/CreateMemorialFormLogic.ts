@@ -24,6 +24,8 @@ export const useMemorialFormLogic = (
   const [startDate, setStartDate] = useState<Date>();
   const [startTime, setStartTime] = useState("00:00");
   const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
+  const [isDataSaved, setIsDataSaved] = useState(false);
+  const [memorialData, setMemorialData] = useState<any>(null);
 
   useEffect(() => {
     const checkLocation = async () => {
@@ -53,21 +55,20 @@ export const useMemorialFormLogic = (
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
-  const handleEmailSubmit = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
+  const handleSaveMemorial = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
     try {
       setIsLoading(true);
       console.log('Starting memorial creation process...');
 
       if (!coupleName || !startDate || !photos.length) {
         toast.error('Por favor, preencha todos os campos obrigatórios');
-        return;
+        return null;
       }
 
       const planPrice = selectedPlan === "basic" 
         ? isBrazil ? 29 : 9
         : isBrazil ? 49 : 14;
 
-      // Primeiro, salvar os dados do memorial
       const result = await saveMemorialData({
         coupleName,
         message,
@@ -98,25 +99,33 @@ export const useMemorialFormLogic = (
       }
 
       console.log('Memorial data saved successfully:', result.data);
-      
-      if (isBrazil) {
-        // Se for usuário brasileiro, mostrar toast de sucesso e redirecionar para yampi
-        toast.success('Memorial criado com sucesso!');
-        setShowEmailDialog(false);
-        
-        // Espera um pouco para o usuário ver a mensagem de sucesso
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        toast.success('Redirecionando para o pagamento...');
-        onEmailSubmit(submittedEmail);
-      } else {
-        // Se for internacional, criar sessão do Stripe
+      toast.success('Memorial criado com sucesso!');
+      setIsDataSaved(true);
+      setMemorialData(result.data);
+      return result.data;
+
+    } catch (error) {
+      console.error('Error in handleSaveMemorial:', error);
+      toast.error(error instanceof Error ? error.message : 'Erro ao criar memorial. Por favor, tente novamente.');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEmailSubmit = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
+    const savedData = await handleSaveMemorial(submittedEmail, fullName, phoneNumber);
+    
+    if (!savedData) return;
+
+    if (!isBrazil) {
+      try {
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
           'create-checkout',
           {
             body: {
               planType: selectedPlan,
-              memorialData: result.data,
+              memorialData: savedData,
               isBrazil: false
             },
           }
@@ -127,13 +136,10 @@ export const useMemorialFormLogic = (
         }
 
         window.location.href = checkoutData.url;
+      } catch (error) {
+        console.error('Error creating Stripe checkout:', error);
+        toast.error('Erro ao criar sessão de pagamento. Por favor, tente novamente.');
       }
-
-    } catch (error) {
-      console.error('Error in handleEmailSubmit:', error);
-      toast.error(error instanceof Error ? error.message : 'Erro ao criar memorial. Por favor, tente novamente.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -158,7 +164,8 @@ export const useMemorialFormLogic = (
     startDate,
     setStartDate,
     startTime,
-    setStartTime
+    setStartTime,
+    isDataSaved,
+    memorialData
   };
 };
-
