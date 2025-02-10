@@ -5,6 +5,7 @@ import { detectUserLocation, saveLocationAnalytics, type LocationInfo } from '@/
 import type { FormPreviewData } from './types';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { getPlanTypeFromSelection } from '@/types/database/memorial';
 
 export const useMemorialFormLogic = (
   onEmailSubmit: (email: string) => void,
@@ -83,10 +84,14 @@ export const useMemorialFormLogic = (
         console.log('Updating existing memorial:', currentMemorialId);
         const table = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
         
+        // Use getPlanTypeFromSelection para obter o tipo correto do plano
+        const fullPlanType = getPlanTypeFromSelection(selectedPlan, isBrazil || false);
+        console.log('Using plan type:', fullPlanType);
+        
         const { data: updatedMemorial, error: updateError } = await supabase
           .from(table)
           .update({
-            plan_type: selectedPlan,
+            plan_type: fullPlanType,
             plan_price: planPrice,
             updated_at: new Date().toISOString()
           })
@@ -95,6 +100,7 @@ export const useMemorialFormLogic = (
           .single();
 
         if (updateError) {
+          console.error('Error updating memorial:', updateError);
           throw new Error(`Failed to update memorial: ${updateError.message}`);
         }
 
@@ -210,3 +216,4 @@ export const useMemorialFormLogic = (
     canCreateNewMemorial
   };
 };
+
