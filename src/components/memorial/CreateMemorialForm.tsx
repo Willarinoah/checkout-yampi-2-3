@@ -78,13 +78,13 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
           className="w-full bg-lovepink hover:bg-lovepink/90"
           onClick={async () => {
             try {
-              setIsLoading(true);
-              await handleEmailSubmit(email, "", ""); // Vamos preencher estes dados no modal
-              setShowPaymentModal(true);
+              const result = await handleEmailSubmit(email, "", ""); // Vamos preencher estes dados no modal
+              if (result) {
+                setShowPaymentModal(true);
+              }
             } catch (error) {
-              toast.error(t("error_saving_data"));
-            } finally {
-              setIsLoading(false);
+              console.error('Error saving memorial data:', error);
+              toast.error(t("error_creating_memorial"));
             }
           }}
           disabled={isLoading}

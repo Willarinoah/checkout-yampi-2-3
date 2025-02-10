@@ -116,7 +116,7 @@ export const useMemorialFormLogic = (
   const handleEmailSubmit = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
     const savedData = await handleSaveMemorial(submittedEmail, fullName, phoneNumber);
     
-    if (!savedData) return;
+    if (!savedData) return null;
 
     if (!isBrazil) {
       try {
@@ -139,8 +139,11 @@ export const useMemorialFormLogic = (
       } catch (error) {
         console.error('Error creating Stripe checkout:', error);
         toast.error('Erro ao criar sessão de pagamento. Por favor, tente novamente.');
+        return null;
       }
     }
+
+    return savedData;
   };
 
   return {
