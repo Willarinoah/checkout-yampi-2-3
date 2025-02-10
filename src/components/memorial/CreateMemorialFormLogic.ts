@@ -117,14 +117,14 @@ export const useMemorialFormLogic = (
       setIsLoading(true);
       console.log('Starting memorial creation process...');
 
+      // Validação dos campos obrigatórios
       if (!coupleName || !startDate || !photos.length) {
         toast.error('Por favor, preencha todos os campos obrigatórios');
+        setIsLoading(false);
         return;
       }
 
-      onEmailSubmit(submittedEmail);
-      setShowEmailDialog(false);
-
+      // Criação dos dados do memorial
       const memorialData = await createMemorialData(submittedEmail, fullName, phoneNumber);
       console.log('Memorial data prepared:', memorialData);
       
@@ -138,14 +138,18 @@ export const useMemorialFormLogic = (
 
         if (insertError) {
           console.error('Error inserting memorial:', insertError);
+          toast.error('Erro ao criar memorial. Por favor, tente novamente.');
           throw new Error(insertError.message);
         }
 
         if (!insertedMemorial) {
+          toast.error('Erro ao criar memorial. Por favor, tente novamente.');
           throw new Error('Failed to create memorial');
         }
 
         console.log('Successfully created memorial in yampi_memorials:', insertedMemorial);
+        onEmailSubmit(submittedEmail);
+        setShowEmailDialog(false);
         toast.success('Memorial criado com sucesso! Redirecionando para o pagamento...');
         
       } else {
