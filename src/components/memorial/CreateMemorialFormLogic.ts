@@ -67,6 +67,7 @@ export const useMemorialFormLogic = (
         ? isBrazil ? 29 : 9
         : isBrazil ? 49 : 14;
 
+      // Primeiro, salvar os dados do memorial
       const result = await saveMemorialData({
         coupleName,
         message,
@@ -97,19 +98,26 @@ export const useMemorialFormLogic = (
       }
 
       console.log('Memorial data saved successfully:', result.data);
-      toast.success('Memorial criado com sucesso!');
       
       if (isBrazil) {
-        onEmailSubmit(submittedEmail);
+        // Se for usuário brasileiro, mostrar toast de sucesso e redirecionar para yampi
+        toast.success('Memorial criado com sucesso!');
         setShowEmailDialog(false);
+        
+        // Espera um pouco para o usuário ver a mensagem de sucesso
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
         toast.success('Redirecionando para o pagamento...');
+        onEmailSubmit(submittedEmail);
       } else {
+        // Se for internacional, criar sessão do Stripe
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
           'create-checkout',
           {
             body: {
               planType: selectedPlan,
-              memorialData: result.data
+              memorialData: result.data,
+              isBrazil: false
             },
           }
         );
@@ -153,3 +161,4 @@ export const useMemorialFormLogic = (
     setStartTime
   };
 };
+
