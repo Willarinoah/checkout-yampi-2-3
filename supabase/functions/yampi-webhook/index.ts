@@ -30,7 +30,6 @@ const verifyYampiSignature = async (payload: string, signature: string | null, s
     const key = encoder.encode(secret);
     const message = encoder.encode(payload);
     
-    // Log para debug
     console.log('Payload being verified:', payload);
     console.log('Received signature:', signature);
     console.log('Secret key length:', secret.length);
@@ -46,7 +45,6 @@ const verifyYampiSignature = async (payload: string, signature: string | null, s
     const signed = await crypto.subtle.sign('HMAC', cryptoKey, message);
     const calculatedSignature = base64Encode(new Uint8Array(signed));
     
-    // Log para debug
     console.log('Calculated signature:', calculatedSignature);
     console.log('Signatures match?', signature === calculatedSignature);
     
@@ -58,7 +56,6 @@ const verifyYampiSignature = async (payload: string, signature: string | null, s
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -70,30 +67,24 @@ serve(async (req) => {
       throw new Error('Missing Yampi webhook secret key');
     }
 
-    // Log para debug
     console.log('YAMPI_WEBHOOK_SECRET length:', yampiSecretKey.length);
     
-    // Get the signature from headers (case insensitive)
     const signature = req.headers.get('X-Yampi-Hmac-SHA256') || req.headers.get('x-yampi-hmac-sha256');
     console.log('Received headers:', Object.fromEntries(req.headers.entries()));
     console.log('Received signature:', signature);
     
-    // Get the raw payload
     const payload = await req.text();
     console.log('Received Yampi webhook payload:', payload);
 
-    // Verify signature
     const isValid = await verifyYampiSignature(payload, signature, yampiSecretKey);
     if (!isValid) {
       console.error('Invalid Yampi signature');
       throw new Error('Invalid webhook signature');
     }
 
-    // Parse the payload
     const webhookData = JSON.parse(payload) as WebhookPayload;
     console.log('Processing webhook event:', webhookData.event);
 
-    // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (!supabaseUrl || !supabaseKey) {
@@ -101,14 +92,32 @@ serve(async (req) => {
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Handle different webhook events
     switch (webhookData.event) {
-      case 'order.paid':
+      case 'order.paid': {
+        // Primeiro, vamos verificar se o memorial existe
+        const { data: existingMemorial, error: checkError } = await supabase
+          .from('yampi_memorials')
+          .select('*')
+          .eq('yampi_order_id', webhookData.data.id.toString())
+          .maybeSingle();
+
+        if (checkError) {
+          console.error('Error checking memorial:', checkError);
+          throw new Error(`Error checking memorial: ${checkError.message}`);
+        }
+
+        if (!existingMemorial) {
+          console.error('No memorial found for order ID:', webhookData.data.id);
+          throw new Error(`No memorial found for order ID: ${webhookData.data.id}`);
+        }
+
+        console.log('Found existing memorial:', existingMemorial);
+
         const { data: memorial, error: updateError } = await supabase
           .from('yampi_memorials')
           .update({
             payment_status: 'approved',
-            yampi_status: 'approved',
+            yampi_status: webhookData.data.status,
             yampi_payment_method: webhookData.data.payment_method,
             yampi_payment_id: webhookData.data.payment_id,
             yampi_installments: webhookData.data.installments,
@@ -125,10 +134,9 @@ serve(async (req) => {
 
         console.log('Memorial updated successfully:', memorial);
 
-        // Send confirmation email
         if (memorial) {
           try {
-            await fetch(`${supabaseUrl}/functions/v1/send-memorial-email`, {
+            const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-memorial-email`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${supabaseKey}`,
@@ -140,14 +148,40 @@ serve(async (req) => {
                 qrCodeUrl: memorial.qr_code_url
               })
             });
-            console.log('Confirmation email sent successfully');
+
+            if (!emailResponse.ok) {
+              const errorData = await emailResponse.text();
+              console.error('Error sending confirmation email:', errorData);
+            } else {
+              console.log('Confirmation email sent successfully');
+            }
           } catch (emailError) {
             console.error('Error sending confirmation email:', emailError);
           }
         }
         break;
+      }
 
-      case 'order.status.updated':
+      case 'order.status.updated': {
+        // Primeiro, vamos verificar se o memorial existe
+        const { data: existingMemorial, error: checkError } = await supabase
+          .from('yampi_memorials')
+          .select('*')
+          .eq('yampi_order_id', webhookData.data.id.toString())
+          .maybeSingle();
+
+        if (checkError) {
+          console.error('Error checking memorial:', checkError);
+          throw new Error(`Error checking memorial: ${checkError.message}`);
+        }
+
+        if (!existingMemorial) {
+          console.error('No memorial found for order ID:', webhookData.data.id);
+          throw new Error(`No memorial found for order ID: ${webhookData.data.id}`);
+        }
+
+        console.log('Found existing memorial for status update:', existingMemorial);
+
         const { error: statusError } = await supabase
           .from('yampi_memorials')
           .update({
@@ -162,6 +196,7 @@ serve(async (req) => {
         }
         console.log('Memorial status updated successfully');
         break;
+      }
 
       default:
         console.log('Unhandled webhook event:', webhookData.event);
