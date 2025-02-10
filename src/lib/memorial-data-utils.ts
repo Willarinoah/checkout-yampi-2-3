@@ -29,6 +29,95 @@ interface SaveMemorialInput {
   isBrazil: boolean;
 }
 
+export const getMemorialBySlug = async (slug: string): Promise<{ memorial: Memorial | null; error?: string }> => {
+  try {
+    // Try yampi_memorials first
+    const { data: yampiMemorial, error: yampiError } = await supabase
+      .from('yampi_memorials')
+      .select('*')
+      .eq('custom_slug', slug)
+      .maybeSingle();
+
+    if (yampiMemorial) {
+      return { memorial: yampiMemorial };
+    }
+
+    // If not found in yampi, try stripe_memorials
+    const { data: stripeMemorial, error: stripeError } = await supabase
+      .from('stripe_memorials')
+      .select('*')
+      .eq('custom_slug', slug)
+      .maybeSingle();
+
+    if (stripeMemorial) {
+      return { memorial: stripeMemorial };
+    }
+
+    return { memorial: null, error: 'Memorial not found' };
+  } catch (error) {
+    console.error('Error fetching memorial:', error);
+    return { memorial: null, error: 'Error fetching memorial' };
+  }
+};
+
+export const updateMemorialData = async (
+  slug: string,
+  data: Partial<Memorial>,
+  isBrazil: boolean
+): Promise<{ success: boolean; error?: string }> => {
+  const tableName = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
+  
+  try {
+    const { error } = await supabase
+      .from(tableName)
+      .update(data)
+      .eq('custom_slug', slug);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error(`Error updating ${tableName}:`, error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    };
+  }
+};
+
+export const getMemorialPaymentStatus = async (slug: string): Promise<string> => {
+  const { memorial, error } = await getMemorialBySlug(slug);
+  if (error || !memorial) {
+    throw new Error(error || 'Memorial not found');
+  }
+  return memorial.payment_status;
+};
+
+export const checkMemorialExists = async (slug: string): Promise<boolean> => {
+  const { memorial } = await getMemorialBySlug(slug);
+  return !!memorial;
+};
+
+export const createMemorial = async (
+  memorialData: Partial<Memorial>,
+  isBrazil: boolean
+): Promise<Memorial | null> => {
+  const tableName = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
+  
+  try {
+    const { data, error } = await supabase
+      .from(tableName)
+      .insert(memorialData)
+      .select()
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(`Error creating memorial in ${tableName}:`, error);
+    return null;
+  }
+};
+
 export const saveMemorialData = async (input: SaveMemorialInput): Promise<{ success: boolean; error?: string; data?: Memorial }> => {
   try {
     console.log('Starting memorial data save process...', input);
@@ -113,4 +202,3 @@ export const saveMemorialData = async (input: SaveMemorialInput): Promise<{ succ
     };
   }
 };
-

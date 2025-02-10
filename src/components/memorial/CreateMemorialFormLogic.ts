@@ -4,6 +4,7 @@ import { saveMemorialData } from '@/lib/memorial-data-utils';
 import { detectUserLocation, saveLocationAnalytics, type LocationInfo } from '@/lib/location-detector';
 import type { FormPreviewData } from './types';
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useMemorialFormLogic = (
   onEmailSubmit: (email: string) => void,
@@ -152,4 +153,3 @@ export const useMemorialFormLogic = (
     setStartTime
   };
 };
-
