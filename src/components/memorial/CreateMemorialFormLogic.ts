@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { uploadPhotosToStorage, uploadQRCode } from '@/lib/file-upload';
@@ -114,6 +115,13 @@ export const useMemorialFormLogic = (
   const handleEmailSubmit = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
     try {
       setIsLoading(true);
+      console.log('Starting memorial creation process...');
+
+      if (!coupleName || !startDate || !photos.length) {
+        toast.error('Por favor, preencha todos os campos obrigatórios');
+        return;
+      }
+
       onEmailSubmit(submittedEmail);
       setShowEmailDialog(false);
 
@@ -121,7 +129,6 @@ export const useMemorialFormLogic = (
       console.log('Memorial data prepared:', memorialData);
       
       if (isBrazil) {
-        // Para o Brasil, salvamos os dados na tabela yampi_memorials
         console.log('Saving memorial data for Brazil...');
         const { data: insertedMemorial, error: insertError } = await supabase
           .from('yampi_memorials')
@@ -139,8 +146,7 @@ export const useMemorialFormLogic = (
         }
 
         console.log('Successfully created memorial in yampi_memorials:', insertedMemorial);
-        // O botão da Yampi já está configurado para redirecionar para o checkout
-        // Não precisamos mais chamar a função yampi-checkout
+        toast.success('Memorial criado com sucesso! Redirecionando para o pagamento...');
         
       } else {
         // Para outros países, mantém o fluxo do Stripe
