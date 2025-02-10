@@ -26,6 +26,8 @@ export const useMemorialFormLogic = (
   const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
   const [isDataSaved, setIsDataSaved] = useState(false);
   const [memorialData, setMemorialData] = useState<any>(null);
+  const [currentMemorialId, setCurrentMemorialId] = useState<string | null>(null);
+  const [canCreateNewMemorial, setCanCreateNewMemorial] = useState(true);
 
   useEffect(() => {
     const checkLocation = async () => {
@@ -55,10 +57,17 @@ export const useMemorialFormLogic = (
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
+  // Efeito para controlar quando o botão pode ser clicável novamente
+  useEffect(() => {
+    if (currentMemorialId && !canCreateNewMemorial) {
+      setCanCreateNewMemorial(true);
+    }
+  }, [selectedPlan]);
+
   const handleSaveMemorial = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
     try {
       setIsLoading(true);
-      console.log('Starting memorial creation process...');
+      console.log('Starting memorial creation/update process...');
 
       if (!coupleName || !startDate || !photos.length) {
         toast.error('Por favor, preencha todos os campos obrigatórios');
@@ -69,6 +78,32 @@ export const useMemorialFormLogic = (
         ? isBrazil ? 29 : 9
         : isBrazil ? 49 : 14;
 
+      // Se já existe um memorial salvo, atualiza em vez de criar um novo
+      if (currentMemorialId) {
+        console.log('Updating existing memorial:', currentMemorialId);
+        const table = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
+        
+        const { data: updatedMemorial, error: updateError } = await supabase
+          .from(table)
+          .update({
+            plan_type: selectedPlan,
+            plan_price: planPrice,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', currentMemorialId)
+          .select()
+          .single();
+
+        if (updateError) {
+          throw new Error(`Failed to update memorial: ${updateError.message}`);
+        }
+
+        setMemorialData(updatedMemorial);
+        toast.success('Memorial atualizado com sucesso!');
+        return updatedMemorial;
+      }
+
+      // Se não existe memorial, cria um novo
       const result = await saveMemorialData({
         coupleName,
         message,
@@ -99,9 +134,11 @@ export const useMemorialFormLogic = (
       }
 
       console.log('Memorial data saved successfully:', result.data);
-      toast.success('Memorial criado com sucesso!');
+      setCurrentMemorialId(result.data.id);
+      setCanCreateNewMemorial(false);
       setIsDataSaved(true);
       setMemorialData(result.data);
+      toast.success('Memorial criado com sucesso!');
       return result.data;
 
     } catch (error) {
@@ -169,6 +206,7 @@ export const useMemorialFormLogic = (
     startTime,
     setStartTime,
     isDataSaved,
-    memorialData
+    memorialData,
+    canCreateNewMemorial
   };
 };

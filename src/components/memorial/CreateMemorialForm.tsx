@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -53,7 +53,8 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     startTime,
     setStartTime,
     isDataSaved,
-    memorialData
+    memorialData,
+    canCreateNewMemorial
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
   const isFormValid = coupleName && startDate && photosPreviews.length > 0;
@@ -78,7 +79,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
           className="w-full bg-lovepink hover:bg-lovepink/90"
           onClick={async () => {
             try {
-              const result = await handleEmailSubmit(email, "", ""); // Vamos preencher estes dados no modal
+              const result = await handleEmailSubmit(email, "", "");
               if (result) {
                 setShowPaymentModal(true);
               }
@@ -87,9 +88,13 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
               toast.error(t("error_creating_memorial"));
             }
           }}
-          disabled={isLoading}
+          disabled={isLoading || !canCreateNewMemorial}
         >
-          {isLoading ? t("creating") : t("create_our_site")}
+          {isLoading 
+            ? t("creating") 
+            : !canCreateNewMemorial 
+              ? t("plan_change_to_continue") 
+              : t("create_our_site")}
         </Button>
       );
     }
@@ -102,7 +107,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         setShowEmailDialog={setShowEmailDialog}
         handleEmailSubmit={handleEmailSubmit}
         email={email}
-        isDisabled={!isFormValid}
+        isDisabled={!isFormValid || !canCreateNewMemorial}
       />
     );
   };
