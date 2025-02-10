@@ -1,3 +1,4 @@
+
 export type Translation = {
   // Home page
   surprise: string;
@@ -81,6 +82,7 @@ export type Translation = {
   photos_no_music: string;
   photos_with_music: string;
   memorial_not_available: string;
+  plan_change_to_continue: string; // Added new translation key
 
   // Form translations
   couple_name: string;
