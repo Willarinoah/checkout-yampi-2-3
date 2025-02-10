@@ -1,10 +1,11 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-yampi-signature',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-yampi-signature, x-yampi-hmac-sha256',
 };
 
 interface WebhookPayload {
@@ -45,6 +46,7 @@ const verifyYampiSignature = async (payload: string, signature: string | null, s
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -55,8 +57,9 @@ serve(async (req) => {
       throw new Error('Missing Yampi webhook secret key');
     }
 
-    // Get the signature from headers
-    const signature = req.headers.get('X-Yampi-Hmac-SHA256');
+    // Get the signature from headers (case insensitive)
+    const signature = req.headers.get('X-Yampi-Hmac-SHA256') || req.headers.get('x-yampi-hmac-sha256');
+    console.log('Received signature:', signature);
     
     // Get the raw payload
     const payload = await req.text();
