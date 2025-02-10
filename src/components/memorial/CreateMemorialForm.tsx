@@ -71,11 +71,22 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       );
     }
 
+    // Se for Brasil, mostra apenas o botão que abre o modal da Yampi
     if (isBrazil) {
       return (
         <Button
           className="w-full bg-lovepink hover:bg-lovepink/90"
-          onClick={() => setShowPaymentModal(true)}
+          onClick={async () => {
+            try {
+              setIsLoading(true);
+              await handleEmailSubmit(email, "", ""); // Vamos preencher estes dados no modal
+              setShowPaymentModal(true);
+            } catch (error) {
+              toast.error(t("error_saving_data"));
+            } finally {
+              setIsLoading(false);
+            }
+          }}
           disabled={isLoading}
         >
           {isLoading ? t("creating") : t("create_our_site")}
@@ -83,6 +94,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       );
     }
     
+    // Se não for Brasil, mostra o botão do Stripe
     return (
       <StripePaymentButton
         isLoading={isLoading}
@@ -159,16 +171,19 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         {renderPaymentButton()}
       </div>
 
-      <PaymentModal
-        open={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        email={email}
-        onSubmit={handleEmailSubmit}
-        selectedPlan={selectedPlan}
-        showYampiButton={true}
-        isLoading={isLoading}
-        isDataSaved={isDataSaved}
-      />
+      {/* Modal da Yampi (apenas para Brasil) */}
+      {isBrazil && (
+        <PaymentModal
+          open={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          email={email}
+          onSubmit={handleEmailSubmit}
+          selectedPlan={selectedPlan}
+          showYampiButton={true}
+          isLoading={isLoading}
+          isDataSaved={isDataSaved}
+        />
+      )}
     </div>
   );
 };
