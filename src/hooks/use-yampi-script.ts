@@ -2,7 +2,7 @@
 type YampiPlan = "basic" | "premium";
 
 const YAMPI_SCRIPTS = {
-  basic: "https://api.yampi.io/v2/teste1970/public/buy-button/IVGTXEE1AT/js",
+  basic: "https://api.yampi.io/v2/teste1970/public/buy-button/JF79KUIUZ5/js",
   premium: "https://api.yampi.io/v2/teste1970/public/buy-button/QR8IDUXVOA/js",
 };
 
