@@ -16,6 +16,9 @@ interface WebhookPayload {
     payment_id?: string;
     installments?: number;
     status?: string;
+    customer?: {
+      email?: string;
+    };
   };
 }
 
@@ -93,27 +96,102 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     switch (webhookData.event) {
-      case 'order.paid': {
-        // Primeiro, vamos verificar se o memorial existe
-        const { data: existingMemorial, error: checkError } = await supabase
+      case 'order.created': {
+        console.log('Processing order.created event');
+        // Busca o memorial mais recente pendente com o email do cliente
+        const { data: memorial, error: findError } = await supabase
+          .from('yampi_memorials')
+          .select('*')
+          .eq('payment_status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (findError) {
+          console.error('Error finding memorial:', findError);
+          throw findError;
+        }
+
+        if (!memorial) {
+          console.error('No pending memorial found');
+          throw new Error('No pending memorial found');
+        }
+
+        // Atualiza o memorial com o ID do pedido Yampi
+        const { error: updateError } = await supabase
+          .from('yampi_memorials')
+          .update({
+            yampi_order_id: webhookData.data.id.toString(),
+            yampi_status: webhookData.data.status,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', memorial.id);
+
+        if (updateError) {
+          console.error('Error updating memorial with Yampi order ID:', updateError);
+          throw updateError;
+        }
+
+        console.log('Memorial updated with Yampi order ID:', webhookData.data.id);
+        break;
+      }
+
+      case 'order.status.updated': {
+        console.log('Processing order.status.updated event');
+        const { data: memorial, error: findError } = await supabase
           .from('yampi_memorials')
           .select('*')
           .eq('yampi_order_id', webhookData.data.id.toString())
           .maybeSingle();
 
-        if (checkError) {
-          console.error('Error checking memorial:', checkError);
-          throw new Error(`Error checking memorial: ${checkError.message}`);
+        if (findError) {
+          console.error('Error finding memorial:', findError);
+          throw findError;
         }
 
-        if (!existingMemorial) {
+        if (!memorial) {
           console.error('No memorial found for order ID:', webhookData.data.id);
           throw new Error(`No memorial found for order ID: ${webhookData.data.id}`);
         }
 
-        console.log('Found existing memorial:', existingMemorial);
+        // Atualiza o status do pedido
+        const { error: updateError } = await supabase
+          .from('yampi_memorials')
+          .update({
+            yampi_status: webhookData.data.status,
+            updated_at: new Date().toISOString()
+          })
+          .eq('yampi_order_id', webhookData.data.id.toString());
 
-        const { data: memorial, error: updateError } = await supabase
+        if (updateError) {
+          console.error('Error updating memorial status:', updateError);
+          throw updateError;
+        }
+
+        console.log('Memorial status updated successfully');
+        break;
+      }
+
+      case 'order.paid': {
+        console.log('Processing order.paid event');
+        const { data: memorial, error: findError } = await supabase
+          .from('yampi_memorials')
+          .select('*')
+          .eq('yampi_order_id', webhookData.data.id.toString())
+          .maybeSingle();
+
+        if (findError) {
+          console.error('Error finding memorial:', findError);
+          throw findError;
+        }
+
+        if (!memorial) {
+          console.error('No memorial found for order ID:', webhookData.data.id);
+          throw new Error(`No memorial found for order ID: ${webhookData.data.id}`);
+        }
+
+        // Atualiza o memorial com as informações de pagamento
+        const { data: updatedMemorial, error: updateError } = await supabase
           .from('yampi_memorials')
           .update({
             payment_status: 'approved',
@@ -132,69 +210,33 @@ serve(async (req) => {
           throw updateError;
         }
 
-        console.log('Memorial updated successfully:', memorial);
+        console.log('Memorial payment confirmed:', updatedMemorial);
 
-        if (memorial) {
-          try {
-            const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-memorial-email`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${supabaseKey}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                to: memorial.email,
-                memorialUrl: memorial.unique_url,
-                qrCodeUrl: memorial.qr_code_url
-              })
-            });
+        // Envia email de confirmação
+        try {
+          const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-memorial-email`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              to: updatedMemorial.email,
+              memorialUrl: updatedMemorial.unique_url,
+              qrCodeUrl: updatedMemorial.qr_code_url
+            })
+          });
 
-            if (!emailResponse.ok) {
-              const errorData = await emailResponse.text();
-              console.error('Error sending confirmation email:', errorData);
-            } else {
-              console.log('Confirmation email sent successfully');
-            }
-          } catch (emailError) {
-            console.error('Error sending confirmation email:', emailError);
+          if (!emailResponse.ok) {
+            const errorData = await emailResponse.text();
+            console.error('Error sending confirmation email:', errorData);
+          } else {
+            console.log('Confirmation email sent successfully');
           }
-        }
-        break;
-      }
-
-      case 'order.status.updated': {
-        // Primeiro, vamos verificar se o memorial existe
-        const { data: existingMemorial, error: checkError } = await supabase
-          .from('yampi_memorials')
-          .select('*')
-          .eq('yampi_order_id', webhookData.data.id.toString())
-          .maybeSingle();
-
-        if (checkError) {
-          console.error('Error checking memorial:', checkError);
-          throw new Error(`Error checking memorial: ${checkError.message}`);
+        } catch (emailError) {
+          console.error('Error sending confirmation email:', emailError);
         }
 
-        if (!existingMemorial) {
-          console.error('No memorial found for order ID:', webhookData.data.id);
-          throw new Error(`No memorial found for order ID: ${webhookData.data.id}`);
-        }
-
-        console.log('Found existing memorial for status update:', existingMemorial);
-
-        const { error: statusError } = await supabase
-          .from('yampi_memorials')
-          .update({
-            yampi_status: webhookData.data.status,
-            updated_at: new Date().toISOString()
-          })
-          .eq('yampi_order_id', webhookData.data.id.toString());
-
-        if (statusError) {
-          console.error('Error updating memorial status:', statusError);
-          throw statusError;
-        }
-        console.log('Memorial status updated successfully');
         break;
       }
 
