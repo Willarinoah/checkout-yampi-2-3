@@ -8,18 +8,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-yampi-signature, x-yampi-hmac-sha256',
 };
 
+interface YampiResource {
+  id: number;
+  status: {
+    id: number;
+    type: string;
+    label: string;
+  };
+  payment: {
+    method: string;
+    installments: number;
+    payment_id?: string;
+  };
+  customer?: {
+    email?: string;
+  };
+}
+
 interface WebhookPayload {
   event: string;
-  data: {
-    id: string;
-    payment_method?: string;
-    payment_id?: string;
-    installments?: number;
-    status?: string;
-    customer?: {
-      email?: string;
-    };
-  };
+  resource: YampiResource;
 }
 
 const verifyYampiSignature = async (payload: string, signature: string | null, secret: string) => {
@@ -87,6 +95,7 @@ serve(async (req) => {
 
     const webhookData = JSON.parse(payload) as WebhookPayload;
     console.log('Processing webhook event:', webhookData.event);
+    console.log('Webhook resource:', webhookData.resource);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -121,8 +130,8 @@ serve(async (req) => {
         const { error: updateError } = await supabase
           .from('yampi_memorials')
           .update({
-            yampi_order_id: webhookData.data.id.toString(),
-            yampi_status: webhookData.data.status,
+            yampi_order_id: webhookData.resource.id.toString(),
+            yampi_status: webhookData.resource.status.type,
             updated_at: new Date().toISOString()
           })
           .eq('id', memorial.id);
@@ -132,7 +141,7 @@ serve(async (req) => {
           throw updateError;
         }
 
-        console.log('Memorial updated with Yampi order ID:', webhookData.data.id);
+        console.log('Memorial updated with Yampi order ID:', webhookData.resource.id);
         break;
       }
 
@@ -141,7 +150,7 @@ serve(async (req) => {
         const { data: memorial, error: findError } = await supabase
           .from('yampi_memorials')
           .select('*')
-          .eq('yampi_order_id', webhookData.data.id.toString())
+          .eq('yampi_order_id', webhookData.resource.id.toString())
           .maybeSingle();
 
         if (findError) {
@@ -150,18 +159,18 @@ serve(async (req) => {
         }
 
         if (!memorial) {
-          console.error('No memorial found for order ID:', webhookData.data.id);
-          throw new Error(`No memorial found for order ID: ${webhookData.data.id}`);
+          console.error('No memorial found for order ID:', webhookData.resource.id);
+          throw new Error(`No memorial found for order ID: ${webhookData.resource.id}`);
         }
 
         // Atualiza o status do pedido
         const { error: updateError } = await supabase
           .from('yampi_memorials')
           .update({
-            yampi_status: webhookData.data.status,
+            yampi_status: webhookData.resource.status.type,
             updated_at: new Date().toISOString()
           })
-          .eq('yampi_order_id', webhookData.data.id.toString());
+          .eq('yampi_order_id', webhookData.resource.id.toString());
 
         if (updateError) {
           console.error('Error updating memorial status:', updateError);
@@ -177,7 +186,7 @@ serve(async (req) => {
         const { data: memorial, error: findError } = await supabase
           .from('yampi_memorials')
           .select('*')
-          .eq('yampi_order_id', webhookData.data.id.toString())
+          .eq('yampi_order_id', webhookData.resource.id.toString())
           .maybeSingle();
 
         if (findError) {
@@ -186,8 +195,8 @@ serve(async (req) => {
         }
 
         if (!memorial) {
-          console.error('No memorial found for order ID:', webhookData.data.id);
-          throw new Error(`No memorial found for order ID: ${webhookData.data.id}`);
+          console.error('No memorial found for order ID:', webhookData.resource.id);
+          throw new Error(`No memorial found for order ID: ${webhookData.resource.id}`);
         }
 
         // Atualiza o memorial com as informações de pagamento
@@ -195,13 +204,13 @@ serve(async (req) => {
           .from('yampi_memorials')
           .update({
             payment_status: 'approved',
-            yampi_status: webhookData.data.status,
-            yampi_payment_method: webhookData.data.payment_method,
-            yampi_payment_id: webhookData.data.payment_id,
-            yampi_installments: webhookData.data.installments,
+            yampi_status: webhookData.resource.status.type,
+            yampi_payment_method: webhookData.resource.payment.method,
+            yampi_payment_id: webhookData.resource.payment.payment_id,
+            yampi_installments: webhookData.resource.payment.installments,
             updated_at: new Date().toISOString()
           })
-          .eq('yampi_order_id', webhookData.data.id.toString())
+          .eq('yampi_order_id', webhookData.resource.id.toString())
           .select()
           .single();
 
@@ -263,3 +272,4 @@ serve(async (req) => {
     );
   }
 });
+
