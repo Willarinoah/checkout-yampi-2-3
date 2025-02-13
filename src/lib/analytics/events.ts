@@ -131,15 +131,11 @@ export const trackBeginCheckout = (
     ecommerce: {
       currency: paymentProvider === 'mercadopago' ? 'BRL' : 'USD',
       value: price,
-      content_type: 'product_group',
-      content_ids: [`memorial_${planType}`],
       items: [{
-        item_id: `memorial_${planType}`,
+        item_id: `${planType}_plan`,
         item_name: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`,
         price,
-        quantity: 1,
-        item_category: 'memorial',
-        item_variant: planType
+        quantity: 1
       }]
     },
     user_data: {
@@ -150,7 +146,6 @@ export const trackBeginCheckout = (
       ...(userData.region && { region: userData.region }),
       ...(userData.city && { city: userData.city })
     },
-    fb_tracking: {},
     funnel_data: {
       step_name: 'begin_checkout',
       step_number: 4
@@ -174,20 +169,11 @@ export const trackPurchase = (
       transaction_id: transactionId,
       currency: paymentProvider === 'mercadopago' ? 'BRL' : 'USD',
       value: price,
-      content_type: 'product_group',
-      content_ids: [`memorial_${planType}`],
-      contents: [{
-        id: `memorial_${planType}`,
-        quantity: 1,
-        item_price: price
-      }],
       items: [{
-        item_id: `memorial_${planType}`,
+        item_id: `${planType}_plan`,
         item_name: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`,
         price,
-        quantity: 1,
-        item_category: 'memorial',
-        item_variant: planType
+        quantity: 1
       }]
     },
     user_data: {
@@ -201,7 +187,6 @@ export const trackPurchase = (
     payment_provider: paymentProvider,
     payment_method: paymentMethod,
     payment_status: status,
-    fb_tracking: {},
     funnel_data: {
       step_name: 'purchase_complete',
       step_number: 5

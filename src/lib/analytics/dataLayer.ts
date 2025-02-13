@@ -24,6 +24,7 @@ export interface DataLayerEvent {
       item_name: string;
       price: number;
       quantity?: number;
+      item_category?: string;
     }>;
   };
   // User data (hashed for privacy)
@@ -34,6 +35,8 @@ export interface DataLayerEvent {
     country?: string;
     region?: string;
     city?: string;
+    external_id?: string;
+    client_user_agent?: string;
   };
   // Funnel data
   funnel_data?: {
