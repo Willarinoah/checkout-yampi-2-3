@@ -1,4 +1,3 @@
-
 import { sha256 } from 'crypto-js';
 import { pushToDataLayer, DataLayerEvent } from './dataLayer';
 
@@ -43,7 +42,7 @@ export const trackPageView = (pageType: string, userData?: UserData) => {
   pushToDataLayer(eventData);
 };
 
-// View Content Event (for Facebook)
+// View Content Event (para Facebook)
 export const trackViewContent = (
   planType: 'basic' | 'premium',
   price: number,
@@ -51,17 +50,13 @@ export const trackViewContent = (
 ) => {
   pushToDataLayer({
     event: 'view_content',
-    content_type: 'product',
+    pageType: 'product',
     ecommerce: {
-      content_type: 'product_group',
-      content_ids: [`memorial_${planType}`],
-      content_name: `Memorial ${planType.charAt(0).toUpperCase() + planType.slice(1)}`,
-      content_category: 'memorial',
       value: price,
       currency: 'BRL',
       items: [{
-        item_id: `memorial_${planType}`,
-        item_name: `Memorial ${planType.charAt(0).toUpperCase() + planType.slice(1)}`,
+        item_id: `${planType}_plan`,
+        item_name: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`,
         price: price,
         quantity: 1
       }]
@@ -74,7 +69,10 @@ export const trackViewContent = (
       ...(userData.region && { region: userData.region }),
       ...(userData.city && { city: userData.city })
     } : undefined,
-    fb_tracking: {}
+    funnel_data: {
+      step_name: 'view_content',
+      step_number: 1
+    }
   });
 };
 
