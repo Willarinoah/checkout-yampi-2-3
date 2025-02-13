@@ -1,3 +1,4 @@
+
 import { sha256 } from 'crypto-js';
 import { pushToDataLayer, DataLayerEvent } from './dataLayer';
 
@@ -15,7 +16,7 @@ const hashData = (data: string): string => {
   return sha256(data).toString();
 };
 
-// Page View Event (already implemented)
+// Page View Event
 export const trackPageView = (pageType: string, userData?: UserData) => {
   const eventData: DataLayerEvent = {
     event: 'page_view',
@@ -40,6 +41,41 @@ export const trackPageView = (pageType: string, userData?: UserData) => {
   }
 
   pushToDataLayer(eventData);
+};
+
+// View Content Event (for Facebook)
+export const trackViewContent = (
+  planType: 'basic' | 'premium',
+  price: number,
+  userData?: UserData
+) => {
+  pushToDataLayer({
+    event: 'view_content',
+    content_type: 'product',
+    ecommerce: {
+      content_type: 'product_group',
+      content_ids: [`memorial_${planType}`],
+      content_name: `Memorial ${planType.charAt(0).toUpperCase() + planType.slice(1)}`,
+      content_category: 'memorial',
+      value: price,
+      currency: 'BRL',
+      items: [{
+        item_id: `memorial_${planType}`,
+        item_name: `Memorial ${planType.charAt(0).toUpperCase() + planType.slice(1)}`,
+        price: price,
+        quantity: 1
+      }]
+    },
+    user_data: userData ? {
+      ...(userData.email && { email_sha256: hashData(userData.email) }),
+      ...(userData.phone && { phone_sha256: hashData(userData.phone) }),
+      ...(userData.name && { name_sha256: hashData(userData.name) }),
+      ...(userData.country && { country: userData.country }),
+      ...(userData.region && { region: userData.region }),
+      ...(userData.city && { city: userData.city })
+    } : undefined,
+    fb_tracking: {}
+  });
 };
 
 // Button Click Events
@@ -97,11 +133,15 @@ export const trackBeginCheckout = (
     ecommerce: {
       currency: paymentProvider === 'mercadopago' ? 'BRL' : 'USD',
       value: price,
+      content_type: 'product_group',
+      content_ids: [`memorial_${planType}`],
       items: [{
-        item_id: `${planType}_plan`,
+        item_id: `memorial_${planType}`,
         item_name: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`,
         price,
-        quantity: 1
+        quantity: 1,
+        item_category: 'memorial',
+        item_variant: planType
       }]
     },
     user_data: {
@@ -112,6 +152,7 @@ export const trackBeginCheckout = (
       ...(userData.region && { region: userData.region }),
       ...(userData.city && { city: userData.city })
     },
+    fb_tracking: {},
     funnel_data: {
       step_name: 'begin_checkout',
       step_number: 4
@@ -135,11 +176,20 @@ export const trackPurchase = (
       transaction_id: transactionId,
       currency: paymentProvider === 'mercadopago' ? 'BRL' : 'USD',
       value: price,
+      content_type: 'product_group',
+      content_ids: [`memorial_${planType}`],
+      contents: [{
+        id: `memorial_${planType}`,
+        quantity: 1,
+        item_price: price
+      }],
       items: [{
-        item_id: `${planType}_plan`,
+        item_id: `memorial_${planType}`,
         item_name: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`,
         price,
-        quantity: 1
+        quantity: 1,
+        item_category: 'memorial',
+        item_variant: planType
       }]
     },
     user_data: {
@@ -153,6 +203,7 @@ export const trackPurchase = (
     payment_provider: paymentProvider,
     payment_method: paymentMethod,
     payment_status: status,
+    fb_tracking: {},
     funnel_data: {
       step_name: 'purchase_complete',
       step_number: 5
