@@ -6,7 +6,7 @@ export interface DataLayerEvent {
   button_type?: string;
   button_location?: string;
   plan_type?: 'basic' | 'premium';
-  payment_provider?: 'stripe' | 'mercadopago';
+  payment_provider?: 'stripe';
   payment_method?: string;
   payment_status?: string;
   checkout_step?: string;

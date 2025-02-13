@@ -97,14 +97,13 @@ export const trackButtonClick = (
 // Payment Form Events
 export const trackPaymentFormInteraction = (
   action: 'start' | 'field_complete' | 'submit',
-  paymentProvider: 'stripe' | 'mercadopago',
   fieldName?: string,
   userData?: UserData
 ) => {
   pushToDataLayer({
     event: 'payment_form_interaction',
     button_type: action,
-    payment_provider: paymentProvider,
+    payment_provider: 'stripe',
     form_field: fieldName,
     form_status: action === 'start' ? 'started' : action === 'submit' ? 'completed' : undefined,
     user_data: userData ? {
@@ -123,13 +122,12 @@ export const trackPaymentFormInteraction = (
 export const trackBeginCheckout = (
   planType: 'basic' | 'premium',
   price: number,
-  userData: UserData,
-  paymentProvider: 'stripe' | 'mercadopago'
+  userData: UserData
 ) => {
   pushToDataLayer({
     event: 'begin_checkout',
     ecommerce: {
-      currency: paymentProvider === 'mercadopago' ? 'BRL' : 'USD',
+      currency: 'USD',
       value: price,
       items: [{
         item_id: `${planType}_plan`,
@@ -159,15 +157,14 @@ export const trackPurchase = (
   planType: 'basic' | 'premium',
   price: number,
   paymentMethod: string,
-  paymentProvider: 'stripe' | 'mercadopago',
   userData: UserData,
-  status: 'approved' | 'pending' | 'rejected' | 'succeeded' | 'failed' | 'canceled'
+  status: 'succeeded' | 'failed' | 'canceled'
 ) => {
   pushToDataLayer({
     event: 'purchase',
     ecommerce: {
       transaction_id: transactionId,
-      currency: paymentProvider === 'mercadopago' ? 'BRL' : 'USD',
+      currency: 'USD',
       value: price,
       items: [{
         item_id: `${planType}_plan`,
@@ -184,7 +181,7 @@ export const trackPurchase = (
       ...(userData.region && { region: userData.region }),
       ...(userData.city && { city: userData.city })
     },
-    payment_provider: paymentProvider,
+    payment_provider: 'stripe',
     payment_method: paymentMethod,
     payment_status: status,
     funnel_data: {
