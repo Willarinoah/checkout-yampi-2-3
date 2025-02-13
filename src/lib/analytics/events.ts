@@ -1,6 +1,6 @@
 
 import { sha256 } from 'crypto-js';
-import { pushToDataLayer, DataLayerEvent } from './dataLayer';
+import { pushToDataLayer, DataLayerEvent, YampiOrder } from './dataLayer';
 
 interface UserData {
   email?: string;
@@ -136,7 +136,8 @@ export const trackBeginCheckout = (
         item_id: `${planType}_plan`,
         item_name: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`,
         price,
-        quantity: 1
+        quantity: 1,
+        item_category: 'memorial'
       }]
     },
     user_data: {
@@ -162,9 +163,10 @@ export const trackPurchase = (
   paymentMethod: string,
   paymentProvider: 'stripe' | 'yampi',
   userData: UserData,
-  status: 'approved' | 'pending' | 'rejected' | 'succeeded' | 'failed' | 'canceled'
+  status: 'approved' | 'pending' | 'rejected' | 'succeeded' | 'failed' | 'canceled' | 'waiting_payment' | 'authorized',
+  yampiOrder?: YampiOrder
 ) => {
-  pushToDataLayer({
+  const eventData: DataLayerEvent = {
     event: 'purchase',
     ecommerce: {
       transaction_id: transactionId,
@@ -174,7 +176,8 @@ export const trackPurchase = (
         item_id: `${planType}_plan`,
         item_name: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`,
         price,
-        quantity: 1
+        quantity: 1,
+        item_category: 'memorial'
       }]
     },
     user_data: {
@@ -192,7 +195,19 @@ export const trackPurchase = (
       step_name: 'purchase_complete',
       step_number: 5
     }
-  });
+  };
+
+  // Adiciona dados específicos do Yampi se disponíveis
+  if (paymentProvider === 'yampi' && yampiOrder) {
+    eventData.pageCategory = 'orderPlaced';
+    eventData.order = yampiOrder;
+    eventData.orderConversionValue = yampiOrder.total;
+    eventData.purchasedSkus = yampiOrder.items.map(item => item.product.sku);
+    eventData.purchasedSkusText = yampiOrder.items.map(item => item.product.sku).join(',');
+    eventData.orderId = yampiOrder.id;
+  }
+
+  pushToDataLayer(eventData);
 };
 
 // Helper function to determine funnel step number

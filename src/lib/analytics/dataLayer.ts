@@ -1,5 +1,56 @@
 
 // Types for DataLayer events
+export interface YampiCustomer {
+  id: number;
+  first_name: string;
+  last_name: string;
+  document?: string;
+  document_type?: string;
+  phone_number?: string;
+  full_name: string;
+  email: string;
+}
+
+export interface YampiProduct {
+  id: string;
+  sku: string;
+  price: number;
+  brand?: string;
+  categories?: string[];
+  image_url?: string;
+  metadata?: Record<string, any>[];
+}
+
+export interface YampiOrderItem {
+  product: YampiProduct;
+  quantity: number;
+  name: string;
+  product_id: number;
+  categories_names: string[];
+}
+
+export interface YampiOrder {
+  id: number;
+  token: string;
+  payment_method: string;
+  number: string;
+  total: number;
+  total_without_taxes?: number;
+  total_without_shipping?: number;
+  customer: YampiCustomer;
+  status: string;
+  items: YampiOrderItem[];
+  address_info?: {
+    hashed_first_name?: string;
+    hashed_last_name?: string;
+    hashed_street_address?: string;
+    city?: string;
+    state?: string;
+    postal_code?: string;
+    country_code?: string;
+  };
+}
+
 export interface DataLayerEvent {
   event: string;
   pageType?: string;
@@ -14,6 +65,12 @@ export interface DataLayerEvent {
   form_field?: string;
   page_path?: string;
   page_title?: string;
+  pageCategory?: string;
+  order?: YampiOrder;
+  orderConversionValue?: number;
+  purchasedSkus?: string[];
+  purchasedSkusText?: string;
+  orderId?: number;
   // Enhanced E-commerce data
   ecommerce?: {
     transaction_id?: string;
@@ -25,6 +82,8 @@ export interface DataLayerEvent {
       price: number;
       quantity?: number;
       item_category?: string;
+      sku?: string;
+      brand?: string;
     }>;
   };
   // User data (hashed for privacy)
