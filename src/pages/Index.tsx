@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
@@ -15,26 +16,23 @@ const Index = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Track page view
-    trackPageView('Homepage');
-
-    // Track user location
-    const trackLocation = async () => {
+    // Track page view with location
+    const initializeAnalytics = async () => {
       try {
         const locationInfo = await detectUserLocation();
-        if (locationInfo) {
-          trackPageView('Homepage', {
-            country: locationInfo.country_code,
-            region: locationInfo.region,
-            city: locationInfo.city
-          });
-        }
+        trackPageView('Homepage', locationInfo ? {
+          country: locationInfo.country_code,
+          region: locationInfo.region,
+          city: locationInfo.city
+        } : undefined);
       } catch (error) {
-        console.error('Error detecting location:', error);
+        console.error('Error in analytics initialization:', error);
+        // Still track page view without location data
+        trackPageView('Homepage');
       }
     };
 
-    trackLocation();
+    initializeAnalytics();
 
     if (location.state && location.state.scrollTo) {
       if (location.state.scrollTo === 'top') {
