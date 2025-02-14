@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export type LocationInfo = {
@@ -25,7 +26,6 @@ const getBrowserLocation = (): Promise<GeolocationPosition> => {
 
 const getCountryFromCoordinates = async (latitude: number, longitude: number): Promise<LocationInfo> => {
   try {
-    // Using Vercel's edge function to get location info
     const response = await fetch('/api/geo');
     if (!response.ok) {
       throw new Error('Failed to fetch location data');
@@ -34,10 +34,10 @@ const getCountryFromCoordinates = async (latitude: number, longitude: number): P
     const data = await response.json();
     
     return {
-      country_code: data.country_code || data.country,
+      country_code: data.country || 'US',
       city: data.city,
       region: data.region,
-      is_brazil: (data.country_code === 'BR' || data.country === 'BR'),
+      is_brazil: (data.country === 'BR'),
       detected_by: 'browser'
     };
   } catch (error) {
@@ -50,12 +50,18 @@ export const detectUserLocation = async (): Promise<LocationInfo> => {
   try {
     // First try: Vercel Edge Runtime geolocation
     try {
-      const response = await fetch('/api/geo');
+      const response = await fetch('/api/geo', {
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
+        }
+      });
+      
       if (response.ok) {
         const data = await response.json();
         console.log('Location detected by Vercel:', data);
         return {
-          country_code: data.country,
+          country_code: data.country || 'US',
           city: data.city,
           region: data.region,
           is_brazil: data.country === 'BR',
@@ -66,8 +72,8 @@ export const detectUserLocation = async (): Promise<LocationInfo> => {
       console.error('Vercel geolocation failed:', error);
     }
 
+    // Second try: Browser Geolocation API
     try {
-      // Second try: Browser Geolocation API
       console.log('Trying browser geolocation...');
       const position = await getBrowserLocation();
       const locationInfo = await getCountryFromCoordinates(
