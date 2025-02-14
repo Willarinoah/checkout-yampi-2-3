@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { YampiButton } from "./YampiButton";
 import { Loader2 } from "lucide-react";
+import { trackAddToCart } from "@/lib/analytics/events";
 
 interface PaymentModalProps {
   open: boolean;
@@ -33,6 +33,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [firstName, setFirstName] = React.useState("");
   const [lastName, setLastName] = React.useState("");
   const [phoneNumber, setPhoneNumber] = React.useState("");
+
+  // Fire add_to_cart event when modal opens
+  React.useEffect(() => {
+    if (open) {
+      const price = selectedPlan === 'basic' ? 29 : 49;
+      trackAddToCart(selectedPlan, price);
+    }
+  }, [open, selectedPlan]);
 
   const sanitizePhoneNumber = (value: string) => {
     return value.replace(/[^\d+]/g, '');

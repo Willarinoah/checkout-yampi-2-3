@@ -1,4 +1,3 @@
-
 import { sha256 } from 'crypto-js';
 import { pushToDataLayer, DataLayerEvent, YampiOrder } from './dataLayer';
 
@@ -206,6 +205,43 @@ export const trackPurchase = (
     eventData.purchasedSkusText = yampiOrder.items.map(item => item.product.sku).join(',');
     eventData.orderId = yampiOrder.id;
   }
+
+  pushToDataLayer(eventData);
+};
+
+// Add to Cart Event
+export const trackAddToCart = (
+  planType: 'basic' | 'premium',
+  price: number,
+  userData?: UserData
+) => {
+  const eventData: DataLayerEvent = {
+    event: 'add_to_cart',
+    ecommerce: {
+      contents: [{
+        content_ids: `memorial_${planType}`,
+        quantity: 1,
+        content_type: 'product_group'
+      }],
+      ecomm_totalvalue: price,
+      currency: 'BRL',
+      items: [{
+        item_id: `memorial_${planType}`,
+        item_name: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`,
+        price: price,
+        quantity: 1,
+        item_category: 'memorial'
+      }]
+    },
+    user_data: userData ? {
+      ...(userData.email && { email_sha256: hashData(userData.email) }),
+      ...(userData.phone && { phone_sha256: hashData(userData.phone) }),
+      ...(userData.name && { name_sha256: hashData(userData.name) }),
+      ...(userData.country && { country: userData.country }),
+      ...(userData.region && { region: userData.region }),
+      ...(userData.city && { city: userData.city })
+    } : undefined
+  };
 
   pushToDataLayer(eventData);
 };
