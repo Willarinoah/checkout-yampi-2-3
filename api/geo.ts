@@ -1,19 +1,28 @@
 
+import { geolocation, ipAddress, getEnv } from '@vercel/functions';
+
 export const config = {
   runtime: 'edge',
 };
 
 export default async function handler(request: Request) {
   try {
-    // Simplified version without geolocation since we can't rely on it in dev
+    const geo = geolocation(request);
+    const ip = ipAddress(request);
+    const { VERCEL_REGION } = getEnv();
+
     const locationData = {
-      country: 'BR', // Default to Brazil for testing
-      city: 'São Paulo',
-      region: 'SP',
-      ip: request.headers.get('x-forwarded-for') || '0.0.0.0',
+      country: geo.country,
+      city: geo.city,
+      region: geo.countryRegion,
+      ip,
       timestamp: new Date().toISOString(),
+      vercelRegion: VERCEL_REGION || 'unknown',
     };
 
+    // Remove the waitUntil and logging since they might be causing issues
+    // with the response format
+    
     return new Response(JSON.stringify(locationData), {
       headers: {
         'content-type': 'application/json',
