@@ -218,13 +218,8 @@ export const trackAddToCart = (
   const eventData: DataLayerEvent = {
     event: 'add_to_cart',
     ecommerce: {
-      contents: [{
-        content_ids: `memorial_${planType}`,
-        quantity: 1,
-        content_type: 'product_group'
-      }],
-      ecomm_totalvalue: price,
       currency: 'BRL',
+      value: price,
       items: [{
         item_id: `memorial_${planType}`,
         item_name: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`,
