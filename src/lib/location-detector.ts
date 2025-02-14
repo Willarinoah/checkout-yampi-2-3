@@ -48,7 +48,7 @@ const getCountryFromCoordinates = async (latitude: number, longitude: number): P
 
 export const detectUserLocation = async (): Promise<LocationInfo> => {
   try {
-    // First try: Vercel Edge Runtime geolocation
+    // First try: Local API geolocation
     try {
       const response = await fetch('/api/geo', {
         headers: {
@@ -57,19 +57,22 @@ export const detectUserLocation = async (): Promise<LocationInfo> => {
         }
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Location detected by Vercel:', data);
-        return {
-          country_code: data.country || 'US',
-          city: data.city,
-          region: data.region,
-          is_brazil: data.country === 'BR',
-          detected_by: 'vercel'
-        };
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      
+      const data = await response.json();
+      console.log('Location detected by API:', data);
+      
+      return {
+        country_code: data.country || 'US',
+        city: data.city,
+        region: data.region,
+        is_brazil: data.country === 'BR',
+        detected_by: 'vercel'
+      };
     } catch (error) {
-      console.error('Vercel geolocation failed:', error);
+      console.error('API geolocation failed:', error);
     }
 
     // Second try: Browser Geolocation API

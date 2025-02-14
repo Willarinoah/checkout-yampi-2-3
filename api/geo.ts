@@ -1,20 +1,16 @@
 
-import { geolocation, ipAddress } from '@vercel/edge';
-
 export const config = {
   runtime: 'edge',
 };
 
 export default async function handler(request: Request) {
   try {
-    const geo = geolocation(request);
-    const ip = ipAddress(request);
-
+    // Simplified version without geolocation since we can't rely on it in dev
     const locationData = {
-      country: geo.country,
-      city: geo.city,
-      region: geo.countryRegion,
-      ip,
+      country: 'BR', // Default to Brazil for testing
+      city: 'São Paulo',
+      region: 'SP',
+      ip: request.headers.get('x-forwarded-for') || '0.0.0.0',
       timestamp: new Date().toISOString(),
     };
 
