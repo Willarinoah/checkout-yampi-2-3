@@ -238,6 +238,7 @@ export type Database = {
         | "vercel"
       payment_status: "pending" | "paid"
       plan_type: "1 year, 3 photos and no music" | "Forever, 7 photos and music"
+      token_type: "memorial_edit" | "payment_validation"
     }
     CompositeTypes: {
       [_ in never]: never
