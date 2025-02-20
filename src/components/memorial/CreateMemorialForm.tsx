@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +12,7 @@ import type { FormPreviewData } from './types';
 import { StripePaymentModal } from './StripePaymentModal';
 import { YampiPaymentModal } from './YampiPaymentModal';
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreateMemorialFormProps {
   onEmailSubmit: (email: string) => void;
@@ -61,24 +61,38 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       const savedData = await handleSaveMemorial();
       if (!savedData) return;
 
+      console.log('Creating Stripe checkout for memorial:', savedData);
+
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         'create-checkout',
         {
           body: {
             planType: selectedPlan,
-            memorialData: savedData,
-            isBrazil: false
+            memorialData: {
+              ...savedData,
+              email,
+              fullName,
+              phone: phoneNumber,
+              customSlug: savedData.custom_slug
+            }
           },
         }
       );
 
-      if (checkoutError || !checkoutData?.url) {
+      if (checkoutError) {
+        console.error('Stripe checkout error:', checkoutError);
         throw new Error('Error creating checkout session');
       }
 
+      if (!checkoutData?.url) {
+        console.error('No URL returned from checkout creation');
+        throw new Error('Invalid checkout response');
+      }
+
+      console.log('Redirecting to Stripe checkout:', checkoutData.url);
       window.location.href = checkoutData.url;
     } catch (error) {
-      console.error('Error creating Stripe checkout:', error);
+      console.error('Error in handleStripeEmailSubmit:', error);
       toast.error('Erro ao criar sessão de pagamento. Por favor, tente novamente.');
     }
   };
@@ -108,7 +122,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       );
     }
 
-    // Se for Brasil, mostra apenas o botão que abre o modal da Yampi
     if (isBrazil) {
       return (
         <Button
@@ -125,7 +138,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       );
     }
     
-    // Se não for Brasil, mostra o botão que abre o modal do Stripe
     return (
       <Button
         className="w-full bg-lovepink hover:bg-lovepink/90"
@@ -201,7 +213,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         {renderPaymentButton()}
       </div>
 
-      {/* Modal da Yampi (apenas para Brasil) */}
       <YampiPaymentModal
         open={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
@@ -210,7 +221,6 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
         isModalOpen={showPaymentModal}
       />
 
-      {/* Modal do Stripe (apenas para internacional) */}
       <StripePaymentModal
         open={showStripeModal}
         onClose={() => setShowStripeModal(false)}

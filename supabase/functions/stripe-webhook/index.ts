@@ -54,6 +54,7 @@ serve(async (req) => {
 
     console.log('Successfully verified webhook signature');
     console.log('Event type:', event.type);
+    console.log('Event metadata:', event.data.object.metadata);
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -67,7 +68,7 @@ serve(async (req) => {
 
       const customSlug = session.metadata?.customSlug;
       if (!customSlug) {
-        console.error('No custom slug found in session metadata');
+        console.error('No custom slug found in session metadata:', session.metadata);
         throw new Error('No custom slug found in session metadata');
       }
 

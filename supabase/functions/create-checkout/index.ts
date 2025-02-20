@@ -25,7 +25,8 @@ serve(async (req) => {
 
     console.log('Request received:', { planType, memorialData })
 
-    if (!memorialData?.id || !memorialData?.custom_slug) {
+    if (!memorialData?.customSlug) {
+      console.error('Missing customSlug in memorial data:', memorialData);
       throw new Error('Missing required memorial data')
     }
 
@@ -34,10 +35,11 @@ serve(async (req) => {
       : Deno.env.get('STRIPE_PREMIUM_PRICE_ID')
 
     if (!priceId) {
+      console.error('Price ID not found for plan type:', planType);
       throw new Error('Price ID not found')
     }
 
-    console.log('Creating checkout session with priceId:', priceId)
+    console.log('Creating checkout session with priceId:', priceId);
 
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -47,11 +49,11 @@ serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/memorial/${memorialData.custom_slug}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get('origin')}/memorial/${memorialData.custom_slug}`,
+      success_url: `${req.headers.get('origin')}/memorial/${memorialData.customSlug}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get('origin')}/memorial/${memorialData.customSlug}`,
       metadata: {
         memorial_id: memorialData.id,
-        customSlug: memorialData.custom_slug,  // Restaurado
+        customSlug: memorialData.customSlug,
         planType: planType,
         email: memorialData.email
       },
@@ -68,7 +70,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in create-checkout:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
