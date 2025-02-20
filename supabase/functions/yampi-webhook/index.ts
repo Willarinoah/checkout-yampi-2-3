@@ -95,7 +95,8 @@ serve(async (req) => {
 
     const webhookData = JSON.parse(payload) as WebhookPayload;
     console.log('Processing webhook event:', webhookData.event);
-    console.log('Webhook resource:', webhookData.resource);
+    console.log('Resource ID:', webhookData.resource.id);
+    console.log('Resource ID as string:', webhookData.resource.id.toString());
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -104,11 +105,26 @@ serve(async (req) => {
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    switch (webhookData.event) {
-      case 'order.created': {
-        console.log('Processing order.created event');
-        // Busca o memorial mais recente pendente com o email do cliente
-        const { data: memorial, error: findError } = await supabase
+    // Função auxiliar para buscar o memorial
+    const findMemorial = async (orderId: string) => {
+      console.log('Searching for memorial with order ID:', orderId);
+      
+      const { data: memorial, error } = await supabase
+        .from('yampi_memorials')
+        .select('*')
+        .eq('yampi_order_id', orderId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error finding memorial:', error);
+        throw error;
+      }
+
+      if (!memorial) {
+        console.log('No memorial found with order ID:', orderId);
+        
+        // Tenta buscar o memorial mais recente pendente como fallback
+        const { data: pendingMemorial, error: pendingError } = await supabase
           .from('yampi_memorials')
           .select('*')
           .eq('payment_status', 'pending')
@@ -116,15 +132,28 @@ serve(async (req) => {
           .limit(1)
           .maybeSingle();
 
-        if (findError) {
-          console.error('Error finding memorial:', findError);
-          throw findError;
+        if (pendingError) {
+          console.error('Error finding pending memorial:', pendingError);
+          throw pendingError;
         }
 
-        if (!memorial) {
-          console.error('No pending memorial found');
-          throw new Error('No pending memorial found');
+        if (!pendingMemorial) {
+          throw new Error(`No memorial found for order ID: ${orderId}`);
         }
+
+        console.log('Found pending memorial:', pendingMemorial);
+        return pendingMemorial;
+      }
+
+      console.log('Found memorial:', memorial);
+      return memorial;
+    };
+
+    switch (webhookData.event) {
+      case 'order.created': {
+        console.log('Processing order.created event');
+        // Busca o memorial mais recente pendente
+        const memorial = await findMemorial(webhookData.resource.id.toString());
 
         // Atualiza o memorial com o ID do pedido Yampi
         const { error: updateError } = await supabase
@@ -147,21 +176,7 @@ serve(async (req) => {
 
       case 'order.status.updated': {
         console.log('Processing order.status.updated event');
-        const { data: memorial, error: findError } = await supabase
-          .from('yampi_memorials')
-          .select('*')
-          .eq('yampi_order_id', webhookData.resource.id.toString())
-          .maybeSingle();
-
-        if (findError) {
-          console.error('Error finding memorial:', findError);
-          throw findError;
-        }
-
-        if (!memorial) {
-          console.error('No memorial found for order ID:', webhookData.resource.id);
-          throw new Error(`No memorial found for order ID: ${webhookData.resource.id}`);
-        }
+        const memorial = await findMemorial(webhookData.resource.id.toString());
 
         // Atualiza o status do pedido
         const { error: updateError } = await supabase
@@ -170,7 +185,7 @@ serve(async (req) => {
             yampi_status: webhookData.resource.status.type,
             updated_at: new Date().toISOString()
           })
-          .eq('yampi_order_id', webhookData.resource.id.toString());
+          .eq('id', memorial.id);
 
         if (updateError) {
           console.error('Error updating memorial status:', updateError);
@@ -183,21 +198,7 @@ serve(async (req) => {
 
       case 'order.paid': {
         console.log('Processing order.paid event');
-        const { data: memorial, error: findError } = await supabase
-          .from('yampi_memorials')
-          .select('*')
-          .eq('yampi_order_id', webhookData.resource.id.toString())
-          .maybeSingle();
-
-        if (findError) {
-          console.error('Error finding memorial:', findError);
-          throw findError;
-        }
-
-        if (!memorial) {
-          console.error('No memorial found for order ID:', webhookData.resource.id);
-          throw new Error(`No memorial found for order ID: ${webhookData.resource.id}`);
-        }
+        const memorial = await findMemorial(webhookData.resource.id.toString());
 
         // Atualiza o memorial com as informações de pagamento
         const { data: updatedMemorial, error: updateError } = await supabase
@@ -210,7 +211,7 @@ serve(async (req) => {
             yampi_installments: webhookData.resource.payment.installments,
             updated_at: new Date().toISOString()
           })
-          .eq('yampi_order_id', webhookData.resource.id.toString())
+          .eq('id', memorial.id)
           .select()
           .single();
 
