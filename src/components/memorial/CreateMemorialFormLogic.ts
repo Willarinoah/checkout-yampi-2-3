@@ -21,12 +21,9 @@ export const useMemorialFormLogic = (
   const [photosPreviews, setPhotosPreviews] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isBrazil, setIsBrazil] = useState<boolean | null>(null);
-  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
   const [startTime, setStartTime] = useState("00:00");
   const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
-  const [isDataSaved, setIsDataSaved] = useState(false);
-  const [memorialData, setMemorialData] = useState<any>(null);
   const [currentMemorialId, setCurrentMemorialId] = useState<string | null>(null);
   const [canCreateNewMemorial, setCanCreateNewMemorial] = useState(true);
 
@@ -58,14 +55,13 @@ export const useMemorialFormLogic = (
     onFormDataChange(previewData);
   }, [coupleName, photosPreviews, message, youtubeUrl, selectedPlan, startDate, startTime, onFormDataChange]);
 
-  // Efeito para controlar quando o botão pode ser clicável novamente
   useEffect(() => {
     if (currentMemorialId && !canCreateNewMemorial) {
       setCanCreateNewMemorial(true);
     }
   }, [selectedPlan]);
 
-  const handleSaveMemorial = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
+  const handleSaveMemorial = async () => {
     try {
       setIsLoading(true);
       console.log('Starting memorial creation/update process...');
@@ -84,7 +80,6 @@ export const useMemorialFormLogic = (
         console.log('Updating existing memorial:', currentMemorialId);
         const table = isBrazil ? 'yampi_memorials' : 'stripe_memorials';
         
-        // Use getPlanTypeFromSelection para obter o tipo correto do plano
         const fullPlanType = getPlanTypeFromSelection(selectedPlan, isBrazil || false);
         console.log('Using plan type:', fullPlanType);
         
@@ -104,7 +99,6 @@ export const useMemorialFormLogic = (
           throw new Error(`Failed to update memorial: ${updateError.message}`);
         }
 
-        setMemorialData(updatedMemorial);
         toast.success('Memorial atualizado com sucesso!');
         return updatedMemorial;
       }
@@ -119,9 +113,9 @@ export const useMemorialFormLogic = (
         planPrice,
         startDate,
         startTime,
-        email: submittedEmail,
-        fullName,
-        phone: phoneNumber,
+        email: '',
+        fullName: '',
+        phone: '',
         addressInfo: locationInfo ? {
           country_code: locationInfo.country_code,
           city: locationInfo.city,
@@ -142,8 +136,6 @@ export const useMemorialFormLogic = (
       console.log('Memorial data saved successfully:', result.data);
       setCurrentMemorialId(result.data.id);
       setCanCreateNewMemorial(false);
-      setIsDataSaved(true);
-      setMemorialData(result.data);
       toast.success('Memorial criado com sucesso!');
       return result.data;
 
@@ -154,39 +146,6 @@ export const useMemorialFormLogic = (
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleEmailSubmit = async (submittedEmail: string, fullName: string, phoneNumber: string) => {
-    const savedData = await handleSaveMemorial(submittedEmail, fullName, phoneNumber);
-    
-    if (!savedData) return null;
-
-    if (!isBrazil) {
-      try {
-        const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
-          'create-checkout',
-          {
-            body: {
-              planType: selectedPlan,
-              memorialData: savedData,
-              isBrazil: false
-            },
-          }
-        );
-
-        if (checkoutError || !checkoutData?.url) {
-          throw new Error('Error creating checkout session');
-        }
-
-        window.location.href = checkoutData.url;
-      } catch (error) {
-        console.error('Error creating Stripe checkout:', error);
-        toast.error('Erro ao criar sessão de pagamento. Por favor, tente novamente.');
-        return null;
-      }
-    }
-
-    return savedData;
   };
 
   return {
@@ -204,16 +163,11 @@ export const useMemorialFormLogic = (
     setPhotosPreviews,
     isLoading,
     isBrazil,
-    showEmailDialog,
-    setShowEmailDialog,
-    handleEmailSubmit,
     startDate,
     setStartDate,
     startTime,
     setStartTime,
-    isDataSaved,
-    memorialData,
-    canCreateNewMemorial
+    canCreateNewMemorial,
+    handleSaveMemorial
   };
 };
-

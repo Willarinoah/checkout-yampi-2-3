@@ -10,8 +10,8 @@ import { PlanSelector } from './PlanSelector';
 import { useMemorialFormLogic } from './CreateMemorialFormLogic';
 import { DateTimePicker } from './DateTimePicker';
 import type { FormPreviewData } from './types';
-import { StripePaymentButton } from './StripePaymentButton';
-import { PaymentModal } from './PaymentModals';
+import { StripePaymentModal } from './StripePaymentModal';
+import { YampiPaymentModal } from './YampiPaymentModal';
 import { toast } from "sonner";
 
 interface CreateMemorialFormProps {
@@ -29,6 +29,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
 }) => {
   const { t } = useLanguage();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showStripeModal, setShowStripeModal] = useState(false);
   
   const {
     selectedPlan,
@@ -45,19 +46,54 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     setPhotosPreviews,
     isLoading,
     isBrazil,
-    showEmailDialog,
-    setShowEmailDialog,
-    handleEmailSubmit,
     startDate,
     setStartDate,
     startTime,
     setStartTime,
-    isDataSaved,
-    memorialData,
-    canCreateNewMemorial
+    canCreateNewMemorial,
+    handleSaveMemorial
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
   const isFormValid = coupleName && startDate && photosPreviews.length > 0;
+
+  const handleStripeEmailSubmit = async (email: string, fullName: string, phoneNumber: string) => {
+    try {
+      const savedData = await handleSaveMemorial();
+      if (!savedData) return;
+
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
+        'create-checkout',
+        {
+          body: {
+            planType: selectedPlan,
+            memorialData: savedData,
+            isBrazil: false
+          },
+        }
+      );
+
+      if (checkoutError || !checkoutData?.url) {
+        throw new Error('Error creating checkout session');
+      }
+
+      window.location.href = checkoutData.url;
+    } catch (error) {
+      console.error('Error creating Stripe checkout:', error);
+      toast.error('Erro ao criar sessão de pagamento. Por favor, tente novamente.');
+    }
+  };
+
+  const handleYampiClick = async () => {
+    try {
+      const result = await handleSaveMemorial();
+      if (result) {
+        setShowPaymentModal(true);
+      }
+    } catch (error) {
+      console.error('Error saving memorial data:', error);
+      toast.error(t("error_creating_memorial"));
+    }
+  };
 
   const renderPaymentButton = () => {
     if (!isFormValid) {
@@ -77,17 +113,7 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       return (
         <Button
           className="w-full bg-lovepink hover:bg-lovepink/90"
-          onClick={async () => {
-            try {
-              const result = await handleEmailSubmit(email, "", "");
-              if (result) {
-                setShowPaymentModal(true);
-              }
-            } catch (error) {
-              console.error('Error saving memorial data:', error);
-              toast.error(t("error_creating_memorial"));
-            }
-          }}
+          onClick={handleYampiClick}
           disabled={isLoading || !canCreateNewMemorial}
         >
           {isLoading 
@@ -99,16 +125,15 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       );
     }
     
-    // Se não for Brasil, mostra o botão do Stripe
+    // Se não for Brasil, mostra o botão que abre o modal do Stripe
     return (
-      <StripePaymentButton
-        isLoading={isLoading}
-        showEmailDialog={showEmailDialog}
-        setShowEmailDialog={setShowEmailDialog}
-        handleEmailSubmit={handleEmailSubmit}
-        email={email}
-        isDisabled={!isFormValid || !canCreateNewMemorial}
-      />
+      <Button
+        className="w-full bg-lovepink hover:bg-lovepink/90"
+        onClick={() => setShowStripeModal(true)}
+        disabled={isLoading || !canCreateNewMemorial}
+      >
+        {isLoading ? t("creating") : t("create_our_site")}
+      </Button>
     );
   };
 
@@ -177,18 +202,21 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       </div>
 
       {/* Modal da Yampi (apenas para Brasil) */}
-      {isBrazil && (
-        <PaymentModal
-          open={showPaymentModal}
-          onClose={() => setShowPaymentModal(false)}
-          email={email}
-          onSubmit={handleEmailSubmit}
-          selectedPlan={selectedPlan}
-          showYampiButton={true}
-          isLoading={isLoading}
-          isDataSaved={isDataSaved}
-        />
-      )}
+      <YampiPaymentModal
+        open={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        selectedPlan={selectedPlan}
+        isLoading={isLoading}
+        isModalOpen={showPaymentModal}
+      />
+
+      {/* Modal do Stripe (apenas para internacional) */}
+      <StripePaymentModal
+        open={showStripeModal}
+        onClose={() => setShowStripeModal(false)}
+        email={email}
+        onSubmit={handleStripeEmailSubmit}
+      />
     </div>
   );
 };
