@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { saveMemorialData } from '@/lib/memorial-data-utils';
 import { detectUserLocation, saveLocationAnalytics, type LocationInfo } from '@/lib/location-detector';
@@ -148,6 +147,35 @@ export const useMemorialFormLogic = (
     }
   };
 
+  const updateMemorialEmail = async (memorialId: string, email: string, fullName: string, phoneNumber: string) => {
+    try {
+      console.log('Updating memorial with email:', { memorialId, email, fullName, phoneNumber });
+      
+      const { data: memorial, error } = await supabase
+        .from('stripe_memorials')
+        .update({
+          email: email,
+          full_name: fullName,
+          phone: phoneNumber,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', memorialId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating memorial with email:', error);
+        throw error;
+      }
+
+      console.log('Successfully updated memorial with email:', memorial);
+      return memorial;
+    } catch (error) {
+      console.error('Error in updateMemorialEmail:', error);
+      return null;
+    }
+  };
+
   return {
     selectedPlan,
     setSelectedPlan,
@@ -168,6 +196,7 @@ export const useMemorialFormLogic = (
     startTime,
     setStartTime,
     canCreateNewMemorial,
-    handleSaveMemorial
+    handleSaveMemorial,
+    updateMemorialEmail
   };
 };

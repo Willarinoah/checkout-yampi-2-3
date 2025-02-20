@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +52,8 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
     startTime,
     setStartTime,
     canCreateNewMemorial,
-    handleSaveMemorial
+    handleSaveMemorial,
+    updateMemorialEmail
   } = useMemorialFormLogic(onEmailSubmit, onShowEmailDialog, email, onFormDataChange);
 
   const isFormValid = coupleName && startDate && photosPreviews.length > 0;
@@ -61,7 +63,13 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
       const savedData = await handleSaveMemorial();
       if (!savedData) return;
 
-      console.log('Creating Stripe checkout for memorial:', savedData);
+      // Primeiro atualiza o memorial com o email
+      const updatedMemorial = await updateMemorialEmail(savedData.id, email, fullName, phoneNumber);
+      if (!updatedMemorial) {
+        throw new Error('Failed to update memorial with email');
+      }
+
+      console.log('Creating Stripe checkout for memorial:', updatedMemorial);
 
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         'create-checkout',
@@ -69,11 +77,8 @@ export const CreateMemorialForm: React.FC<CreateMemorialFormProps> = ({
           body: {
             planType: selectedPlan,
             memorialData: {
-              ...savedData,
-              email,
-              fullName,
-              phone: phoneNumber,
-              customSlug: savedData.custom_slug
+              ...updatedMemorial,
+              customSlug: updatedMemorial.custom_slug
             }
           },
         }
