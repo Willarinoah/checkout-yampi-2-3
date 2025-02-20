@@ -25,11 +25,10 @@ serve(async (req) => {
 
     console.log('Request received:', { planType, memorialData })
 
-    if (!memorialData?.id) {
-      throw new Error('No memorial data provided')
+    if (!memorialData?.id || !memorialData?.custom_slug) {
+      throw new Error('Missing required memorial data')
     }
 
-    const price = planType === 'basic' ? 900 : 1400 // $9 or $14 in cents
     const priceId = planType === 'basic' 
       ? Deno.env.get('STRIPE_BASIC_PRICE_ID')
       : Deno.env.get('STRIPE_PREMIUM_PRICE_ID')
@@ -38,7 +37,7 @@ serve(async (req) => {
       throw new Error('Price ID not found')
     }
 
-    console.log('Creating checkout session with price:', { price, priceId })
+    console.log('Creating checkout session with priceId:', priceId)
 
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -52,7 +51,9 @@ serve(async (req) => {
       cancel_url: `${req.headers.get('origin')}/memorial/${memorialData.custom_slug}`,
       metadata: {
         memorial_id: memorialData.id,
-        plan_type: planType,
+        customSlug: memorialData.custom_slug,  // Restaurado
+        planType: planType,
+        email: memorialData.email
       },
       customer_email: memorialData.email,
     })

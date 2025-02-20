@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
@@ -64,7 +65,8 @@ serve(async (req) => {
       console.log('Processing checkout.session.completed');
       console.log('Session metadata:', session.metadata);
 
-      if (!session.metadata?.customSlug) {
+      const customSlug = session.metadata?.customSlug;
+      if (!customSlug) {
         console.error('No custom slug found in session metadata');
         throw new Error('No custom slug found in session metadata');
       }
@@ -76,8 +78,9 @@ serve(async (req) => {
           payment_status: 'paid',
           stripe_session_id: session.id,
           stripe_customer_id: session.customer,
+          updated_at: new Date().toISOString()
         })
-        .eq('custom_slug', session.metadata.customSlug)
+        .eq('custom_slug', customSlug)
         .select()
         .maybeSingle();
 
@@ -86,7 +89,7 @@ serve(async (req) => {
         throw updateError;
       }
 
-      console.log('Successfully updated payment status for slug:', session.metadata.customSlug);
+      console.log('Successfully updated payment status for slug:', customSlug);
 
       if (memorial) {
         try {
