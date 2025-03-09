@@ -104,9 +104,9 @@ const Privacy = () => {
               Se você tiver alguma dúvida sobre esta Política de Privacidade, entre em contato conosco:
             </p>
             <ul className="list-none space-y-2 text-gray-700">
-              <li><strong>Email:</strong> contact@memoryys.com</li>
-              <li><strong>Telefone:</strong> +55 24 99268-4832</li>
-              <li><strong>Responsável:</strong> William Freitas Rondon da Silva</li>
+              <li><strong>Email:</strong> </li>
+              <li><strong>Telefone:</strong> </li>
+              <li><strong>Responsável:</strong> </li>
               <li><strong>Sede:</strong> Brasil</li>
             </ul>
           </section>

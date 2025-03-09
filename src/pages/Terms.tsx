@@ -106,9 +106,9 @@ const Terms = () => {
               Se você tiver alguma dúvida sobre estes Termos de Uso, entre em contato conosco:
             </p>
             <ul className="list-none space-y-2 text-gray-700">
-              <li>Email: contact@memoryys.com</li>
-              <li>Telefone: +55 24 99268-4832</li>
-              <li>Responsável: William Freitas Rondon da Silva</li>
+              <li>Email: </li>
+              <li>Telefone: </li>
+              <li>Responsável: </li>
               <li>Sede: Brasil</li>
             </ul>
           </section>

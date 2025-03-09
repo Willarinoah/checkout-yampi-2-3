@@ -35,8 +35,8 @@ const Footer = () => {
               {t("create_beautiful")}
             </p>
             <div className="space-y-2">
-              <p className="text-gray-400">{t("contact_phone")}: +5524992684832</p>
-              <p className="text-gray-400">{t("contact_email")}: contact@memoryys.com</p>
+              <p className="text-gray-400">{t("contact_phone")}: </p>
+              <p className="text-gray-400">{t("contact_email")}: </p>
             </div>
           </div>
           
@@ -54,7 +54,7 @@ const Footer = () => {
             <ul className="space-y-2">
               <li><Link to="/privacy" className="text-gray-400 hover:text-lovepink">{t("privacy_policy")}</Link></li>
               <li><Link to="/terms" className="text-gray-400 hover:text-lovepink">{t("terms_of_service")}</Link></li>
-              <li><span className="text-gray-400">CNPJ: 49.595.923/0001-22</span></li>
+              <li><span className="text-gray-400">CNPJ: </span></li>
             </ul>
           </div>
           
